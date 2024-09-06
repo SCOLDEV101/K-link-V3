@@ -19,7 +19,7 @@ export function FilterTag({
                 category.checkVariable 
               )
             }
-            className="btn d-flex flex-row justify-content-center align-items-center gap-2 rounded-pill text-nowrap"
+            className="btn d-flex flex-row justify-content-center align-items-center gap-2 rounded-pill text-nowrap px-4"
             style={{ background: selectedCategoryNames.includes(
               category.name.toLowerCase()
             )
