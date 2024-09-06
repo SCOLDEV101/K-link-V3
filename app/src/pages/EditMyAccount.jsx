@@ -151,7 +151,6 @@ function EditMyAccount() {
 
   const inputs = [
     { name: "username", label: "ชื่อเล่น", type: "text" },
-    { name: "fullname", label: "ชื่อ-สกุล", type: "text" },
     { name: "telephone", label: "เบอร์โทรศัพท์", type: "text" },
     { name: "aboutMe", label: "เกี่ยวกับฉัน", type: "textarea" },
   ];
@@ -173,6 +172,7 @@ function EditMyAccount() {
         background: "#fff",
         borderRadius: "20px",
         zIndex: 15,
+        boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
       }}
     >
       <form>
@@ -229,11 +229,11 @@ function EditMyAccount() {
               <textarea
                 className="form-control mt-4"
                 placeholder="เกี่ยวกับฉัน"
-                style={{background:"#D9D9D9" , borderRadius:"10px"}}
+                style={{backgroundColor: "#E7E7E7" , borderRadius:"10px"}}
                 name={input.name}
                 value={EditprofileData[input.name]}
                 onChange={handleInputChange}
-                rows="3"
+                rows="6"
               />
             ) : (
               <>
@@ -258,7 +258,7 @@ function EditMyAccount() {
             )}
           </div>
         ))}
-        <div className="my-3 ">
+        <div className="my-3">
         <button className='border-0 p-2 w-100'style={{borderRadius:"10px" , backgroundColor:"#FFB600" , marginTop:"10px" ,fontSize: "1rem" }}
         onClick={updateProfileData}
           >
