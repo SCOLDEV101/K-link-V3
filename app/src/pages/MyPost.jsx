@@ -6,16 +6,25 @@ import config from "../constants/function";
 
 function MyPost() {
   const [listItem, setlistItem] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const headersCookie = config.Headers().headers;
+
   useEffect(() => {
     fetchData();
+    
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+
+    return () => clearTimeout(loadingTimeout);
   }, []);
 
   const fetchData = async () => {
     try {
       await axios
-        .get(config.SERVER_PATH + `/api/user/myPost`, { headers: headersCookie })
+        .get(config.SERVER_PATH + `/api/user/myPos`, { headers: headersCookie })
         .then((res) => {
+          setIsLoading(false); 
           if (res.data.status === "ok") {
             console.log("myPost res :", res.data.data);
             setlistItem(res.data.data);
@@ -25,16 +34,18 @@ function MyPost() {
           }
         })
         .catch((err) => {
+          setIsLoading(false);
           throw err.response.data;
         });
     } catch (error) {
+      setIsLoading(false);
       console.error("Error fetching data: ", error);
     }
   };
+
   const [selectedCategoryNames, setSelectedCategoryNames] = useState([]);
-  const [selectedCategoryVariables, setSelectedCategoryVariables] = useState(
-    []
-  );
+  const [selectedCategoryVariables, setSelectedCategoryVariables] = useState([]);
+
   const categories = [
     { name: "Hobby", checkVariable: "isHobby" },
     { name: "Library", checkVariable: "isLibrary" },
@@ -81,21 +92,41 @@ function MyPost() {
         style={{ position: "sticky", top: "0", zIndex: 3 }}
       >
         <FilterTag
-          selectedCategoryNames={selectedCategoryNames} // <============================== Set this
-          toggleCategoryName={toggleCategoryName} // <============================== Set this
+          selectedCategoryNames={selectedCategoryNames}
+          toggleCategoryName={toggleCategoryName}
           categories={categories}
         />
       </div>
       <div
         className="mx-auto px-4 position-relative"
-        style={{ overflowY: "auto",width: "100%" }}
+        style={{ overflowY: "auto", width: "100%" }}
       >
-        {filteredLists && filteredLists.length > 0 ? (
+        {isLoading ? (
+    <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems:"center",
+      height: "50vh",
+    }}
+  >
+    <l-tail-chase size="40" speed="1.75" color="rgb(255,133,0)"></l-tail-chase>
+  </div>
+        ) : filteredLists.length > 0 ? (
           <List listItem={filteredLists} />
         ) : (
-          <div className=" text-center text-secondary">ไม่มีโพสของคุณ</div>
+          <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems:"center",
+        height: "50vh",
+        color: "#D9D9D9",
+      }}
+    >
+      ไม่มีโพสต์
+    </div>
         )}
-        {/* // <============================== Set this */}
       </div>
     </div>
   );
