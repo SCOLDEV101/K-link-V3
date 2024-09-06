@@ -22,7 +22,7 @@ function MyPost() {
   const fetchData = async () => {
     try {
       await axios
-        .get(config.SERVER_PATH + `/api/user/myPos`, { headers: headersCookie })
+        .get(config.SERVER_PATH + `/api/user/myPost`, { headers: headersCookie })
         .then((res) => {
           setIsLoading(false); 
           if (res.data.status === "ok") {

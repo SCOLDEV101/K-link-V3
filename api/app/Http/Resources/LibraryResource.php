@@ -51,7 +51,7 @@ class LibraryResource extends JsonResource
             'download' => $this->library->downloaded,
             'shares' => $this->library->shared,
             'tag' => $this->tag,
-            'img' => $files,
+            'img' => $files ?? null,
         ];
     }
 }
