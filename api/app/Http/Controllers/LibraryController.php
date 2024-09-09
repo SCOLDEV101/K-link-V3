@@ -59,7 +59,7 @@ class LibraryController extends Controller
             $file = $request->file('files');
             $extension = $file->getClientOriginalExtension();
             if (in_array($extension, $allowedfileExtension)) {
-                $name =  'library-' . now()->format('YmdHis') . 'date-name' . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
+                $name =  'library-' . now()->format('YmdHis'). str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
                 $filename = $name . '.' . $extension;
                 $file->move($path, $filename);
             } else if (!in_array($extension, $allowedfileExtension)) {
@@ -187,19 +187,22 @@ class LibraryController extends Controller
                 'message' => 'library not found.',
             ], 404);
         }
-        $spliter = 'date-name';
         $encodedname = $libraryDb->library->filepath;
-        $arrayname = explode($spliter, $encodedname);
-        $intersect = array_search($spliter, $arrayname);
-        $fileoriginname = $arrayname[$intersect + 1];
-        $originname = preg_split("/.pdf/", $fileoriginname)[0];
-
-
+        $arrayname = preg_split('/-|[.s]/', $encodedname,-1, PREG_SPLIT_NO_EMPTY);
+        $intersect = array_search('-', $arrayname)+1;
+        $fileoriginname = $arrayname[$intersect];
         $path = public_path('uploaded/Library/');
         $filePath = $path . $libraryDb->library->filepath;
-        $filesize = filesize($filePath);
-        $base64Pdf = base64_encode(file_get_contents($filePath));
-
+        if(file_exists($filePath)){
+            $originname = preg_replace('/^[\d .-]+/','', basename($fileoriginname));
+            $filesize = filesize($filePath);
+            $base64Pdf = base64_encode(file_get_contents($filePath));
+        }
+        else {
+            $originname = 'not found';
+            $filesize = 0;
+            $base64Pdf = null;
+        }
         $data = [
             'subject' => $libraryDb->subject ?? 'none',
             'filename' => $originname,
