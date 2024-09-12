@@ -11,7 +11,7 @@ function MyPost() {
 
   useEffect(() => {
     fetchData();
-    
+
     const loadingTimeout = setTimeout(() => {
       setIsLoading(false);
     }, 5000);
@@ -22,9 +22,11 @@ function MyPost() {
   const fetchData = async () => {
     try {
       await axios
-        .get(config.SERVER_PATH + `/api/user/myPost`, { headers: headersCookie })
+        .get(config.SERVER_PATH + `/api/user/myPost`, {
+          headers: headersCookie,
+        })
         .then((res) => {
-          setIsLoading(false); 
+          setIsLoading(false);
           if (res.data.status === "ok") {
             console.log("myPost res :", res.data.data);
             setlistItem(res.data.data);
@@ -44,7 +46,9 @@ function MyPost() {
   };
 
   const [selectedCategoryNames, setSelectedCategoryNames] = useState([]);
-  const [selectedCategoryVariables, setSelectedCategoryVariables] = useState([]);
+  const [selectedCategoryVariables, setSelectedCategoryVariables] = useState(
+    []
+  );
 
   const categories = [
     { name: "Hobby", checkVariable: "isHobby" },
@@ -98,34 +102,43 @@ function MyPost() {
         />
       </div>
       <div
-        className="mx-auto px-4 position-relative"
-        style={{ overflowY: "auto", width: "100%" }}
+        className="position-relative"
+        style={{
+          overflow: "auto",
+          overflowY: "scroll",
+          maxWidth: "500px",
+          width: "90vw",
+        }}
       >
         {isLoading ? (
-    <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems:"center",
-      height: "50vh",
-    }}
-  >
-    <l-tail-chase size="40" speed="1.75" color="rgb(255,133,0)"></l-tail-chase>
-  </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "50vh",
+            }}
+          >
+            <l-tail-chase
+              size="40"
+              speed="1.75"
+              color="rgb(255,133,0)"
+            ></l-tail-chase>
+          </div>
         ) : filteredLists.length > 0 ? (
           <List listItem={filteredLists} />
         ) : (
           <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems:"center",
-        height: "50vh",
-        color: "#D9D9D9",
-      }}
-    >
-      ไม่มีโพสต์
-    </div>
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "50vh",
+              color: "#D9D9D9",
+            }}
+          >
+            ไม่มีโพสต์
+          </div>
         )}
       </div>
     </div>

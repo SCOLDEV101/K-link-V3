@@ -112,8 +112,8 @@ function LibraryHomePage() {
         <SearchButton fromFeature={"library"} />
       </div>
       <div
-        className="mx-auto mb-0 px-4 position-relative"
-        style={{ overflow: "auto", overflowY: "scroll" }}
+        className="position-relative"
+        style={{ overflow: "auto", overflowY: "scroll" , maxWidth:"500px" , width:"90vw"}}
       >
         {searchListsArray.length > 0 ? (
           <List listItem={searchListsArray} fetchData={fetchData} />

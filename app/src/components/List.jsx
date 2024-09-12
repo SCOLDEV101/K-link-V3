@@ -1,26 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoShareSocial } from "react-icons/io5";
-import {
-  MdPeopleAlt,
-  MdOutlineInfo,
-  MdOutlineDownload,
-  MdOutlineBookmark,
-  MdOutlineBookmarkBorder,
-} from "react-icons/md";
-import { TbMessageReport } from "react-icons/tb";
-import { FaUserTimes } from "react-icons/fa";
-import { RiErrorWarningFill } from "react-icons/ri";
-import { BiLike } from "react-icons/bi";
-import { FaXmark } from "react-icons/fa6";
-import { HiPlus } from "react-icons/hi";
 import axios from "axios";
-import Option from "./Option";
 import config from "../constants/function";
-import Swal from 'sweetalert2'
-
-
+import Swal from "sweetalert2";
 import { Document, Page, pdfjs } from "react-pdf";
+import { IoGameController } from "react-icons/io5";
+import { FiBookOpen, FiFileText, FiFlag } from "react-icons/fi";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "../index.css";
@@ -29,12 +15,6 @@ function List({ listItem, fetchData }) {
   const [items, setItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [bookmarks, setBookmarks] = useState({});
-  const [option, setoption] = useState({
-    tgg: false,
-    o_hId: "",
-    o_type: "",
-    o_bookmark: null,
-  });
   const headersAuth = config.Headers().headers;
   const navigate = useNavigate();
 
@@ -49,15 +29,6 @@ function List({ listItem, fetchData }) {
     });
     setBookmarks(initialBookmarks);
   }, [items]);
-
-  function toggleOption(HID, Type, bookmark) {
-    setoption({
-      tgg: !option.tgg,
-      o_hId: HID,
-      o_type: Type,
-      o_bookmark: bookmark,
-    });
-  }
 
   const sendBookmark = async (hID) => {
     setBookmarks((prevBookmarks) => ({
@@ -84,48 +55,14 @@ function List({ listItem, fetchData }) {
       }
     }
   };
-
-  const getColorByMajor = (major) => {
-    switch (major) {
-      case "วิศวกรรมศาสตร์":
-        return "#5E1814";
-      case "สถาปัตยกรรมศาสตร์":
-        return "#7C4700";
-      case "ครุศาสตร์อุตสาหกรรม":
-        return "#FF1493";
-      case "เทคโนโลยีการเกษตร":
-        return "#00FF00";
-      case "วิทยาศาสตร์":
-        return "#FFB600";
-      case "เทคโนโลยีสารสนเทศ":
-        return "#0000FF";
-      case "อุตสาหกรรมอาหาร":
-        return "#FF597E";
-      case "วิทยาลัยนาโนเทคโนโลยี":
-        return "#7CB518";
-      case "บริหารธุรกิจ":
-        return "#00BFFF";
-      default:
-        return "#000000";
-    }
-  };
-
   const handleFeatureClick = (item) => {
     console.log("handleFeatureClick :", item);
-    if (item.type === "tutoring" || item.type === "hobby") {
-      handleClick(item.hID, item.userstatus);
-    } else if (item.type === "library") {
-      navigate("/library", { state: { id: item.hID } });
-    }
+    setSelectedItemId(item.hID);
   };
 
   const handleClose = (event) => {
     event.stopPropagation();
     setSelectedItemId(null);
-  };
-
-  const handleClick = (id) => {
-    setSelectedItemId(id);
   };
 
   const handleReportList = (item) => {
@@ -134,64 +71,68 @@ function List({ listItem, fetchData }) {
     });
   };
 
-  const handleButtonClick = async (id, status) => {  
-      try {
-        const res = await axios.post(
-          config.SERVER_PATH + `/api/user/joinGroup/${id}`,
-          {},
-          { headers: headersAuth, withCredentials: true }
-        );
+  function formatDateThai(dateStr) {
+    const monthsThai = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
   
-        if (res.data.status === "ok") {
-          let successMessage = "ส่งคำขอเข้าร่วมกลุ่มแล้ว";
+    const dateObj = new Date(dateStr);
+    const day = dateObj.getDate();
+    const month = monthsThai[dateObj.getMonth()];
+    const year = dateObj.getFullYear() + 543; 
   
-          if (status === "join") {
-            successMessage = "ยกเลิกคำขอเข้าร่วมกลุ่มแล้ว";
-          }
+    return `${day} ${month} ${year}`;
+  }
   
-          Swal.fire({
-            position: "center",
-            title: successMessage,
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-success',
-            }
-          });
-  
-          console.log(status + " group success");
-          // fetchData();
+  function formatTime(timeStr) {
+    const [hour, minute] = timeStr.split(':');
+    return `${hour}.${minute} น.`;
+  }
+
+  const handleButtonClick = async (id, status) => {
+    try {
+      const res = await axios.post(
+        config.SERVER_PATH + `/api/user/joinGroup/${id}`,
+        {},
+        { headers: headersAuth, withCredentials: true }
+      );
+
+      if (res.data.status === "ok") {
+        let successMessage = "ส่งคำขอเข้าร่วมกลุ่มแล้ว";
+
+        if (status === "join") {
+          successMessage = "ยกเลิกคำขอเข้าร่วมกลุ่มแล้ว";
         }
-      } catch (err) {
-        console.log(err);
+
         Swal.fire({
           position: "center",
-          title: "เกิดข้อผิดพลาด",
+          title: successMessage,
           showConfirmButton: false,
           timer: 2000,
           customClass: {
-            title: 'swal-title-error',
-            container: 'swal-container',
-            popup: 'swal-popup-error',
-          }
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-success",
+          },
         });
-      }
-  };
-  
-  
 
-  const getItemStatus = (item) => {
-    switch (item.userstatus) {
-      case "request":
-        return "Pending";
-      case "member":
-        return "Joined";
-      case "full":
-        return "Full";
-      default:
-        return "";
+        console.log(status + " group success");
+        // fetchData();
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-error",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
     }
   };
 
@@ -201,263 +142,33 @@ function List({ listItem, fetchData }) {
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
-        container: 'swal-container',
-        title: 'swal-title',
-        popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
-      }
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        confirmButton: "swal-confirm-button",
+        cancelButton: "swal-cancel-button",
+      },
     };
-  
+
     if (newStatus === "request") {
       swalOptions.title = "ต้องการขอเข้าร่วมกลุ่มหรือไม่?";
     } else if (newStatus === "join") {
       swalOptions.title = "ยกเลิกคำขอเข้าร่วมกลุ่มหรือไม่?";
     }
-  
+
     const result = await Swal.fire(swalOptions);
-  
+
     if (result.isConfirmed) {
-    setItems((prevItems) => {
-      const updatedItems = prevItems.map((item) =>
-        item.hID === hID ? { ...item, userstatus: newStatus } : item
-      );
-      console.log("Updated items:", updatedItems); // ตรวจสอบค่าที่อัปเดตแล้ว
-      return updatedItems;
-    });
-    handleButtonClick(hID, newStatus);
-  }
+      setItems((prevItems) => {
+        const updatedItems = prevItems.map((item) =>
+          item.hID === hID ? { ...item, userstatus: newStatus } : item
+        );
+        console.log("Updated items:", updatedItems); // ตรวจสอบค่าที่อัปเดตแล้ว
+        return updatedItems;
+      });
+      handleButtonClick(hID, newStatus);
+    }
   };
-
-  
-
-  // const renderButtons = (item) => {
-  //   const status = getItemStatus(item);
-  //   if (item.hID === selectedItemId) {
-  //     switch (status) {
-  //       case "Pending":
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={() => handleButtonClick(item.hID)}
-  //             >
-  //               <FaUserTimes
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ยกเลิกคำขอ
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //       case "Full":
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               disabled
-  //             >
-  //               <RiErrorWarningFill
-  //                 style={{ color: "#FF0101", fontSize: "5vw", margin: "1vw" }}
-  //               />
-  //               กลุ่มเต็ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //       case "Joined":
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/abouthobbygroup", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdOutlineInfo style={{ fontSize: "3.5vw", margin: "1vw" }} />{" "}
-  //               {/* <============== WTF BRO ========== */}
-  //               เกี่ยวกับกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //       default:
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() => handleJoinGroupClick(item.hID)}
-  //             >
-  //               <HiPlus
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#7CB518",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               เข้าร่วมกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //     }
-  //   }
-  //   return null;
-  // };
 
   return (
     <div onClick={handleClose} style={{ position: "relative" }}>
@@ -488,578 +199,204 @@ function List({ listItem, fetchData }) {
               selectedItemId === item.hID ? "highlighted zIndex-9999" : ""
             }`}
           >
-            {item.type === "hobby" && (
+            <div className="card p-3" style={{ borderRadius: "15px" }}>
               <div
-                className="card my-2 border border-dark m-auto"
+                className="position-relative mx-auto my-1"
                 style={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  backgroundColor: "white",
-                  boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-                  top: "10%",
-                  cursor: "default",
-                  maxWidth: "500px",
+                  width: "75vw",
+                  height: "25vw",
+                  maxHeight: "100px",
+                  maxWidth: "450px",
                 }}
               >
-                <div className="row">
-                  <div className="col align-self-left d-flex m-0">
-                    <img
-                      src={
-                        item.type === "hobby" ? "./hobby.png" : "./tutoring.png"
-                      }
-                      className="p-0"
-                      alt=""
-                    />
-                  </div>
-                  <div
-                    className="col align-self-left d-flex m-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFeatureClick(item);
-                    }}
-                  >
-                    <div></div>
-                  </div>
-                  <div
-                    className="col"
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      marginRight: "3%",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    <div className="col align-self-right" height={"8vw"}>
-                      <div className="d-flex">
-                        <div
-                          className="text-start fs-5"
-                          style={{ color: "#FF0101" }}
-                          onClick={() => handleReportList(item)}
-                        >
-                          <TbMessageReport className="mx-2 mb-1 fs-2" />
-                        </div>
-                        <div onClick={() => sendBookmark(item.hID)}>
-                          {bookmarks[item.hID] ? (
-                            <MdOutlineBookmark
-                              className="mt-1 fs-2"
-                              style={{ color: "#FFB600" }}
-                            />
-                          ) : (
-                            <MdOutlineBookmarkBorder className="mt-1 fs-2" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p
-                      className={
-                        item.memberMax === null ||
-                        item.memberMax === 0 ||
-                        item.member <= item.memberMax
-                          ? "text-success fw-bold"
-                          : "text-danger fw-bold"
-                      }
-                      style={{
-                        fontSize: "4vw",
-                        textAlign: "right",
-                        margin: "0",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      {item.member}/
-                      {item.memberMax === null || item.memberMax === 0
-                        ? "ไม่จำกัด"
-                        : item.memberMax}
-                    </p>
-                  </div>
-                </div>
-
+                <img
+                  src={
+                    item.image != null
+                      ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
+                      : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
+                  }
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "15px",
+                    boxShadow: "0px 0px 5.6px rgba(0, 0, 0, 0.25)",
+                  }}
+                />
                 <div
-                  className="row"
-                  style={{ padding: "0% 5%" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFeatureClick(item);
+                  className="position-absolute d-flex align-items-center m-2  fs-1"
+                  style={{
+                    top: "0",
+                    right: "0",
+                    transform: "translate(50%, -50%)",
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0rem",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {item.activityName}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "left",
-                      color: "#DDDCDC",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    {item.leader}
-                  </p>
-                  <p
-                    className={
-                      item.userstatus === "member"
-                        ? "text-success"
-                        : "text-warning"
-                    }
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      margin: "0",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    {item.userstatus}
-                  </p>
-                  <div className="row">
-                    <div className="col align-self-center">
-                      <img
-                        src={
-                          item.image != null
-                            ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
-                            : "https://www.kasandbox.org/programming-images/avatars/leaf-blue.png"
-                        }
-                        style={{ width: "25vw", height: "25vw" }}
+                  {item.type === "hobby" ? (
+                    <div
+                      style={{
+                        backgroundColor: "#FFB600",
+                        padding: "0.3rem",
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <IoGameController
+                        className="text-dark"
+                        style={{ marginLeft: "0.1rem" }}
                       />
                     </div>
-                    <div className="col align-self-center">
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        ทุกๆวัน: {item.weekDate.split(",").join(" ")}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        เวลา: {item.actTime}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        สถานที่: {item.location}
-                      </p>
-                    </div>
-                  </div>
-                  <p
-                    style={{ fontSize: "3vw", textAlign: "left" }}
-                    className="m-0 pt-2"
-                  >
-                    รายละเอียด: {item.detail}
-                  </p>
-                  <div className="p-1 mb-2" style={{ textAlign: "left" }}>
-                    {item.tag &&
-                      item.tag.split(",").map((tag, i) => (
-                        <p
-                          key={i}
-                          className="mx-1 my-0"
-                          style={{
-                            fontSize: "3vw",
-                            borderRadius: "50px",
-                            backgroundColor: "#D9D9D9",
-                            display: "inline-block",
-                            padding: "0.2em 0.5em",
-                          }}
-                        >
-                          {tag}
-                        </p>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {item.type === "tutoring" && (
-              <div
-                className="card my-2 border border-dark m-auto"
-                style={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  backgroundColor: "white",
-                  boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-                  top: "10%",
-                  maxWidth: "500px",
-                  cursor: "default",
-                }}
-              >
-                <div className="row">
-                  <div className="col align-self-left d-flex m-0">
-                    <img
-                      src={
-                        item.feature === "hobby"
-                          ? "./hobby.png"
-                          : "./tutoring.png"
-                      }
-                      className="p-0"
-                      alt=""
-                    />
-                  </div>
-                  <div
-                    className="col align-self-left d-flex m-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFeatureClick(item);
-                    }}
-                  >
-                    <div></div>
-                  </div>
-                  <div
-                    className="col"
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      marginRight: "3%",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    <div className="col align-self-right" height={"8vw"}>
-                      <div className="d-flex">
-                        <div
-                          className="text-start fs-5"
-                          style={{ color: "#FF0101" }}
-                          onClick={() => handleReportList(item)}
-                        >
-                          <TbMessageReport className="mx-2 mb-1 fs-2" />
-                        </div>
-                        <div onClick={() => sendBookmark(item.hID)}>
-                          {bookmarks[item.hID] ? (
-                            <MdOutlineBookmark
-                              className="mt-1 fs-2"
-                              style={{ color: "#FFB600" }}
-                            />
-                          ) : (
-                            <MdOutlineBookmarkBorder className="mt-1 fs-2" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p
-                      className={
-                        item.memberMax === null ||
-                        item.memberMax === 0 ||
-                        item.member <= item.memberMax
-                          ? "text-success fw-bold"
-                          : "text-danger fw-bold"
-                      }
-                      style={{
-                        fontSize: "4vw",
-                        textAlign: "right",
-                        margin: "0",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      {item.member}/
-                      {item.memberMax === null || item.memberMax === 0
-                        ? "ไม่จำกัด"
-                        : item.memberMax}
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  className="row"
-                  style={{ padding: "0% 5%" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFeatureClick(item);
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0rem",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {item.activityName}
-                  </p>
-                  <p
-                    className={
-                      item.userstatus === "member"
-                        ? "text-success"
-                        : "text-warning"
-                    }
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      margin: "0",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    {item.userstatus}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "left",
-                      color: "#DDDCDC",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    ผู้สอน: {item.teachBy}
-                  </p>
-                  <div className="row">
-                    <div className="col align-self-center">
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        วันที่:{" "}
-                        {item.date
-                          ? new Date(item.date).toLocaleDateString()
-                          : "--"}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        {item.Starttime && item.Endtime
-                          ? `เวลา: ${item.Starttime.substring(
-                              0,
-                              5
-                            )} - ${item.Endtime.substring(0, 5)} น.`
-                          : null}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        สถานที่: {item.location}
-                      </p>
-                    </div>
-                  </div>
-                  <p
-                    style={{ fontSize: "3vw", textAlign: "left" }}
-                    className="m-0 pt-2"
-                  >
-                    รายละเอียด: {item.detail}
-                  </p>
-                  <div className="p-1 mb-2" style={{ textAlign: "left" }}>
-                    {item.tag &&
-                      item.tag.split(",").map((tag, i) => (
-                        <p
-                          key={i}
-                          className="mx-1 my-0"
-                          style={{
-                            fontSize: "3vw",
-                            borderRadius: "50px",
-                            backgroundColor: "#D9D9D9",
-                            display: "inline-block",
-                            padding: "0.2em 0.5em",
-                          }}
-                        >
-                          {tag}
-                        </p>
-                      ))}
+                  ) : item.type === "tutoring" ? (
                     <div
-                      className="fw-bold"
                       style={{
-                        fontSize: "4vw",
-                        textAlign: "right",
-                        color: getColorByMajor(item.Major),
+                        backgroundColor: "#21005D",
+                        padding: "0.4rem",
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      {item.Major}
+                      <FiBookOpen className="text-white mt-1" />
                     </div>
-                  </div>
+                  ) : item.type === "library" ? (
+                    <div
+                      style={{
+                        backgroundColor: "#7CB518",
+                        padding: "0.5rem",
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <FiFileText className="text-white" />
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-            )}
 
-            {item.type === "library" && (
+                {item.type !== "library" && item.member && (
+                  <div
+                    className="position-absolute"
+                    style={{
+                      top: "10px",
+                      left: "10px",
+                      background:
+                        item.userstatus === "member"
+                          ? "linear-gradient(90deg, rgba(129,255,108,0.8) 0%, rgba(185,255,63,0.8) 100%)"
+                          : item.memberMax !== null &&
+                            item.memberMax !== 0 &&
+                            item.member >= item.memberMax
+                          ? "red"
+                          : "rgba(255, 255, 255, 0.8)",
+                      padding: "0.2rem 0.5rem",
+                      backdropFilter:"blur(3.29px)",
+                      borderRadius: "5px",
+                      color: "black",
+                      fontSize: "0.8rem",
+                      maxWidth: "50%",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.25)",
+                    }}
+                  >
+                    {item.member}/
+                    {item.memberMax === 0 || item.memberMax === null
+                      ? "ไม่จำกัด"
+                      : item.memberMax}
+                  </div>
+                )}
+              </div>
               <div
-                className="card my-2 border border-dark m-auto"
+                className="d-flex mt-2 mx-auto"
                 style={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  backgroundColor: "white",
-                  boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-                  top: "10%",
-                  cursor: "default",
-                  maxWidth: "500px",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "75vw",
+                  maxWidth: "450px",
                 }}
               >
-                <div className="row">
-                  <div
-                    className="col"
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      marginRight: "3%",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    <div className="col align-self-right" height={"8vw"}>
-                      <div className="d-flex justify-content-end">
-                        <div
-                          className="text-start fs-5"
-                          style={{ color: "#FF0101" }}
-                          onClick={() => handleReportList(item)}
-                        >
-                          <TbMessageReport className="mx-2 mb-1 fs-2" />
-                        </div>
-                        <div onClick={() => sendBookmark(item.hID)}>
-                          {bookmarks[item.hID] ? (
-                            <MdOutlineBookmark
-                              className="mt-1 fs-2"
-                              style={{ color: "#FFB600" }}
-                            />
-                          ) : (
-                            <MdOutlineBookmarkBorder className="mt-1 fs-2" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="row"
-                  style={{ padding: "0% 5%" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFeatureClick(item);
+                <p
+                  className="m-0"
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: "55vw",
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0",
-                    }}
-                  >
-                    {item.activityName}
-                  </p>
-                  {/* <p
-                    style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0",
-                    }}
-                  >
-                    {item.code}
-                  </p> */}
-                  <div className="row">
-                    <div className="col align-self-center">
-                      {/* <img
-                        src={item.img}
-                        style={{ width: "25vw", height: "35vw" }}
-                      /> */}
-                      <PDF_Document file={item.img[0]} />
-                    </div>
-                    <div className="col align-self-center">
-                      <p
-                        style={{
-                          fontSize: "4vw",
-                          textAlign: "left",
-                          color: "#DDDCDC",
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        โดย: {item.leader}
-                      </p>
-                      <div
-                        className="fw-bold"
-                        style={{
-                          fontSize: "3vw",
-                          color: getColorByMajor(item.Major),
-                        }}
-                      >
-                        {item.Major}
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          display: "-webkit-box",
-                          WebkitBoxOrient: "vertical",
-                          WebkitLineClamp: 3,
-                          overflow: "hidden",
-                        }}
-                        className="m-0 pt-2"
-                      >
-                        รายละเอียด: {item.detail}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-1 mb-0" style={{ textAlign: "left" }}>
-                    {item.tag &&
-                      item.tag.split(",").map((tag, i) => (
-                        <p
-                          key={i}
-                          className="mx-1 my-0"
-                          style={{
-                            fontSize: "3vw",
-                            borderRadius: "50px",
-                            backgroundColor: "#D9D9D9",
-                            display: "inline-block",
-                            padding: "0.2em 0.5em",
-                          }}
-                        >
-                          {tag}
-                        </p>
-                      ))}
-                    <div className="row">
-                      <div
-                        className="d-flex align-items-end col"
-                        style={{
-                          fontSize: "4vw",
-                          marginRight: "3%",
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        {/* <BiLike
-                          style={{ fontSize: "8vw" }}
-                          className="mx-2 "
-                        />
-                        {item.Like} */}
-                      </div>
-                      <div
-                        className="col"
-                        style={{
-                          fontSize: "8vw",
-                          textAlign: "right",
-                          marginRight: "3%",
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        <a href={`${config.SERVER_PATH}/uploaded/Library/${item.filename}`} target="_blank" rel="noopener noreferrer">
-                          <MdOutlineDownload className="mx-2 mt-1 text-dark" />
-                        </a>
-                        {/* <IoShareSocial className="mx-2" /> */}
-                      </div>
-                    </div>
-                  </div>
+                  {item.activityName}
+                </p>
+                <div className="mb-1" style={{ maxWidth: "20vw" }}>
+                  <FiFlag className="mx-2" style={{ fontSize: "20px" }}  onClick={() => handleReportList(item)} />
+                  {bookmarks[item.hID] ? <FaBookmark style={{ fontSize: "20px", color:"#FFB600" }} onClick={() => sendBookmark(item.hID)} /> : <FaRegBookmark style={{ fontSize: "20px" }} onClick={() => sendBookmark(item.hID)}/>}
                 </div>
               </div>
-            )}
-
+                <div
+                className="d-flex flex-column mx-auto"
+                style={{
+                  alignItems: "start",
+                  width: "75vw",
+                  maxWidth: "450px",
+                }}
+              >
+                <p
+                  className="m-0"
+                  style={{
+                  color:"#625B71",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                {item.type === "library" ?
+                item.Major :
+                item.location }
+                </p>
+                <p
+                  className="m-0"
+                  style={{
+                  color:"#625B71",
+                    fontSize: "14px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                {item.type === "library" ? "PDF | 120 หน้า" 
+                : item.type === "hobby" ? formatTime(item.actTime) 
+                : item.type === "tutoring" ? formatDateThai(item.date) + " | " + formatTime(item.Starttime) + " - " + formatTime(item.Endtime) 
+                : <></>}
+                </p>
+                {item.detail && 
+                <p
+                  className="m-0"
+                  style={{
+                  color:"#7B7B7B",
+                    fontSize: "14px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                {item.detail}
+                </p>
+                }
+                </div>
+              jjjjjjjjjjjjjj
+            </div>
             <div className="my-2" style={{ maxWidth: "600px" }}>
               {/* {renderButtons(item)} */}
 
@@ -1075,16 +412,6 @@ function List({ listItem, fetchData }) {
                         handleStatusUpdate(item.hID, "join");
                       }}
                     >
-                      <FaUserTimes
-                        style={{
-                          color: "#FFF",
-                          fontSize: "6vw",
-                          background: "#FF0101",
-                          borderRadius: "50%",
-                          padding: "3px",
-                          marginRight: "3px",
-                        }}
-                      />
                       ยกเลิกคำขอ
                     </button>
                   ) : item.userstatus === "member" ? (
@@ -1103,10 +430,6 @@ function List({ listItem, fetchData }) {
                         }
                       }}
                     >
-                      <MdOutlineInfo
-                        style={{ fontSize: "3.5vw", margin: "1vw" }}
-                      />{" "}
-                      {/* <============== WTF BRO ========== */}
                       เกี่ยวกับกลุ่ม
                     </button>
                   ) : item.userstatus === "full" ? (
@@ -1115,13 +438,6 @@ function List({ listItem, fetchData }) {
                       style={{ fontSize: "4vw", borderRadius: "10px" }}
                       disabled
                     >
-                      <RiErrorWarningFill
-                        style={{
-                          color: "#FF0101",
-                          fontSize: "5vw",
-                          margin: "1vw",
-                        }}
-                      />
                       กลุ่มเต็ม
                     </button>
                   ) : (
@@ -1129,24 +445,12 @@ function List({ listItem, fetchData }) {
                       className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
                       style={{ fontSize: "3.5vw", borderRadius: "10px" }}
                       onClick={() => {
-                        // handleJoinGroupClick(item.hID);
                         handleStatusUpdate(item.hID, "request");
                       }}
                     >
-                      <HiPlus
-                        style={{
-                          color: "#FFF",
-                          fontSize: "6vw",
-                          background: "#7CB518",
-                          borderRadius: "50%",
-                          padding: "3px",
-                          marginRight: "3px",
-                        }}
-                      />
                       เข้าร่วมกลุ่ม
                     </button>
                   )}
-                  {/* ==========[ CHANGE BTN ]=========== */}
                   <button
                     className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
                     style={{ fontSize: "4vw", borderRadius: "10px" }}
@@ -1154,16 +458,6 @@ function List({ listItem, fetchData }) {
                       navigate("/members", { state: { id: item.hID } })
                     }
                   >
-                    <MdPeopleAlt
-                      style={{
-                        color: "#FFF",
-                        fontSize: "6vw",
-                        background: "#FFB600",
-                        borderRadius: "50%",
-                        padding: "3px",
-                        marginRight: "3px",
-                      }}
-                    />
                     สมาชิกกลุ่ม
                   </button>
                   <button
@@ -1171,16 +465,6 @@ function List({ listItem, fetchData }) {
                     style={{ fontSize: "4vw", borderRadius: "10px" }}
                     onClick={handleClose}
                   >
-                    <FaXmark
-                      style={{
-                        color: "#FFF",
-                        fontSize: "6vw",
-                        background: "#FF0101",
-                        borderRadius: "50%",
-                        padding: "3px",
-                        marginRight: "3px",
-                      }}
-                    />
                     ปิด
                   </button>
                 </div>
@@ -1191,13 +475,6 @@ function List({ listItem, fetchData }) {
       ) : (
         <p></p>
       )}
-      <Option
-        caseId="ListOption"
-        hID={option.o_hId}
-        type={option.o_type}
-        bookmark={option.o_bookmark}
-        show={false}
-      />
     </div>
   );
 }
@@ -1271,4 +548,8 @@ function PDF_Document({ file }) {
       )}
     </div>
   );
+}
+
+{
+  /* <PDF_Document file={item.img[0]} /> */
 }
