@@ -5,8 +5,11 @@ import config from "../constants/function";
 import Swal from "sweetalert2";
 import { Document, Page, pdfjs } from "react-pdf";
 import { IoGameController } from "react-icons/io5";
-import { FiBookOpen, FiFileText, FiFlag } from "react-icons/fi";
+import { FiBookOpen, FiFileText, FiFlag , FiInfo } from "react-icons/fi";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa";
+import { TbEye } from "react-icons/tb";
+import { LuShare2 } from "react-icons/lu";
+import { MdOutlineDownload } from "react-icons/md";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "../index.css";
@@ -55,9 +58,10 @@ function List({ listItem, fetchData }) {
       }
     }
   };
+
   const handleFeatureClick = (item) => {
     console.log("handleFeatureClick :", item);
-    setSelectedItemId(item.hID);
+    setSelectedItemId(selectedItemId === null ? item.hID : null);
   };
 
   const handleClose = (event) => {
@@ -73,22 +77,42 @@ function List({ listItem, fetchData }) {
 
   function formatDateThai(dateStr) {
     const monthsThai = [
-      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+      "มกราคม",
+      "กุมภาพันธ์",
+      "มีนาคม",
+      "เมษายน",
+      "พฤษภาคม",
+      "มิถุนายน",
+      "กรกฎาคม",
+      "สิงหาคม",
+      "กันยายน",
+      "ตุลาคม",
+      "พฤศจิกายน",
+      "ธันวาคม",
     ];
-  
+
     const dateObj = new Date(dateStr);
     const day = dateObj.getDate();
     const month = monthsThai[dateObj.getMonth()];
-    const year = dateObj.getFullYear() + 543; 
-  
+    const year = dateObj.getFullYear() + 543;
+
     return `${day} ${month} ${year}`;
   }
-  
+
   function formatTime(timeStr) {
-    const [hour, minute] = timeStr.split(':');
+    const [hour, minute] = timeStr.split(":");
     return `${hour}.${minute} น.`;
   }
+
+  const dayColors = {
+    "จ.": "#FFB600",
+    "อ.": "#EFB8C8",
+    "พ.": "#7CB518",
+    "พฤ.": "#F96E20",
+    "ศ.": "#729BC0",
+    "ส.": "#A970C4",
+    "อา.": "#B3261E",
+  };
 
   const handleButtonClick = async (id, status) => {
     try {
@@ -201,6 +225,10 @@ function List({ listItem, fetchData }) {
           >
             <div className="card p-3" style={{ borderRadius: "15px" }}>
               <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFeatureClick(item);
+                }}
                 className="position-relative mx-auto my-1"
                 style={{
                   width: "75vw",
@@ -209,6 +237,8 @@ function List({ listItem, fetchData }) {
                   maxWidth: "450px",
                 }}
               >
+                {item.type==="library" ? 
+                <PDF_Document file={item.img[0]}  /> :
                 <img
                   src={
                     item.image != null
@@ -223,6 +253,7 @@ function List({ listItem, fetchData }) {
                     boxShadow: "0px 0px 5.6px rgba(0, 0, 0, 0.25)",
                   }}
                 />
+                  }
                 <div
                   className="position-absolute d-flex align-items-center m-2  fs-1"
                   style={{
@@ -291,13 +322,9 @@ function List({ listItem, fetchData }) {
                       background:
                         item.userstatus === "member"
                           ? "linear-gradient(90deg, rgba(129,255,108,0.8) 0%, rgba(185,255,63,0.8) 100%)"
-                          : item.memberMax !== null &&
-                            item.memberMax !== 0 &&
-                            item.member >= item.memberMax
-                          ? "red"
                           : "rgba(255, 255, 255, 0.8)",
                       padding: "0.2rem 0.5rem",
-                      backdropFilter:"blur(3.29px)",
+                      backdropFilter: "blur(3.29px)",
                       borderRadius: "5px",
                       color: "black",
                       fontSize: "0.8rem",
@@ -308,10 +335,7 @@ function List({ listItem, fetchData }) {
                       boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.25)",
                     }}
                   >
-                    {item.member}/
-                    {item.memberMax === 0 || item.memberMax === null
-                      ? "ไม่จำกัด"
-                      : item.memberMax}
+                    {item.member} / {item.memberMax === 0 || item.memberMax === null ? "ไม่จำกัด" : item.memberMax}
                   </div>
                 )}
               </div>
@@ -325,6 +349,10 @@ function List({ listItem, fetchData }) {
                 }}
               >
                 <p
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFeatureClick(item);
+                  }}
                   className="m-0"
                   style={{
                     fontSize: "20px",
@@ -338,11 +366,29 @@ function List({ listItem, fetchData }) {
                   {item.activityName}
                 </p>
                 <div className="mb-1" style={{ maxWidth: "20vw" }}>
-                  <FiFlag className="mx-2" style={{ fontSize: "20px" }}  onClick={() => handleReportList(item)} />
-                  {bookmarks[item.hID] ? <FaBookmark style={{ fontSize: "20px", color:"#FFB600" }} onClick={() => sendBookmark(item.hID)} /> : <FaRegBookmark style={{ fontSize: "20px" }} onClick={() => sendBookmark(item.hID)}/>}
+                  <FiFlag
+                    className="mx-2"
+                    style={{ fontSize: "20px" }}
+                    onClick={() => handleReportList(item)}
+                  />
+                  {bookmarks[item.hID] ? (
+                    <FaBookmark
+                      style={{ fontSize: "20px", color: "#FFB600" }}
+                      onClick={() => sendBookmark(item.hID)}
+                    />
+                  ) : (
+                    <FaRegBookmark
+                      style={{ fontSize: "20px" }}
+                      onClick={() => sendBookmark(item.hID)}
+                    />
+                  )}
                 </div>
               </div>
-                <div
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFeatureClick(item);
+                }}
                 className="d-flex flex-column mx-auto"
                 style={{
                   alignItems: "start",
@@ -353,7 +399,7 @@ function List({ listItem, fetchData }) {
                 <p
                   className="m-0"
                   style={{
-                  color:"#625B71",
+                    color: "#625B71",
                     fontSize: "14px",
                     fontWeight: "bold",
                     overflow: "hidden",
@@ -361,52 +407,122 @@ function List({ listItem, fetchData }) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                {item.type === "library" ?
-                item.Major :
-                item.location }
+                  {item.type === "library" ? item.Major : item.location}
                 </p>
                 <p
                   className="m-0"
                   style={{
-                  color:"#625B71",
+                    color: "#625B71",
                     fontSize: "14px",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
                   }}
                 >
-                {item.type === "library" ? "PDF | 120 หน้า" 
-                : item.type === "hobby" ? formatTime(item.actTime) 
-                : item.type === "tutoring" ? formatDateThai(item.date) + " | " + formatTime(item.Starttime) + " - " + formatTime(item.Endtime) 
-                : <></>}
+                  {item.type === "library" ? (
+                    "PDF | 120 หน้า"
+                  ) : item.type === "hobby" ? (
+                    formatTime(item.actTime)
+                  ) : item.type === "tutoring" ? (
+                    formatDateThai(item.date) +
+                    " | " +
+                    formatTime(item.Starttime) +
+                    " - " +
+                    formatTime(item.Endtime)
+                  ) : (
+                    <></>
+                  )}
                 </p>
-                {item.detail && 
-                <p
-                  className="m-0"
-                  style={{
-                  color:"#7B7B7B",
-                    fontSize: "14px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                {item.detail}
-                </p>
-                }
+                {item.detail && (
+                  <p
+                    className="m-0"
+                    style={{
+                      color: "#7B7B7B",
+                      fontSize: "14px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {item.detail}
+                  </p>
+                )} 
+                { item.weekDate &&
+                <div className="d-flex gap-2 my-2">
+                  {item.weekDate.split(",").map((day, index) => (
+                    <p
+                      key={index}
+                      className="m-0 px-2 py-1"
+                      style={{
+                        color: "#000000",
+                        fontSize: "14px",
+                        border: `1px solid ${dayColors[day] || "#000"}`,
+                        borderRadius:
+                          day === "อา." || day === "พฤ." ? "15px" : "50%",
+                      }}
+                    >
+                      {day}
+                    </p>
+                  ))}
                 </div>
-              jjjjjjjjjjjjjj
-            </div>
+                  }
+              </div>
+              <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto px-2" style={{borderRadius:"40px" , scrollbarWidth:"none"}}> 
+              <div className="p-1 d-flex flex-row flex-nowrap overflow-auto" style={{ textAlign: "left" , borderRadius:"40px" , scrollbarWidth:"none"}}>
+                    {item.tag &&
+                      item.tag.split(",").map((tag, i) => (
+                        <p
+                          key={i}
+                          className="mx-1 my-0 py-1 px-3 text-nowrap d-flex flex-row justify-content-center align-items-center"
+                          style={{
+                            fontSize: "10px",
+                            borderRadius: "40px",
+                            backgroundColor: "#E7E7E7",
+                            display: "inline-block",
+                            maxHeight:"23px"
+                          }}
+                        >
+                          {tag}
+                        </p>
+                      ))}
+                  </div>
+                  </div>
+                </div>
             <div className="my-2" style={{ maxWidth: "600px" }}>
               {/* {renderButtons(item)} */}
 
               {item.hID === selectedItemId && (
                 <div style={{ maxWidth: "600px" }}>
                   {/* ==========[ CHANGE BTN ]=========== */}
-                  {item.userstatus === "request" ? (
+                  {item.type === "library" ? (<>
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "4vw", borderRadius: "10px" }}
+                    className="btn py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                    onClick={() => navigate("/aboutlibrary", { state: { id: item.hID } })}
+                  >
+                    <TbEye style={{ marginRight: "5px" }} />
+                    ดูตัวอย่าง
+                  </button>
+                    <button
+                    className="btn bg-white py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.filename}`, "_blank", "noopener noreferrer")}
+                  >
+                    <MdOutlineDownload style={{marginRight:"5px"}}/>
+                    ดาวน์โหลด
+                  </button>
+                  <button
+                    className="btn bg-white py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                  >
+                    <LuShare2 style={{marginRight:"5px"}} />
+                    แชร์
+                  </button>
+                  </>) 
+                  : item.userstatus === "request" ? ( <>
+                    <button
+                      className="btn py-1 px-3 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" , backgroundColor:"#B3261E" , color:"#E7E7E7" }}
                       onClick={() => {
                         // handleButtonClick(item.hID);
                         handleStatusUpdate(item.hID, "join");
@@ -414,10 +530,12 @@ function List({ listItem, fetchData }) {
                     >
                       ยกเลิกคำขอ
                     </button>
+
+                    </>
                   ) : item.userstatus === "member" ? (
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "3.5vw", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-3 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" }}
                       onClick={() => {
                         if (item.type === "hobby") {
                           navigate("/abouthobbygroup", {
@@ -430,20 +548,21 @@ function List({ listItem, fetchData }) {
                         }
                       }}
                     >
+                      <FiInfo style={{marginRight:"5px" , marginBottom:"2px"}}/>
                       เกี่ยวกับกลุ่ม
                     </button>
                   ) : item.userstatus === "full" ? (
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "4vw", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-3 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" }}
                       disabled
                     >
                       กลุ่มเต็ม
                     </button>
                   ) : (
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "3.5vw", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-3 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" }}
                       onClick={() => {
                         handleStatusUpdate(item.hID, "request");
                       }}
@@ -451,9 +570,11 @@ function List({ listItem, fetchData }) {
                       เข้าร่วมกลุ่ม
                     </button>
                   )}
+                  {item.type !== "library" ? 
+                  <>
                   <button
-                    className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                    style={{ fontSize: "4vw", borderRadius: "10px" }}
+                    className="btn bg-white py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" }}
                     onClick={() =>
                       navigate("/members", { state: { id: item.hID } })
                     }
@@ -461,12 +582,14 @@ function List({ listItem, fetchData }) {
                     สมาชิกกลุ่ม
                   </button>
                   <button
-                    className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                    style={{ fontSize: "4vw", borderRadius: "10px" }}
+                    className="btn bg-white py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" }}
                     onClick={handleClose}
                   >
                     ปิด
                   </button>
+                  </>
+                      :<></>  }
                 </div>
               )}
             </div>
