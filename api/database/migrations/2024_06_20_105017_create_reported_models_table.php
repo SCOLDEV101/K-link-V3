@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reported_models', function (Blueprint $table) {
-            $table->id('reportNumber');
+            $table->id();
+            $table->string('reportedBy');
+            $table->string('reportedID');
             $table->string('type');
             $table->string('title');
             $table->text('detail')->nullable();
-            $table->integer('reportedBy');
-            $table->string('reportID');
             $table->boolean('status')->default(1);
             $table->timestamps();
         });

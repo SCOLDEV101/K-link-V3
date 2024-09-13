@@ -8,22 +8,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class NotifyModel extends Model
 {
-    protected $guard = [ 'notifyID' ];
+    protected $guard = [ 'id' ];
     protected $casts = [
         'id' => 'string',
     ];
     protected $fillable = [
-        'notiType', 'sender', 'receiver' , 'id'
+        'id' , 'receiverID' , 'senderID' , 'postID' , 'type'
     ];
 
     use HasFactory;
 
     public function sendBy(): BelongsTo {
-        return $this->belongsTo(UserModel::class, 'sender', 'uID');
+        return $this->belongsTo(UserModel::class, 'senderID', 'id');
     }
 
     public function hobby(): BelongsTo {
-        return $this->belongsTo(HobbyModel::class, 'id', 'hID');
+        return $this->belongsTo(HobbyModel::class, 'id', 'postID');
     }    
 
     // public function library(): BelongsTo {

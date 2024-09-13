@@ -13,36 +13,35 @@ class UserModel extends Model
 {
     use HasFactory, HasApiTokens, Notifiable;
 
-    protected $guard = [ 'uID' , 'key' ];
+    protected $guard = [ 'id' ];
 
-    protected $primaryKey = 'uID';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
-        'username', 'password', 'fullname',
-        'aboutMe', 'telephone', 'email', 'facultyID',
-        'majorID', 'profileImage', 'roleID', 'bookmark',
+        'facultyID','majorID','imageOrFileID',
+        'roleID','username','fullname',
+        'aboutMe','telephone','email',
         'status'
     ];
 
     protected $hidden = [
         'password',
-        'key',
     ];
 
     public static $defaultUser = [
-        ['uID'=>'65010111','username'=>'สบายดี','fullname'=>'นายไอโอที-1','aboutMe'=>'ชอบเล่นฟุตบอล วันหยุดมักจะไปเที่ยวกับเพื่อน เก่งแคลคูลัส',
+        ['id'=>'65010111','username'=>'สบายดี','fullname'=>'นายไอโอที-1','aboutMe'=>'ชอบเล่นฟุตบอล วันหยุดมักจะไปเที่ยวกับเพื่อน เก่งแคลคูลัส',
         'telephone'=>'065-0650111','email'=>'65010111@kmitl.ac.th','facultyID'=>'1','majorID'=>'ENG11',
         'roleID'=>'100'],
-        ['uID'=>'65010222','username'=>'พิชัย','fullname'=>'นายไอโอที-2','aboutMe'=>'เป็นประธานชมรมยิงปืน ตัวแทนนักกีฬา',
+        ['id'=>'65010222','username'=>'พิชัย','fullname'=>'นายไอโอที-2','aboutMe'=>'เป็นประธานชมรมยิงปืน ตัวแทนนักกีฬา',
         'telephone'=>'065-0650222','email'=>'65010222@kmitl.ac.th','facultyID'=>'1','majorID'=>'ENG12',
         'roleID'=>'100'],
-        ['uID'=>'65010333','username'=>'หวาน','fullname'=>'นางสาวไอโอที-1','aboutMe'=>'ประธานรุ่นปี 2565 ปัจจุบันเรียนอยู่ปี 3 เคลไปแลกเปลี่ยนที่ฝรั่งเศษ เรียนเก่งมาก',
+        ['id'=>'65010333','username'=>'หวาน','fullname'=>'นางสาวไอโอที-1','aboutMe'=>'ประธานรุ่นปี 2565 ปัจจุบันเรียนอยู่ปี 3 เคลไปแลกเปลี่ยนที่ฝรั่งเศษ เรียนเก่งมาก',
         'telephone'=>'065-0650333','email'=>'65010333@kmitl.ac.th','facultyID'=>'1','majorID'=>'ENG13',
         'roleID'=>'100'],
-        ['uID'=>'65010444','username'=>'โจน','fullname'=>'นายไอโอที-3','aboutMe'=>'ลูกครึ่งไทย-แคนนาดา รับงานแสดงเป็นบางครั้ง ไม่ชอบกินเผ็ด',
+        ['id'=>'65010444','username'=>'โจน','fullname'=>'นายไอโอที-3','aboutMe'=>'ลูกครึ่งไทย-แคนนาดา รับงานแสดงเป็นบางครั้ง ไม่ชอบกินเผ็ด',
         'telephone'=>'065-0650444','email'=>'65010444@kmitl.ac.th','facultyID'=>'1','majorID'=>'ENG14',
         'roleID'=>'100'],
-        ['uID'=>'65010555','username'=>'ซินดี้','fullname'=>'นางสาวไอโอที-2','aboutMe'=>'เป็นคนใต้ที่ไม่กินเผ็ด กลัวผีแต่ก็ชอบดูหนังผี',
+        ['id'=>'65010555','username'=>'ซินดี้','fullname'=>'นางสาวไอโอที-2','aboutMe'=>'เป็นคนใต้ที่ไม่กินเผ็ด กลัวผีแต่ก็ชอบดูหนังผี',
         'telephone'=>'065-0650555','email'=>'65010555@kmitl.ac.th','facultyID'=>'1','majorID'=>'ENG15',
         'roleID'=>'100']
     ];
@@ -52,7 +51,7 @@ class UserModel extends Model
     }
 
     public static function bookmark() {
-        $userDb = UserModel::where('uID',auth()->user()->uID)->first();
+        $userDb = UserModel::where('id',auth()->user()->id)->first();
         $bookmark = explode(',', $userDb->bookmark);
         return HobbyModel::whereIn('hID', $bookmark)->get();
     }
@@ -64,9 +63,9 @@ class UserModel extends Model
             ->leftJoin('faculty_models', 'faculty_models.facultyID', '=', 'user_models.facultyID')
             ->where(function ($query) use ($keyword) {
                 return $query->where('user_models.status', '=', 1)
-                    ->where('user_models.uID', 'like', "%$keyword%")
-                    ->orwhere('user_models.uID', 'like', "%$keyword")
-                    ->orwhere('user_models.uID', 'like', "$keyword%")
+                    ->where('user_models.id', 'like', "%$keyword%")
+                    ->orwhere('user_models.id', 'like', "%$keyword")
+                    ->orwhere('user_models.id', 'like', "$keyword%")
                     ->orwhere('user_models.fullname', 'like', "%$keyword%")
                     ->orwhere('user_models.fullname', 'like', "%$keyword")
                     ->orwhere('user_models.fullname', 'like', "$keyword%")

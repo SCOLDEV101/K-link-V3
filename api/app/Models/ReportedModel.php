@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReportedModel extends Model
 {
-    protected $guard = ['reportNumber'];
+    protected $guard = ['id'];
 
     protected $fillable = [
-        'title', 'type', 'detail',
-        'reportedBy', 'reportID', 'status'
+        'id','reportedBy','reportedID',
+        'type','title','detail',
+        'status'
     ];
     
     protected $casts = [
