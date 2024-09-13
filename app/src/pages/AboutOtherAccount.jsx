@@ -124,6 +124,7 @@ const AboutOtherAccount = () => {
         zIndex: -1,
         overflowY: "auto",
         overflowX: "hidden",
+        boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
       }}
     >
         <div>
@@ -147,7 +148,7 @@ const AboutOtherAccount = () => {
             <p>เบอร์โทร : {memberinfo.telephone}</p>
             <p>คณะ : {memberinfo.faculty}</p>
           </div>
-          <div className="mt-1 mb-3 h-auto p-2 mx-3" style={{ backgroundColor: "#D9D9D9", borderRadius: "10px" }}>
+          <div className="mt-1 mb-3 h-auto p-2 mx-3" style={{ backgroundColor: "#E7E7E7", borderRadius: "10px" }}>
             {memberinfo.aboutMe}
           </div>
         </div>
@@ -159,10 +160,11 @@ const AboutOtherAccount = () => {
                 top: "120px",
                 background: "#ffffff",
                 borderRadius: "20px",
+                boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
               }}
             >
               <div className='m-3 d-flex row'>
-              <button className='border-0 p-2' onClick={() => handleReportProfile(uID)} style={{borderRadius:"10px"}}>
+              <button className='border-0 p-2'  onClick={() => handleReportProfile(uID)} style={{borderRadius:"10px" , backgroundColor: "#E7E7E7"}}>
                 รายงาน
               </button>
               <button className='border-0 p-2 text-white' onClick={() => kickmember(uID , hID)} style={{borderRadius:"10px" , backgroundColor:"#B3261E" , marginTop:"10px"}}>
@@ -178,9 +180,10 @@ const AboutOtherAccount = () => {
                 top: "120px",
                 background: "#ffffff",
                 borderRadius: "20px",
+                boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
               }}
             >
-              <button className='border-0 m-3 p-2'  onClick={() => handleReportProfile(uID)} style={{borderRadius:"10px"}}>
+              <button className='border-0 m-3 p-2'  onClick={() => handleReportProfile(uID)} style={{borderRadius:"10px", backgroundColor: "#E7E7E7"}}>
                 รายงาน
               </button>
             </div>

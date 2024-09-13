@@ -19,21 +19,19 @@ export function FilterTag({
                 category.checkVariable 
               )
             }
-            className="btn d-flex flex-row justify-content-center align-items-center gap-2 ps-2 rounded-pill text-nowrap"
-            style={{ background: "#D9D9D9"}}
+            className="btn d-flex flex-row justify-content-center align-items-center gap-2 rounded-pill text-nowrap px-4"
+            style={{ background: selectedCategoryNames.includes(
+              category.name.toLowerCase()
+            )
+              ? "#F89603"
+              : "#ECECEC",
+              color: selectedCategoryNames.includes(
+                category.name.toLowerCase()
+              )
+                ? "#F6F6F6"
+                : "#625B71",
+            }}
           >
-            <div
-              className="rounded-circle m-0"
-              style={{
-                width: "22px",
-                height: "22px",
-                background: selectedCategoryNames.includes(
-                  category.name.toLowerCase()
-                )
-                  ? "#FFB600"
-                  : "#FFFF",
-              }}
-            ></div>
             <span>{category.name}</span>
           </a>
         ))}
