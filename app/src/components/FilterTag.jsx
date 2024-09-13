@@ -6,8 +6,8 @@ export function FilterTag({
   categories,
 }) {
   return (
-    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto px-2 py-2" style={{boxShadow: "0px 5px 10px rgba(0, 0, 0, .25)", borderBottomRightRadius:"15px", borderBottomLeftRadius:"15px"}}> 
-    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto" style={{borderRadius:"15px"}}>    
+    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto px-2 py-2" style={{boxShadow: "0px 5px 10px rgba(0, 0, 0, .25)", borderBottomRightRadius:"15px", borderBottomLeftRadius:"15px" , scrollbarWidth:"none"}}> 
+    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto" style={{borderRadius:"15px" , scrollbarWidth:"none"}}>    
     {categories &&
         categories.map((category) => (
           <a
