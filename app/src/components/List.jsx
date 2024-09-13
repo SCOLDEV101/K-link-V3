@@ -223,7 +223,7 @@ function List({ listItem, fetchData }) {
               selectedItemId === item.hID ? "highlighted zIndex-9999" : ""
             }`}
           >
-            <div className="card p-3" style={{ borderRadius: "15px" }}>
+            <div className="card p-3 border-0 mx-3" style={{ borderRadius: "15px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", }}>
               <div
                 onClick={(e) => {
                   e.stopPropagation();
@@ -250,7 +250,7 @@ function List({ listItem, fetchData }) {
                     height: "100%",
                     objectFit: "cover",
                     borderRadius: "15px",
-                    boxShadow: "0px 0px 5.6px rgba(0, 0, 0, 0.25)",
+                    boxShadow: "inset 0px 0px 5.6px 0px rgba(0, 0, 0, 0.25)",
                   }}
                 />
                   }
@@ -314,29 +314,49 @@ function List({ listItem, fetchData }) {
                 </div>
 
                 {item.type !== "library" && item.member && (
-                  <div
-                    className="position-absolute"
-                    style={{
-                      top: "10px",
-                      left: "10px",
-                      background:
-                        item.userstatus === "member"
-                          ? "linear-gradient(90deg, rgba(129,255,108,0.8) 0%, rgba(185,255,63,0.8) 100%)"
-                          : "rgba(255, 255, 255, 0.8)",
-                      padding: "0.2rem 0.5rem",
-                      backdropFilter: "blur(3.29px)",
-                      borderRadius: "5px",
-                      color: "black",
-                      fontSize: "0.8rem",
-                      maxWidth: "50%",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.25)",
-                    }}
-                  >
-                    {item.member} / {item.memberMax === 0 || item.memberMax === null ? "ไม่จำกัด" : item.memberMax}
-                  </div>
+                 <div
+                 className="position-absolute"
+                 style={{
+                   top: "10px",
+                   left: "10px",
+                   padding: "0.2rem 0.5rem",
+                   borderRadius: "5px",
+                   maxWidth: "50%",
+                   position: "relative", 
+                 }}
+               >
+                 <div
+                   style={{
+                     position: "absolute",
+                     top: 0,
+                     left: 0,
+                     right: 0,
+                     bottom: 0,
+                     background:
+                       item.userstatus === "member"
+                         ? "linear-gradient(90deg, rgba(129,255,108,0.8) 0%, rgba(185,255,63,0.8) 100%)"
+                         : "rgba(255, 255, 255, 0.8)",
+                     borderRadius: "5px",
+                     backdropFilter: "blur(3.29px)",
+                     zIndex: 1, 
+                     boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.25)",
+                   }}
+                 ></div>
+                 <div
+                   style={{
+                     position: "relative",
+                     zIndex: 2, 
+                     color: "black",
+                     fontSize: "0.8rem",
+                     whiteSpace: "nowrap",
+                     overflow: "hidden",
+                     textOverflow: "ellipsis",
+                   }}
+                 >
+                   {item.member} / {item.memberMax === 0 || item.memberMax === null ? "ไม่จำกัด" : item.memberMax}
+                 </div>
+               </div>
+               
                 )}
               </div>
               <div
@@ -467,19 +487,20 @@ function List({ listItem, fetchData }) {
                 </div>
                   }
               </div>
-              <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto px-2" style={{borderRadius:"40px" , scrollbarWidth:"none"}}> 
-              <div className="p-1 d-flex flex-row flex-nowrap overflow-auto" style={{ textAlign: "left" , borderRadius:"40px" , scrollbarWidth:"none"}}>
+              <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto mx-auto" style={{borderRadius:"40px" , scrollbarWidth:"none" , width:"75vw" , maxWidth:"450px"}}> 
+              <div className="py-1 d-flex flex-row flex-nowrap overflow-auto" style={{ textAlign: "left" , borderRadius:"40px" , scrollbarWidth:"none"}}>
                     {item.tag &&
                       item.tag.split(",").map((tag, i) => (
                         <p
                           key={i}
-                          className="mx-1 my-0 py-1 px-3 text-nowrap d-flex flex-row justify-content-center align-items-center"
+                          className="my-0 py-1 px-3 text-nowrap d-flex flex-row justify-content-center align-items-center"
                           style={{
                             fontSize: "10px",
                             borderRadius: "40px",
                             backgroundColor: "#E7E7E7",
                             display: "inline-block",
-                            maxHeight:"23px"
+                            maxHeight:"23px",
+                            marginRight:"5px"
                           }}
                         >
                           {tag}
@@ -488,7 +509,7 @@ function List({ listItem, fetchData }) {
                   </div>
                   </div>
                 </div>
-            <div className="my-2" style={{ maxWidth: "600px" }}>
+            <div className="mt-3 mb-4 mx-3" style={{ maxWidth: "600px" }}>
               {/* {renderButtons(item)} */}
 
               {item.hID === selectedItemId && (
@@ -496,24 +517,24 @@ function List({ listItem, fetchData }) {
                   {/* ==========[ CHANGE BTN ]=========== */}
                   {item.type === "library" ? (<>
                     <button
-                    className="btn py-1 px-3 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                    className="btn py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
                     onClick={() => navigate("/aboutlibrary", { state: { id: item.hID } })}
                   >
                     <TbEye style={{ marginRight: "5px" }} />
                     ดูตัวอย่าง
                   </button>
                     <button
-                    className="btn bg-white py-1 px-3 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.filename}`, "_blank", "noopener noreferrer")}
                   >
-                    <MdOutlineDownload style={{marginRight:"5px"}}/>
+                    <MdOutlineDownload style={{marginRight:"5px" }}/>
                     ดาวน์โหลด
                   </button>
                   <button
-                    className="btn bg-white py-1 px-3 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                   >
                     <LuShare2 style={{marginRight:"5px"}} />
                     แชร์
@@ -521,8 +542,8 @@ function List({ listItem, fetchData }) {
                   </>) 
                   : item.userstatus === "request" ? ( <>
                     <button
-                      className="btn py-1 px-3 my-auto mx-1"
-                      style={{ fontSize: "14px", borderRadius: "10px" , backgroundColor:"#B3261E" , color:"#E7E7E7" }}
+                      className="btn py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" , backgroundColor:"#B3261E" , color:"#E7E7E7" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
                         // handleButtonClick(item.hID);
                         handleStatusUpdate(item.hID, "join");
@@ -534,8 +555,8 @@ function List({ listItem, fetchData }) {
                     </>
                   ) : item.userstatus === "member" ? (
                     <button
-                      className="btn bg-white py-1 px-3 my-auto mx-1"
-                      style={{ fontSize: "14px", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" ,boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
                       onClick={() => {
                         if (item.type === "hobby") {
                           navigate("/abouthobbygroup", {
@@ -553,16 +574,16 @@ function List({ listItem, fetchData }) {
                     </button>
                   ) : item.userstatus === "full" ? (
                     <button
-                      className="btn bg-white py-1 px-3 my-auto mx-1"
-                      style={{ fontSize: "14px", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
                       disabled
                     >
                       กลุ่มเต็ม
                     </button>
                   ) : (
                     <button
-                      className="btn bg-white py-1 px-3 my-auto mx-1"
-                      style={{ fontSize: "14px", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
                         handleStatusUpdate(item.hID, "request");
                       }}
@@ -573,8 +594,8 @@ function List({ listItem, fetchData }) {
                   {item.type !== "library" ? 
                   <>
                   <button
-                    className="btn bg-white py-1 px-3 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={() =>
                       navigate("/members", { state: { id: item.hID } })
                     }
@@ -583,7 +604,7 @@ function List({ listItem, fetchData }) {
                   </button>
                   <button
                     className="btn bg-white py-1 px-3 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" }}
+                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={handleClose}
                   >
                     ปิด

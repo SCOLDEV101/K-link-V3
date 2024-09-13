@@ -113,7 +113,7 @@ function LibraryHomePage() {
       </div>
       <div
         className="position-relative"
-        style={{ overflow: "auto", overflowY: "scroll" , maxWidth:"500px" , width:"90vw"}}
+        style={{ overflow: "auto", overflowY: "scroll" , maxWidth:"550px" , width:"95vw"}}
       >
         {searchListsArray.length > 0 ? (
           <List listItem={searchListsArray} fetchData={fetchData} />

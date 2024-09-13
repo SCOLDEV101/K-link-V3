@@ -106,8 +106,8 @@ function MyPost() {
         style={{
           overflow: "auto",
           overflowY: "scroll",
-          maxWidth: "500px",
-          width: "90vw",
+          maxWidth: "550px",
+          width: "95vw",
         }}
       >
         {isLoading ? (
