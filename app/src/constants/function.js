@@ -3,12 +3,6 @@ const config = {
     SERVER_PATH: "http://localhost:8000",
     // API_PATH: "http://192.168.30.195:8000/api/",
     // IMAGE_PATH: "http://192.168.30.195:8000/uploaded",
-// =======
-    // API_PATH: "http://localhost:8000/api/",
-    // IMAGE_PATH: "http://localhost:8000/uploaded",
-    API_PATH: "http://10.26.7.27:8000/api/",
-    IMAGE_PATH: "http://10.26.7.27:8000/uploaded",
-// >>>>>>> Stashed changes
     // tokenName: "token",
     // API_PATH: "http://localhost:8000/api/",
     // IMAGE_PATH: "http://127.0.0.1:8000/uploaded",

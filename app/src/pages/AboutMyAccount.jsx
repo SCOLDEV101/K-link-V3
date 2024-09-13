@@ -104,6 +104,7 @@ function AboutMyAccount() {
     zIndex: 1,
     overflowY: "auto",
     overflowX: "hidden",
+    boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
   }}
 >
 
@@ -121,16 +122,31 @@ function AboutMyAccount() {
             /> 
              <h3 className="my-2 fw-bold">{profileData.username}</h3>
            </div>
- 
-           <div style={{ fontSize: "1rem" }} className="px-5">
-            <p>ชื่อเล่น : {profileData.username || '--'}</p> 
-            <p>ชื่อ-สกุล : {profileData.fullname || '--'}</p> 
-            <p>อีเมล : {profileData.email || '--'}</p>
-            <p>เบอร์โทร : {profileData.telephone || '--'}</p>
-            <p>คณะ : {profileData.faculty || '--'}</p>
+          
+          <div>
+          <div className="mx-3 d-flex justify-content-between">
+           <p>ชื่อเล่น</p>
+           <p className="fw-bold">{profileData.username || '--'}</p>
+            </div>
+            <div className="mx-3 d-flex justify-content-between">
+           <p>ชื่อ-สกุล</p>
+           <p className="fw-bold">{profileData.fullname || '--'}</p> 
+           </div>
+            <div className="mx-3 d-flex justify-content-between">
+           <p>อีเมล</p>
+           <p className="fw-bold">{profileData.email || '--'}</p> 
+           </div>
+            <div className="mx-3 d-flex justify-content-between">
+           <p>เบอร์โทร</p>
+           <p className="fw-bold">{profileData.telephone || '--'}</p> 
+           </div>
+            <div className="mx-3 d-flex justify-content-between">
+           <p>คณะ</p>
+           <p className="fw-bold"> {profileData.faculty || '--'}</p> 
+           </div>
           </div>
            {profileData.aboutMe ? (
-           <div className="mt-1 mb-3 h-auto p-2 mx-3" placeholder="เกี่ยวกับฉัน" style={{ backgroundColor: "#D9D9D9", borderRadius: "10px" }}>
+           <div className="mt-1 mb-3 h-auto p-2 mx-3" placeholder="เกี่ยวกับฉัน" style={{ backgroundColor: "#E7E7E7", borderRadius: "10px" }}>
              {profileData.aboutMe}
            </div>
            ): (<></>)}
@@ -142,11 +158,11 @@ function AboutMyAccount() {
     top: "120px",
     background: "#ffffff",
     borderRadius: "20px",
+    boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
   }}
 >
-
                <div className='m-3 d-flex row'>
-                 <button className='border-0 p-2 text-white'style={{borderRadius:"10px" , backgroundColor:"#FFB600" , marginTop:"10px"}}>
+                 <button className='border-0 p-2 text-white'style={{borderRadius:"10px" , backgroundColor:"#FFB600"}}>
                 <Link
                     to="/aboutmyaccount/editmyaccount"
                     style={{ color: "black" , fontSize: "1rem" }}
