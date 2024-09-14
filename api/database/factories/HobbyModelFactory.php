@@ -12,6 +12,7 @@ use App\Models\GroupModel;
 use App\Models\GroupDayModel;
 use App\Models\MemberModel;
 use App\Models\RequestModel;
+use App\Models\BookmarkModel;
 
 use Illuminate\Support\Facades\Log;
 // use Illuminate\Support\Facades\DB;
@@ -55,7 +56,7 @@ class HobbyModelFactory extends Factory
         $leader = $this->faker->randomElement($userID); // สุ่มเอา 1 user เป็น leader
 
         $memberMax = $this->faker->numberBetween(1, 99); // Real Max: 99, จำนวนสมาชิกที่มีได้
-        $memberRand = rand(1, $memberMax); // สุ่มจำนวนสมาชิกกลุ่ม
+        $memberRand = rand(1, 5); // สุ่มจำนวนสมาชิกกลุ่ม
 
         $availableUsers = array_diff($userID, [$leader]); // เอาสมาชิกที่ไม่ใช่ leader
         $members = $this->faker->randomElements($availableUsers, $memberRand - 1); // สุ่มเอา id ใน userArray ที่ไม่มี leader

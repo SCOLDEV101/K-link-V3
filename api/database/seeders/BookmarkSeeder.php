@@ -4,18 +4,15 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\UserModel;
+use App\Models\BookmarkModel;
 
-class UserSeeder extends Seeder
+class BookmarkSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        foreach(UserModel::$defaultUser as $User){
-            UserModel::create($User);
-        }
-        // UserModel::factory(100)->create();
+        BookmarkModel::factory(120)->create();
     }
 }

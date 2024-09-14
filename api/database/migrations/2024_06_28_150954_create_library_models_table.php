@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('library_models', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->integer('facultyID');
-            $table->integer('majorID');
-            $table->integer('departmentID');
+            $table->integer('majorID')->nullable();
+            $table->integer('departmentID')->nullable();
             $table->integer('imageOrFileID')->nullable();
             $table->string('name');
             $table->text('detail')->nullable();

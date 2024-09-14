@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             HobbySeeder::class,
             TutoringSeeder::class,
             LibrarySeeder::class,
+            BookmarkSeeder::class
             // SectionSeeder::class,
         ]);
     }

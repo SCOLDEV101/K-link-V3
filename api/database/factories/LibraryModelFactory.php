@@ -11,6 +11,7 @@ use App\Models\DepartmentModel;
 use App\Models\GroupModel;
 use App\Models\TagModel;
 use App\Models\GroupTagModel;
+use App\Models\BookmarkModel;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LibraryModel>
