@@ -12,15 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tutoring_models', function (Blueprint $table) {
-            $table->string('tutoringID')->primary();
-            $table->string('hID');
-            $table->string('facultyID');
-            $table->string('majorID')->nullable();
-            $table->string('sectionID')->nullable();
-            $table->date('date');
+            $table->string('id')->primary();
+            $table->integer('facultyID');
+            $table->integer('majorID')->nullable();
+            $table->integer('departmentID')->nullable();
+            $table->integer('imageOrFileID');
+            $table->string('name');
+            $table->integer('memberMax')->nullable();
+            $table->text('location');
+            $table->text('detail')->nullable();
             $table->time('startTime');
             $table->time('endTime');
-            $table->boolean('status')->default(1);
+            $table->date('date');
+            $table->string('leader');
+            $table->integer('downloaded')->default(0);
+            $table->string('createdBy');
             $table->timestamps();
         });
     }

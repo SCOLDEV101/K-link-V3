@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('faculty_models', function (Blueprint $table) {
-            $table->id('id');
-            $table->string('nameTH')->nullable();
-            $table->string('nameEN')->nullable();
-            $table->boolean('status')->default(1);
+        Schema::create('group_tag_models', function (Blueprint $table) {
+            $table->id();
+            $table->integer('tagID');
+            $table->string('groupID');
+            $table->string('type');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('faculty_models');
+        Schema::dropIfExists('group_tag_models');
     }
 };

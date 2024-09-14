@@ -5,6 +5,16 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\HobbyModel;
 use App\Models\UserModel;
+use App\Models\DayModel;
+use App\Models\TagModel;
+use App\Models\GroupTagModel;
+use App\Models\GroupModel;
+use App\Models\GroupDayModel;
+use App\Models\MemberModel;
+use App\Models\RequestModel;
+
+use Illuminate\Support\Facades\Log;
+// use Illuminate\Support\Facades\DB;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\HobbyModel>
@@ -18,13 +28,13 @@ class HobbyModelFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-    {
+    {   
         $tags = [
-        'กิจกรรมวิจัย', 'การประชุมวิชาการ', 'การสัมมนา', 'กิจกรรมการศึกษา', 'งานเสวนา', 'กิจกรรมสันทนาการ', 'การแข่งขันกีฬา', 'นิทรรศการ', 'งานแสดงผลงาน', 'เวิร์กช็อป',
-        'สัมมนาวิชาการ', 'ค่ายนักศึกษา', 'กิจกรรมอาสา', 'งานเชื่อมโยงวิจัย', 'กิจกรรมเครือข่าย', 'การศึกษาเชิงวิจัย', 'การพัฒนาสมรรถนะ', 'การเรียนรู้ตลอดชีวิต', 'โครงการนวัตกรรม', 'การบรรยายพิเศษ',
-        'การอบรมเชิงปฏิบัติการ', 'การพัฒนาศักยภาพ', 'การฝึกอบรมบุคลากร', 'การศึกษาออนไลน์', 'การจัดการความรู้', 'การพัฒนาองค์กร', 'การวิจัยและพัฒนา', 'กิจกรรมวิทยาศาสตร์', 'การตลาดและการประชาสัมพันธ์', 'การพัฒนาเทคโนโลยี',
-        'การส่งเสริมการศึกษา', 'กิจกรรมเชิงพาณิชย์', 'การพัฒนาทักษะทางวิชาชีพ', 'การอบรมเทคโนโลยี', 'การจัดการข้อมูล', 'การศึกษาเชิงลึก', 'การประชุมภายในองค์กร', 'การพัฒนาเครื่องมือวิจัย', 'การแสดงผลงานวิจัย', 'การฝึกอบรมระดับชาติ',
-        ];
+            'กิจกรรมวิจัย', 'การประชุมวิชาการ', 'การสัมมนา', 'กิจกรรมการศึกษา', 'งานเสวนา', 'กิจกรรมสันทนาการ', 'การแข่งขันกีฬา', 'นิทรรศการ', 'งานแสดงผลงาน', 'เวิร์กช็อป',
+            'สัมมนาวิชาการ', 'ค่ายนักศึกษา', 'กิจกรรมอาสา', 'งานเชื่อมโยงวิจัย', 'กิจกรรมเครือข่าย', 'การศึกษาเชิงวิจัย', 'การพัฒนาสมรรถนะ', 'การเรียนรู้ตลอดชีวิต', 'โครงการนวัตกรรม', 'การบรรยายพิเศษ',
+            'การอบรมเชิงปฏิบัติการ', 'การพัฒนาศักยภาพ', 'การฝึกอบรมบุคลากร', 'การศึกษาออนไลน์', 'การจัดการความรู้', 'การพัฒนาองค์กร', 'การวิจัยและพัฒนา', 'กิจกรรมวิทยาศาสตร์', 'การตลาดและการประชาสัมพันธ์', 'การพัฒนาเทคโนโลยี',
+            'การส่งเสริมการศึกษา', 'กิจกรรมเชิงพาณิชย์', 'การพัฒนาทักษะทางวิชาชีพ', 'การอบรมเทคโนโลยี', 'การจัดการข้อมูล', 'การศึกษาเชิงลึก', 'การประชุมภายในองค์กร', 'การพัฒนาเครื่องมือวิจัย', 'การแสดงผลงานวิจัย', 'การฝึกอบรมระดับชาติ',
+            ];
         $activityNames = [
             'การแข่งขันวิชาการ', 'งานสัมมนาวิทยาศาสตร์', 'การฝึกอบรมวิจัย', 'การประชุมเทคโนโลยี', 'การท่องเที่ยวเชิงวิทยาศาสตร์', 'งานแสดงนวัตกรรม', 'กิจกรรมสันทนาการนักศึกษา', 'การประชุมเชิงปฏิบัติการ', 'การฝึกอบรมอาจารย์', 'การศึกษาเชิงปฏิบัติ',
             'การสอนเชิงวิจัย', 'การสัมมนานักวิจัย', 'การประชุมวิจัยระดับชาติ', 'กิจกรรมการศึกษาต่อ', 'งานวิจัยและพัฒนา', 'การเรียนรู้ด้านวิศวกรรม', 'การอบรมการใช้เครื่องมือวิจัย', 'งานสอนและการเรียนรู้', 'การพัฒนาทักษะนักศึกษา', 'การประชุมวิทยาศาสตร์และเทคโนโลยี',
@@ -41,56 +51,126 @@ class HobbyModelFactory extends Factory
             'ข้อควรระวังในการเข้าร่วม', 'รายละเอียดการบรรยายพิเศษ', 'ข้อมูลสำหรับการลงทะเบียนเข้าร่วมกิจกรรม', 'ข้อกำหนดการใช้บริการ', 'ข้อมูลสำคัญสำหรับผู้เข้าร่วมประชุม', 'การจัดการด้านโลจิสติกส์', 'คำแนะนำในการเตรียมเอกสาร', 'รายละเอียดการประชุมงานวิจัย', 'ข้อกำหนดสำหรับการเข้าร่วมงาน', 'ข้อมูลการตรวจสอบผลการประชุม',
         ];
 
-        $userIDs = UserModel::pluck('uID')->toArray(); // Get all uID
-        $leader = $this->faker->randomElement($userIDs);
-        $memberMax = $this->faker->numberBetween(1, 99); // Real Max: 99
-        $memberRand = rand(1,$memberMax);
-        $members = $this->faker->randomElements(array_diff($userIDs, [$leader]), $memberRand-1);
-        $selectedTags = $this->faker->randomElements($tags, $this->faker->numberBetween(1, 5));
-        return [
-            'hID' => $this->idGeneration(),
-            'type' => $this->faker->randomElement(['hobby', 'tutoring', 'library']),
-            'tag' => implode(',', $selectedTags),
-            'leader' => $leader,
-            'member' => implode(',', array_merge([$leader], $members)),
-            'memberCount' => count($members) + 1, // +1 for the leader
+        $userID = UserModel::pluck('id')->toArray(); // เอารายชื่อ user ออกมา
+        $leader = $this->faker->randomElement($userID); // สุ่มเอา 1 user เป็น leader
+
+        $memberMax = $this->faker->numberBetween(1, 99); // Real Max: 99, จำนวนสมาชิกที่มีได้
+        $memberRand = rand(1, $memberMax); // สุ่มจำนวนสมาชิกกลุ่ม
+
+        $availableUsers = array_diff($userID, [$leader]); // เอาสมาชิกที่ไม่ใช่ leader
+        $members = $this->faker->randomElements($availableUsers, $memberRand - 1); // สุ่มเอา id ใน userArray ที่ไม่มี leader
+
+        $remainingUsers = array_diff($availableUsers, $members); // จำนวน user ที่เหลือ ที่ไม่ใช่ member และ leader
+        $requests = $this->faker->randomElements($remainingUsers, $this->faker->numberBetween(0, count($remainingUsers))); // สุ่มเอาสามชิกที่เหลือ ที่ไม่ใช่ member และ leader มาลงใน request
+
+        $selectedTags = $this->faker->randomElements($tags, $this->faker->numberBetween(1, 5)); // สุ่มให้จำนวนแท็กมี 1-5 แท็ก
+        
+        $startTime = $this->faker->time(); // สุ่มเวลา
+        $endTime = $this->faker->time(); // สุ่มเวลา
+        
+        $startTimestamp = strtotime($startTime);
+        $endTimestamp = $startTimestamp + rand(3600, 10800); // สุ่มให้เวลา endTime ห่างจาก startTime อยู่ 1-3 ชม.
+    
+        $startTime = date('H:i:s', $startTimestamp); // format เวลา
+        $endTime = date('H:i:s', $endTimestamp); // format เวลา
+
+        $imageID = 
+
+        $hobby = [
+            'id' => $this->idGeneration(),
+            'imageOrFileID' => $this->faker->randomElement([1,2,5]),
+            'name' => $this->faker->randomElement($activityNames),
             'memberMax' => $this->faker->randomElement([$memberMax, null]),
-            'activityName' => $this->faker->randomElement($activityNames),
-            'weekDate' => $this->randdays(),
-            'actTime' => $this->faker->dateTime(),
-            'createdBy' => $this->faker->randomElement(array_merge([$leader], $members)),
             'location' => $this->faker->randomElement($locations),
             'detail' => $this->faker->randomElement($details),
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'leader' => $leader,
+            'createdBy' => $this->faker->randomElement(array_merge([$leader], $members)),
         ];
+
+        // เก็บ id กลุ่มและประเภท ลงใน groupModel โดย groupModel จะเป็นตัวเชื่อมไอดีของกลุ่มและโพสต์ทั้งหมดเพื่อแสดงรายละเอียด
+        GroupModel::create([
+            'groupID' => $hobby['id'],
+            'type' => 'hobby',
+        ]);
+
+        // สุ่มสมาชิก โดยเก็บ userID เป็น id ใน members Array
+        MemberModel::create([
+            'groupID' => $hobby['id'],
+            'userID' => $leader,
+        ]);
+        foreach ($members as $member) {
+            MemberModel::create([
+                'groupID' => $hobby['id'],
+                'userID' => $member,
+            ]);
+        }
+
+        // สุ่ม requeset โดยเก็บ userID เป็น id ใน requests Array ซึ่งเป็นส่วนเหลือจากสมาชิกและหัวหน้า
+        foreach ($requests as $request) {
+            RequestModel::create([
+                'groupID' => $hobby['id'],
+                'userID' => $request,
+            ]);
+        }
+
+        // บันทึก tag ที่ชื่อไม่ซ้ำกัน ลงใน tagModel และเก็บกลุ่มกับแท็กของกลุ่ม ลงใน groupTagModel
+        foreach ($selectedTags as $tagName) {
+            $tag = TagModel::firstOrCreate(['name' => $tagName]);
+            GroupTagModel::create([
+                'groupID' => $hobby['id'],
+                'tagID' => $tag->id,
+                'type' => 'hobby'
+            ]);
+        }
+
+        // ดึงไอดีของวันจาก DayModel และสุ่มเก็บ id กลุ่มและ id วันเพื่อเชื่อมวันกลับกลุ่มใน GroupDayModel
+        $days = DayModel::pluck('id')->toArray();
+
+        $selectedDays = array_unique($this->faker->randomElements($days, $this->faker->numberBetween(1, count($days))));
+
+        foreach ($selectedDays as $day) {
+            $dayModel = DayModel::find($day);
+            if ($dayModel) {
+                GroupDayModel::create([
+                    'groupID' => $hobby['id'],
+                    'dayID' => $dayModel->id,
+                ]);
+            }
+        }
+
+        return $hobby;
+
     }
 
-    public function randdays()
-    {
-        $days = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
-        $index = rand(1, 7);
-        $array = array();
-        for ($each = 7 - $index; $each < 7; $each++) {
-            $array[] = $days[$each];
-        }
-        return implode(',', $array);
-    }
+    // public function randdays()
+    // {
+    //     $days = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
+    //     $index = rand(1, 7);
+    //     $array = array();
+    //     for ($each = 7 - $index; $each < 7; $each++) {
+    //         $array[] = $days[$each];
+    //     }
+    //     return implode(',', $array);
+    // }
 
-    public function randusers($userID, $memberMax)
-    {
-        $array = array();
-        if ($memberMax > 1) {
-            for ($each = 0; $each < $memberMax - 1; $each++) {
-                $index = rand($each, $memberMax);
-                if (!empty($userID[$index]) && $userID[$index] != null) {
-                    $array[] = $userID[$index];
-                    unset($userID[$index]);
-                }
-            }
-            if (sizeof($array) > 0) {
-                return ',' . implode(',', $array);
-            }
-        }
-    }
+    // public function randusers($userID, $memberMax)
+    // {
+    //     $array = array();
+    //     if ($memberMax > 1) {
+    //         for ($each = 0; $each < $memberMax - 1; $each++) {
+    //             $index = rand($each, $memberMax);
+    //             if (!empty($userID[$index]) && $userID[$index] != null) {
+    //                 $array[] = $userID[$index];
+    //                 unset($userID[$index]);
+    //             }
+    //         }
+    //         if (sizeof($array) > 0) {
+    //             return ',' . implode(',', $array);
+    //         }
+    //     }
+    // }
 
     public function idGeneration()
     {
@@ -100,7 +180,7 @@ class HobbyModelFactory extends Factory
 
         $allNumbers = [];
         for ($i = 0; $i < $sets; $i++) {
-            $numbers = range(0, 100);
+            $numbers = range(1, 100);
             shuffle($numbers);
             $allNumbers[] = array_slice($numbers, 0, $numbersPerSet);
         }

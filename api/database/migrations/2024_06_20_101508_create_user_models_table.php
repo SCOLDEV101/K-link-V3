@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_models', function (Blueprint $table) {
-            $table->id();
-            $table->string('facultyID');
-            $table->string('majorID');
-            $table->text('imageOrFileID')->nullable();
+            $table->id('id');
+            $table->integer('facultyID');
+            $table->integer('majorID');
+            $table->integer('imageOrFileID')->nullable();
             $table->string('roleID')->default('100');
             $table->string('username');
             $table->string('fullname');

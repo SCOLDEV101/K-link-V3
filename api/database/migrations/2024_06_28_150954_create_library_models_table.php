@@ -12,14 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('library_models', function (Blueprint $table) {
-            $table->string('libraryID')->primary();
-            $table->string('hID');
-            $table->string('filepath');
+            $table->string('id')->primary();
             $table->integer('facultyID');
-            $table->string('subject')->nullable();
-            $table->boolean('status')->default(1);
-            $table->integer('downloaded')->default(0);
-            $table->integer('shared')->default(0);
+            $table->integer('majorID');
+            $table->integer('departmentID');
+            $table->integer('imageOrFileID')->nullable();
+            $table->string('name');
+            $table->text('detail')->nullable();
+            $table->integer('memberMax')->nullable();
+            $table->string('createdBy');
+            $table->integer('download')->default(1);
             $table->timestamps();
         });
     }

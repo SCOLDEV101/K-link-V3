@@ -19,14 +19,17 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
+            ImageOrFileModelSeeder::class,
             FacultySeeder::class,
             MajorSeeder::class,
+            DepartmentSeeder::class,
+            DaySeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
             HobbySeeder::class,
-            SectionSeeder::class,
             TutoringSeeder::class,
-            LibrarySeeder::class
+            LibrarySeeder::class,
+            // SectionSeeder::class,
         ]);
     }
 }

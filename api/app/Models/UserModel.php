@@ -47,7 +47,7 @@ class UserModel extends Model
     ];
 
     public function faculty(): BelongsTo {
-        return $this->belongsTo(FacultyModel::class, 'facultyID', 'facultyID'); //ใช้คอลัมน์ uID ของ UserModel เป็นคีย์
+        return $this->belongsTo(FacultyModel::class, 'facultyID', 'facultyID'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์
     }
 
     public static function bookmark() {
