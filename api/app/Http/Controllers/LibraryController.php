@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Jobs\pdfToImage;
 
 use App\Models\HobbyModel;
 use App\Models\LibraryModel;
@@ -8,7 +9,6 @@ use App\Http\Resources\LibraryResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 
 class LibraryController extends Controller
 {
@@ -59,7 +59,7 @@ class LibraryController extends Controller
             $file = $request->file('files');
             $extension = $file->getClientOriginalExtension();
             if (in_array($extension, $allowedfileExtension)) {
-                $name =  'library-' . now()->format('YmdHis') . 'date-name' . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
+                $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
                 $filename = $name . '.' . $extension;
                 $file->move($path, $filename);
             } else if (!in_array($extension, $allowedfileExtension)) {
@@ -101,6 +101,7 @@ class LibraryController extends Controller
         ];
 
         if (HobbyModel::insert($data) && LibraryModel::insert($librarydata)) {
+            dispatch(new PdfToImage($filename));
             return response()->json([
                 'status' => 'ok',
                 'message' => 'create library success.'
@@ -166,6 +167,7 @@ class LibraryController extends Controller
         ];
 
         if (HobbyModel::where('hID', $hID)->update($data) && LibraryModel::where('hID', $hID)->update($librarydata)) {
+            dispatch(new PdfToImage($filename));
             return response()->json([
                 'status' => 'ok',
                 'message' => 'update library success.'
@@ -187,26 +189,36 @@ class LibraryController extends Controller
                 'message' => 'library not found.',
             ], 404);
         }
-        $spliter = 'date-name';
         $encodedname = $libraryDb->library->filepath;
-        $arrayname = explode($spliter, $encodedname);
-        $intersect = array_search($spliter, $arrayname);
-        $fileoriginname = $arrayname[$intersect + 1];
-        $originname = preg_split("/.pdf/", $fileoriginname)[0];
-
-
-        $path = public_path('uploaded/Library/');
-        $filePath = $path . $libraryDb->library->filepath;
-        $filesize = filesize($filePath);
-        $base64Pdf = base64_encode(file_get_contents($filePath));
-
+        $arrayname = preg_split('/-|[.s]/', $encodedname, -1, PREG_SPLIT_NO_EMPTY);
+        $intersect = array_search('-', $arrayname) + 1;
+        $fileoriginname = $arrayname[$intersect];
+        $filePath = public_path('uploaded\\Library\\'.$libraryDb->library->filepath);
+        echo($filePath);
+        if (file_exists($filePath)) {
+            $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
+            $filesize = filesize($filePath);
+        } else {
+            $originname = 'not found';
+            $filesize = 0;
+        }
+        $filename = basename($libraryDb->library->filepath,'.pdf');
+        $imagePath = public_path('\\pdfImage\\'.$filename);
+        if(File::exists($imagePath)){
+            echo($imagePath);
+            $allpages = File::files($imagePath);
+            $totalpages = count($allpages);
+            $imagePath='/pdfImage/'.$filename.'/output_page_';     
+        }
+        else $imagePath = null;
         $data = [
             'subject' => $libraryDb->subject ?? 'none',
             'filename' => $originname,
             'owner' => $libraryDb->leaderGroup->username,
             'uploadDate' => $libraryDb->created_at,
             'filesizeInBytes' => $filesize,
-            'file' => $base64Pdf,
+            '$totalpages'=>$totalpages ?? '0',
+            'filepageurl' => $imagePath,
         ];
         return response()->json([
             'status' => 'ok',

@@ -6,8 +6,8 @@ export function FilterTag({
   categories,
 }) {
   return (
-    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto px-2 py-2" style={{boxShadow: "0px 5px 10px rgba(0, 0, 0, .25)", borderBottomRightRadius:"15px", borderBottomLeftRadius:"15px"}}> 
-    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto" style={{borderRadius:"15px"}}>    
+    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto px-2 py-2" style={{boxShadow: "0px 5px 10px rgba(0, 0, 0, .25)", borderBottomRightRadius:"15px", borderBottomLeftRadius:"15px" , scrollbarWidth:"none"}}> 
+    <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto" style={{borderRadius:"15px" , scrollbarWidth:"none"}}>    
     {categories &&
         categories.map((category) => (
           <a
@@ -19,21 +19,19 @@ export function FilterTag({
                 category.checkVariable 
               )
             }
-            className="btn d-flex flex-row justify-content-center align-items-center gap-2 ps-2 rounded-pill text-nowrap"
-            style={{ background: "#D9D9D9"}}
+            className="btn d-flex flex-row justify-content-center align-items-center gap-2 rounded-pill text-nowrap px-4"
+            style={{ background: selectedCategoryNames.includes(
+              category.name.toLowerCase()
+            )
+              ? "#F89603"
+              : "#ECECEC",
+              color: selectedCategoryNames.includes(
+                category.name.toLowerCase()
+              )
+                ? "#F6F6F6"
+                : "#625B71",
+            }}
           >
-            <div
-              className="rounded-circle m-0"
-              style={{
-                width: "22px",
-                height: "22px",
-                background: selectedCategoryNames.includes(
-                  category.name.toLowerCase()
-                )
-                  ? "#FFB600"
-                  : "#FFFF",
-              }}
-            ></div>
             <span>{category.name}</span>
           </a>
         ))}
