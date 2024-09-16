@@ -114,6 +114,27 @@ function List({ listItem, fetchData }) {
     "อา.": "#B3261E",
   };
 
+
+
+  const handleShare = (selectedItemId) => {
+    const shareUrl = `http://localhost:3001/aboutlibrary/${selectedItemId}`; 
+    const shareText = `ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK\n${shareUrl}\nร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK`;
+    navigator.clipboard.writeText(shareText)
+  
+    if (navigator.share) {
+      navigator.share({
+        title: "ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK",
+        text: "ร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK",
+        url: shareUrl, 
+      })
+      .then(() => console.log('แชร์สำเร็จ!'))
+      .catch((error) => console.log('การแชร์ล้มเหลว:', error));
+    } else {
+      alert('ไม่รองรับในเบราว์เซอร์ของคุณ');
+    }
+  };
+  
+
   const handleButtonClick = async (id, status) => {
     try {
       const res = await axios.post(
@@ -187,7 +208,7 @@ function List({ listItem, fetchData }) {
         const updatedItems = prevItems.map((item) =>
           item.hID === hID ? { ...item, userstatus: newStatus } : item
         );
-        console.log("Updated items:", updatedItems); // ตรวจสอบค่าที่อัปเดตแล้ว
+        console.log("Updated items:", updatedItems); 
         return updatedItems;
       });
       handleButtonClick(hID, newStatus);
@@ -237,11 +258,10 @@ function List({ listItem, fetchData }) {
                   maxWidth: "450px",
                 }}
               >
-                {item.type==="library" ? 
-                <PDF_Document file={item.img[0]}  /> :
                 <img
                   src={
-                    item.image != null
+                    item.type==="library" && item.thumbnail != null  ? `${config.SERVER_PATH}${item.thumbnail}`
+                    : item.image != null
                       ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
                       : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
                   }
@@ -253,7 +273,7 @@ function List({ listItem, fetchData }) {
                     boxShadow: "inset 0px 0px 5.6px 0px rgba(0, 0, 0, 0.25)",
                   }}
                 />
-                  }
+                  
                 <div
                   className="position-absolute d-flex align-items-center m-2  fs-1"
                   style={{
@@ -519,13 +539,13 @@ function List({ listItem, fetchData }) {
                     <button
                     className="btn py-1 px-2 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
-                    onClick={() => navigate("/aboutlibrary", { state: { id: item.hID } })}
+                    onClick={() => navigate(`/aboutlibrary/${selectedItemId}`)}
                   >
                     <TbEye style={{ marginRight: "5px" }} />
                     ดูตัวอย่าง
                   </button>
                     <button
-                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    className="btn bg-white py-1 px-1 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.filename}`, "_blank", "noopener noreferrer")}
                   >
@@ -534,9 +554,10 @@ function List({ listItem, fetchData }) {
                   </button>
                   <button
                     className="btn bg-white py-1 px-2 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
+                    style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
+                    onClick={() => handleShare(selectedItemId)}
                   >
-                    <LuShare2 style={{marginRight:"5px"}} />
+                    <LuShare2 style={{ marginRight: "5px" }} />
                     แชร์
                   </button>
                   </>) 
@@ -624,76 +645,3 @@ function List({ listItem, fetchData }) {
 }
 
 export default List;
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString(); // Set the workerSrc globally
-
-function PDF_Document({ file }) {
-  const [numPages, setNumPages] = useState(null);
-  const [pdfUrl, setPdfUrl] = useState(null);
-
-  const base64Data = file;
-
-  useEffect(() => {
-    const base64ToBlobUrl = (base64) => {
-      try {
-        if (!base64 || typeof base64 !== "string") {
-          throw new Error("Invalid Base64 string");
-        }
-
-        const byteCharacters = atob(base64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: "application/pdf" });
-        return URL.createObjectURL(blob);
-      } catch (error) {
-        console.error("Error decoding Base64 data:", error);
-        return null;
-      }
-    };
-
-    setPdfUrl(base64ToBlobUrl(base64Data));
-
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
-  }, [base64Data]);
-
-  function onDocumentLoadSuccess({ numPages }) {
-    setNumPages(numPages);
-  }
-
-  return (
-    <div>
-      {pdfUrl ? (
-        <>
-          <Document
-            className="pdf-document"
-            renderMode={"canvas"}
-            // file={pdfUrl}
-            file={`data:application/pdf;base64,${file}`}
-            onLoadSuccess={onDocumentLoadSuccess}
-          >
-            <Page pageNumber={1} width={100} className="pdf-page" />
-          </Document>
-          {/* <a href={pdfUrl} download={pdfUrl + ".pdf"}>
-            <button className="download-button">Download PDF</button>
-          </a> */}
-        </>
-      ) : (
-        <p>Loading PDF...</p>
-      )}
-    </div>
-  );
-}
-
-{
-  /* <PDF_Document file={item.img[0]} /> */
-}
