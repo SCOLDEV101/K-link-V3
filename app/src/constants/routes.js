@@ -27,6 +27,7 @@ import AboutTutoringGroup from "../pages/AboutTutoringGroup";
 import AboutApp from "../pages/AboutApp";
 import LibraryCreatePost from "../pages/LibraryCreatePost";
 import ProtectedRoute from "../components/ProtectRoute";
+import AboutLibrary from "../pages/AboutLibrary";
 
 export const RouterPathAndName = [
     {
@@ -108,6 +109,11 @@ export const RouterPathAndName = [
         path: "/abouttutoringgroup",
         name: "เกี่ยวกับกลุ่ม",
         element: <ProtectedRoute><Layout><AboutTutoringGroup /></Layout></ProtectedRoute>,
+    },
+    {
+        path: "/aboutlibrary/:id",
+        name: "เกี่ยวกับกลุ่ม",
+        element: <ProtectedRoute><Layout><AboutLibrary /></Layout></ProtectedRoute>,
     },
     {
         path: "/invitefriend",
