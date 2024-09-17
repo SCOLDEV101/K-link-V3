@@ -547,7 +547,7 @@ function List({ listItem, fetchData }) {
                     <button
                     className="btn bg-white py-1 px-1 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
-                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.filename}`, "_blank", "noopener noreferrer")}
+                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.encodedfilename}`, "_blank", "noopener noreferrer")}
                   >
                     <MdOutlineDownload style={{marginRight:"5px" }}/>
                     ดาวน์โหลด
