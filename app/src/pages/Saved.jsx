@@ -92,8 +92,13 @@ function Saved() {
         />
       </div>
       <div
-        className="mx-auto px-4 position-relative"
-        style={{ overflowY: "auto", flexGrow: 1, width: "100%" }}
+        className="position-relative"
+        style={{
+          overflow: "auto",
+          overflowY: "scroll",
+          maxWidth: "550px",
+          width: "95vw",
+        }}
       >
         {isLoading ? (
           <div

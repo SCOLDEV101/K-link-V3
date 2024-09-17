@@ -492,8 +492,10 @@ function List({ listItem, fetchData }) {
                   {item.weekDate.split(",").map((day, index) => (
                     <p
                       key={index}
-                      className="m-0 px-2 py-1"
+                      className="m-0"
                       style={{
+                        paddingLeft:".35rem",
+                        paddingRight:".35rem",
                         color: "#000000",
                         fontSize: "14px",
                         border: `1px solid ${dayColors[day] || "#000"}`,
