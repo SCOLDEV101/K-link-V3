@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RouterPathAndName } from "../constants/routes";
 import { FaArrowLeft } from "react-icons/fa";
 
-function Header({groupName}) {
+function Header({groupName , FileData}) {
   const location = useLocation();
   const navigate = useNavigate();
   let HeaderTitle =

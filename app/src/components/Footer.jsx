@@ -4,7 +4,7 @@ import { IoHome } from "react-icons/io5";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 
-const Footer = () => {
+const Footer = ({FileData}) => {
   const Menus = [
     {
       name: "My POST",
