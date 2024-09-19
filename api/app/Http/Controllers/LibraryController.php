@@ -223,6 +223,7 @@ class LibraryController extends Controller
             'filesizeInBytes' => $filesize,
             '$totalpages'=>$totalpages ?? '0',
             'filepageurl' => $allImagePath,
+            'downloadlink' => '/uploaded/Library/'.$libraryDb->library->filepath,
         ];
         return response()->json([
             'status' => 'ok',
