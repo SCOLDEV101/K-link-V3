@@ -194,7 +194,6 @@ class LibraryController extends Controller
         $intersect = array_search('-', $arrayname) + 1;
         $fileoriginname = $arrayname[$intersect];
         $filePath = public_path('uploaded\\Library\\'.$libraryDb->library->filepath);
-        echo($filePath);
         if (file_exists($filePath)) {
             $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
             $filesize = filesize($filePath);
@@ -205,7 +204,6 @@ class LibraryController extends Controller
         $filename = basename($libraryDb->library->filepath,'.pdf');
         $imagePath = public_path('\\pdfImage\\'.$filename);
         if(File::exists($imagePath)){
-            echo($imagePath);
             $allpages = File::files($imagePath);
             $totalpages = count($allpages);
             $imagePath='/pdfImage/'.$filename.'/output_page_';     
