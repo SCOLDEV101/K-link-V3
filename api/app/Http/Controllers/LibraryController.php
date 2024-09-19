@@ -206,7 +206,7 @@ class LibraryController extends Controller
         if(File::exists($imagePath)){
             $allpages = File::files($imagePath);
             $totalpages = count($allpages);
-            $imagePath='/pdfImage/'.$filename.'/output_page_';     
+            $imagePath='/uploaded/Library/'.$libraryDb->library->filepath;     
         }
         else $imagePath = null;
         $data = [
