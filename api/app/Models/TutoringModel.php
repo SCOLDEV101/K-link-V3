@@ -9,6 +9,11 @@ use App\Models\FacultyModel;
 
 class TutoringModel extends Model
 {
+    public function leaderGroup(): BelongsTo
+    {
+        return $this->belongsTo(UserModel::class, 'leader', 'id'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
+    }
+
     public static $TutoringStaticGroup = [
         ['tutoringID'=>'t-20240801-001','hID' => 'h-20240801-013', 'facultyID' => '1', 'majorID' => 'ENG05', 'sectionID' => '1', 'date'=> '2024-08-01', 'startTime'=> '20:00:00', 'endTime'=> '22:00:00'],
         ['tutoringID'=>'t-20240801-002','hID' => 'h-20240802-014', 'facultyID' => '2', 'majorID' => 'ENG07', 'sectionID' => '2', 'date'=> '2024-08-01', 'startTime'=> '20:00:00', 'endTime'=> '22:00:00'],

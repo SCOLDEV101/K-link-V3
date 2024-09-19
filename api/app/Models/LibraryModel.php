@@ -9,6 +9,11 @@ use App\Models\FacultyModel;
 
 class LibraryModel extends Model
 {
+    public function leaderGroup(): BelongsTo
+    {
+        return $this->belongsTo(UserModel::class, 'createdBy', 'id'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
+    }
+
     public static $LibraryStaticGroup = [
         ['libraryID'=>'l-20240801-001','hID' => 'h-20240801-025', 'filepath' => 'library-Rev1_1.pdf', 'facultyID' => '1',],
         ['libraryID'=>'l-20240801-002','hID' => 'h-20240802-026', 'filepath' => 'library-th-2.pdf', 'facultyID' => '2',],

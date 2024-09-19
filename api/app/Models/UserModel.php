@@ -50,7 +50,7 @@ class UserModel extends Model
     ];
 
     public function faculty(): BelongsTo {
-        return $this->belongsTo(FacultyModel::class, 'facultyID', 'facultyID'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์
+        return $this->belongsTo(FacultyModel::class, 'facultyID', 'id'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์
     }
 
     public static function bookmark() {
@@ -92,19 +92,21 @@ class UserModel extends Model
 
     public static $validator = [
         [
-            'username' => ['required','string'],
-            'fullname' => ['required','string'],
-            'aboutMe' => ['nullable','string'],
-            'telephone' => ['required','string'],
+            'username' => ['sometimes','regex:/^[a-zA-Z0-9ก-๙-_\s]+$/u','max:50'],
+            'fullname' => ['sometimes','regex:/^[a-zA-Zก-๙\s]+$/u','max:100'],
+            'aboutMe' => ['nullable','regex:/^[a-zA-Z0-9ก-๙\s]+$/u','max:1000'],
+            'telephone' => ['sometimes','regex:/^[0-9]+$/','min:10','max:10'],
         ],
         [
-            'username.required' => 'username required',
-            'username.string' => 'username string invalid',
-            'fullname.required' => 'fullname required',
-            'fullname.string' => 'fullname string invalid',
-            'aboutMe.string' => 'aboutMe string invalid',
-            'telephone.required' => 'telephone required',
-            'telephone.string' => 'telephone string invalid',
+            'username.regex' => 'username can only contain letters, numbers, dashes, and underscores.',
+            'username.max' => 'username characters exceed limit',
+            'fullname.regex' => 'fullname can only contain letters, and whitespaces.',
+            'fullname.max' => 'fullname characters exceed limit',
+            'aboutMe.regex' => 'aboutMe can only contain letters, numbers and whitespaces.',
+            'aboutMe.max' => 'about me characters exceed limit',
+            'telephone.regex' => 'telephone type invalid',
+            'telephone.max' => 'telephone should have only 10 numbers',
+            'telephone.min' => 'telephone should have only 10 numbers',
         ]
     ];
 }

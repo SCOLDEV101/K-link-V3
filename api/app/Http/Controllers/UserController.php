@@ -3,98 +3,99 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\UserModel; 
-use App\Models\HobbyModel; 
-use App\Models\LibraryModel; 
-use App\Models\NotifyModel; 
-use App\Models\ReportedModel; 
+use App\Models\UserModel;
+use App\Models\HobbyModel;
+use App\Models\imageOrFileModel;
+use App\Models\GroupModel;
+use App\Models\NotifyModel;
+use App\Models\ReportedModel;
 use Illuminate\Support\Facades\File;
 use App\Http\Resources\UserResource;
-use App\Http\Resources\HobbyGroupResource;
-use App\Http\Resources\LibraryResource;
 use App\Http\Resources\MyPostResource;
 use App\Http\Resources\BookmarkResource;
 use App\Http\Resources\NotificationResource;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Http\ResourceController;
+use App\Models\TutoringModel;
+use App\Models\LibraryModel;
 
 class UserController extends Controller
 {
-    function viewBookmark() {
-        $currentUser = UserModel::where('uID',auth()->user()->uID)->first();
-        if(!$currentUser){
+    function viewBookmark()
+    {
+        $currentUser = UserModel::where('id', auth()->user()->id)->first();
+        if (!$currentUser) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'unauthorize.'
-            ],401);
+            ], 401);
         };
 
-        $bookmarkArray = explode(",",$currentUser->bookmark);
-        $group = HobbyModel::whereIn('hID',$bookmarkArray)->get();
+        $bookmarkArray = explode(",", $currentUser->bookmark);
+        $group = HobbyModel::whereIn('hID', $bookmarkArray)->get();
 
         $data = BookmarkResource::collection($group);
-        if($data) {
+        if ($data) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'fetch bookmark success.',
                 'data' => $data
-            ],200);
+            ], 200);
         } else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'failed to fetch bookmark.'
-            ],500);
+            ], 500);
         }
     }
 
-    function addOrDeleteBookmark($id) {
-        $userDb = UserModel::where('uID',auth()->user()->uID)->first();
-        if(!$userDb){
+    function addOrDeleteBookmark($id)
+    {
+        $userDb = UserModel::where('id', auth()->user()->id)->first();
+        if (!$userDb) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'unauthorize.'
-            ],401);
+            ], 401);
         }
 
-        if(HobbyModel::where('hID',$id)->first()) {
-            $database = HobbyModel::where('hID',$id)->first();
-        }else {
+        if (HobbyModel::where('hID', $id)->first()) {
+            $database = HobbyModel::where('hID', $id)->first();
+        } else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'post not found.'
-            ],404);
+            ], 404);
         }
 
-        $bookmarkArray = explode(",",$userDb->bookmark);
-        if(!in_array($id,$bookmarkArray)) {
+        $bookmarkArray = explode(",", $userDb->bookmark);
+        if (!in_array($id, $bookmarkArray)) {
             $bookmarkArray[] = $id;
-            $bookmark = implode(",",$bookmarkArray);
-        } else if(in_array($id,$bookmarkArray)) {
+            $bookmark = implode(",", $bookmarkArray);
+        } else if (in_array($id, $bookmarkArray)) {
             $bookmarkArray = array_diff($bookmarkArray, [$id]);
             $bookmark = implode(",", $bookmarkArray);
-        } else{
+        } else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'bookmark not found.'
-            ],500);
+            ], 500);
         }
 
-        if(UserModel::where('uID',auth()->user()->uID)->update(['bookmark'=>$bookmark])){
+        if (UserModel::where('id', auth()->user()->id)->update(['bookmark' => $bookmark])) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'update bookmark success.'
-            ],200);
-        }else{
+            ], 200);
+        } else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'failed to update bookmark.'
-            ],500);
+            ], 500);
         }
-
     }
 
-    function report(Request $request) {
+    function report(Request $request)
+    {
         $validationRules = ReportedModel::$validator[0];
         $validationMessages = ReportedModel::$validator[1];
         $validator = Validator::make($request->all(), $validationRules, $validationMessages);
@@ -103,94 +104,114 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'failed',
                 'message' => $validator->errors()
-            ],400);
+            ], 400);
         }
-        if (sizeof(HobbyModel::where('hID', $request->input('id'))->get()) == 0 and sizeof(UserModel::where('uID', $request->input('id'))->get()) == 0) {
+        if (sizeof(GroupModel::where('groupID', $request->input('id'))->get()) == 0 and sizeof(UserModel::where('id', $request->input('id'))->get()) == 0) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'id not found.',
+                'message' => 'not found.',
             ], 403);
         }
-
-        if(UserModel::where('uID', $request->input('id'))->first()){
+        //filter group or user report
+        if (UserModel::where('id', $request->input('id'))->first()) {
             $receiver = (int)$request->input('id');
-        }else{
-            $groupDb = HobbyModel::where('hID',$request->input('id'))->first();
-            $receiver = (int)$groupDb->leader;
+        } else {
+            $groupDb = GroupModel::where('groupID', $request->input('id'))->first();
+            if($groupDb->type=="hobby"){
+                $hobbyDb = HobbyModel::where('id', $request->input('id'))->first();
+                $receiver = (int)$hobbyDb->leader;
+            }
+            else if($groupDb->type=="tutoring"){
+                $tutorDb = TutoringModel::where('id', $request->input('id'))->first();
+                $receiver = (int)$tutorDb->leader;
+            }
+            else if($groupDb->type=="library"){
+                $libraryDb = LibraryModel::where('id', $request->input('id'))->first();
+                $receiver = (int)$libraryDb->createdBy;
+            }
+            else {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'failed to indentify group type.'
+                ], 500);
+            }
         }
 
-        $data = [
+        $reportdata = [
+            'reportedID' => $request->input('id'),
+            'reportedBy' => (int)auth()->user()->id,
             'type' => $request->input('type'),
             'title' => $request->input('title'),
-            'detail' => $request->input('detail'),
-            'reportedBy' => (int)auth()->user()->uID,
-            'reportID' => $request->input('id'),
+            'detail' => $request->input('detail'),    
             'created_at' => now(),
             'updated_at' => now(),
         ];
 
         $notifyData = [
-            'notiType' => 'report',
-            'id' => $request->input('id'),
-            'sender' => (int)auth()->user()->uID,
-            'receiver' => $receiver,
+            'receiverID' => $receiver,
+            'senderID' => (int)auth()->user()->id,
+            'postID' => $request->input('id'),
+            'type' => 'report',
             'created_at' => now(),
             'updated_at' => now(),
         ];
 
-        if (ReportedModel::insert($data)) {
+        if (ReportedModel::insert($reportdata)) {
             NotifyModel::create($notifyData);
             return response()->json([
                 'status' => 'ok',
                 'message' => 'create report success.',
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'failed to create report.',
+            ], 500);
+        }
+    }
+
+    function memberInfo($uID)
+    {
+        $userDb = UserModel::where('id', $uID)->get();
+        $data = UserResource::collection($userDb)->first();
+
+        if ($data) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'get user info success.',
                 'data' => $data
             ], 200);
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'failed to create report.',
-            ], 500);
-        }
-    }
-    
-    function memberInfo($uID) {
-        $userDb = UserModel::where('uID',$uID)->get();
-        $data = UserResource::collection($userDb);
-        
-        if($data){
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'create report success.',
-                'data' => $data[0]
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'failed to create report.',
+                'message' => 'failed to get user info report.',
             ], 500);
         }
     }
 
-    function showAboutUser() {
-        $uID = auth()->user()->uID;
-        $userDb = UserModel::where('uID', $uID)->get();
-        $data = UserResource::collection($userDb);
+    function showAboutUser()
+    {
+        $uID = auth()->user()->id;
+        $userDb = UserModel::where('id', $uID)->get();
+        $data = UserResource::collection($userDb)->first();
 
         if ($data) {
             return response()->json([
                 'status' => 'ok',
-                'message' => 'fetch about my account success.',
-                'data' => $data[0]
+                'message' => 'fetch my account success.',
+                'data' => $data
             ], 200);
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'failed to fetch about my account.',
+                'message' => 'failed to fetch my account.',
             ], 500);
         };
     }
 
-    function updateAboutUser(Request $request) {
+    function updateAboutUser(Request $request)
+    {
+        
         $validationRules = UserModel::$validator[0];
         $validationMessages = UserModel::$validator[1];
 
@@ -203,35 +224,50 @@ class UserController extends Controller
             ],400);
         }
 
-        $uID = auth()->user()->uID;
-        $userDb = UserModel::where('uID', $uID)->first();
+        $uID = auth()->user()->id;
+        $userDb = UserModel::where('id', $uID)->first();
         $path = public_path('uploaded/profileImage/');
 
-        if ($userDb->profileImage != null && $userDb->profileImage != $request->input('profileImage')) {
-            File::delete($path . $userDb->profileImage);
+        if (!empty($userDb->imageOrFileID)) {
+            // echo ('have imageOrFileID/');
+            $imageOrFileDb = imageOrFileModel::where('id', $userDb->imageOrFileID)->first();
+        } else {
+            // echo ('not have imageOrFileID/');
+            $imageOrFileDb = new imageOrFileModel;
+            $imageOrFileDb->id = null;
+            $imageOrFileDb->name = null;
+        };
+
+        if ($userDb->imageOrFileID != null && $imageOrFileDb->name != $request->input('profileImage')) {
+            // echo ("delete image/");
+            File::delete($path . $imageOrFileDb->name);
+            imageOrFileModel::where('id', $userDb->imageOrFileID)->delete();
+            $imageOrFileDb->id = null;
         };
 
         if ($request->file('profileImage')) {
+            // echo ("new image/");
             $file = $request->file('profileImage');
             $extension = $file->getClientOriginalExtension();
-            $filename = 'profile-' . date('YmdHi'). rand(0,99) . '.' . $extension;
+            $filename = 'profile-' . date('YmdHi') . rand(0, 99) . '.' . $extension;
             $file->move($path, $filename);
+            $imageOrFileDb->name = $filename;
+            $imageOrFileDb->save();
         } else {
             $filename = null;
         }
-
         $data = [
             'username' => $request->input('username') ?? $userDb->username,
             'fullname' => $request->input('fullname') ?? $userDb->fullname,
             'aboutMe' => $request->input('aboutMe') ?? $userDb->aboutMe,
             'telephone' => $request->input('telephone') ?? $userDb->telephone,
-            'profileImage' => $filename ?? $userDb->profileImage,
+            'imageOrFileID' => $imageOrFileDb->id,
         ];
 
-        if (UserModel::where('uID', $uID)->update($data)) {
+        if (UserModel::where('id', $uID)->update($data)) {
             return response()->json([
                 'status' => 'ok',
-                'message' => 'update hobby group success.'
+                'message' => 'update hobby group success.',
             ], 200);
         } else {
             return response()->json([
@@ -240,18 +276,19 @@ class UserController extends Controller
             ], 500);
         };
     }
-    
-    function invitePage($id) {
-        $groupDb = HobbyModel::where('hID',$id)->first();
-        if(empty($groupDb)){
+
+    function invitePage($id)
+    {
+        $groupDb = HobbyModel::where('hID', $id)->first();
+        if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'hobby not found.',
-            ],404);
+            ], 404);
         };
 
-        $memberArray = explode(',',$groupDb->member);
-        $requestArray = explode(',',$groupDb->memberRequest);
+        $memberArray = explode(',', $groupDb->member);
+        $requestArray = explode(',', $groupDb->memberRequest);
         $userDb = UserModel::all();
         $data = [];
 
@@ -259,23 +296,23 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'failed',
                 'message' => 'unauthorize.',
-            ],401);
+            ], 401);
         }
 
-        foreach($userDb as $user){
-            if(in_array($user->uID, $memberArray)){
+        foreach ($userDb as $user) {
+            if (in_array($user->uID, $memberArray)) {
                 $data[] = [
                     'username' => $user->username,
                     'uID' => (int)$user->uID,
-                    'status' =>'member'
+                    'status' => 'member'
                 ];
-            }else if(in_array($user->uID, $requestArray)){
+            } else if (in_array($user->uID, $requestArray)) {
                 $data[] = [
                     'username' => $user->username,
                     'uID' => (int)$user->uID,
-                    'status' =>'request'
+                    'status' => 'request'
                 ];
-            }else {
+            } else {
                 $data[] = [
                     'username' => $user->username,
                     'uID' => (int)$user->uID,
@@ -287,37 +324,37 @@ class UserController extends Controller
         return response()->json([
             'status' => 'ok',
             'data' => $data
-        ],200);
-
+        ], 200);
     }
 
-    function inviteFriend(Request $request , $hID) {
-        if(HobbyModel::where('hID',$hID)->first()){
-            $groupDb = HobbyModel::where('hID',$hID)->first();
-        // }else if(!empty(HobbyModel::where('hID',$id)->get())){
+    function inviteFriend(Request $request, $hID)
+    {
+        if (HobbyModel::where('hID', $hID)->first()) {
+            $groupDb = HobbyModel::where('hID', $hID)->first();
+            // }else if(!empty(HobbyModel::where('hID',$id)->get())){
 
-        }else {
+        } else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'group not found.',
-            ],404);
+            ], 404);
         }
 
-        $memberArray = explode(',',$groupDb->member);
-        $requestArray = explode(',',$groupDb->memberRequest);
+        $memberArray = explode(',', $groupDb->member);
+        $requestArray = explode(',', $groupDb->memberRequest);
 
-        if(in_array((int)$request->input('receiver'), $memberArray)){
+        if (in_array((int)$request->input('receiver'), $memberArray)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'already be a member.',
-            ],400);
+            ], 400);
         }
 
-        if(in_array((int)$request->input('receiver'), $requestArray)){
+        if (in_array((int)$request->input('receiver'), $requestArray)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'already be a request.',
-            ],400);
+            ], 400);
         }
 
         // if(NotifyModel::where('notiType','invite')->where('id',$id)->exists()){
@@ -336,41 +373,42 @@ class UserController extends Controller
             'updated_at' => now(),
         ];
 
-        if(NotifyModel::create($data)){
+        if (NotifyModel::create($data)) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'invite friend success.',
                 'data' => $data
-            ],200);
-        }else{
+            ], 200);
+        } else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'failed to invite friend.',
-            ],500);
+            ], 500);
         }
     }
 
-    function requestToGroup(Request $request, $id) {
-        $groupDb = HobbyModel::where('hID',$id)->first();
-        if(empty($groupDb)){
+    function requestToGroup(Request $request, $id)
+    {
+        $groupDb = HobbyModel::where('hID', $id)->first();
+        if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'hobby not found.',
-            ],404);
+            ], 404);
         }
         $uID = auth()->user()->uID;
-        $memberArray = explode(',',$groupDb->member);
-        $requestArray = explode(',',$groupDb->memberRequest);
+        $memberArray = explode(',', $groupDb->member);
+        $requestArray = explode(',', $groupDb->memberRequest);
 
-        if(empty($requestArray[0])){
+        if (empty($requestArray[0])) {
             $requestArray = [];
         }
 
-        if(in_array($uID, $memberArray)){
+        if (in_array($uID, $memberArray)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'already be a member.',
-            ],400);
+            ], 400);
         }
 
         $notifyData = [
@@ -382,48 +420,50 @@ class UserController extends Controller
             'updated_at' => now(),
         ];
 
-        if(in_array($uID, $requestArray)){
-            $newRequestMember = array_diff($requestArray,[$uID]);
-        }else if(!in_array($uID, $requestArray)){
-            $newRequestMember = array_merge($requestArray,[$uID]);
+        if (in_array($uID, $requestArray)) {
+            $newRequestMember = array_diff($requestArray, [$uID]);
+        } else if (!in_array($uID, $requestArray)) {
+            $newRequestMember = array_merge($requestArray, [$uID]);
             $sendRequestNotify = NotifyModel::create($notifyData);
-            if(!$sendRequestNotify){
+            if (!$sendRequestNotify) {
                 return response()->json([
                     'status' => 'failed',
                     'message' => 'failed to send request.',
-                ],500);
+                ], 500);
             }
         }
 
         $data = [
-            'memberRequest' => implode(',',$newRequestMember)
+            'memberRequest' => implode(',', $newRequestMember)
         ];
 
-        if(HobbyModel::where('hID',$id)->update($data)){
+        if (HobbyModel::where('hID', $id)->update($data)) {
             return response()->json([
                 'status' => 'ok',
-                'message' =>'update request to group success.',
+                'message' => 'update request to group success.',
                 'data' => $data
-            ],200);
-        }else{
+            ], 200);
+        } else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'failed to update request to group.',
-            ],500);
+            ], 500);
         }
     }
 
-    function notification() {
-        $notifyDb = NotifyModel::where('receiver',auth()->user()->uID)->latest()->get();
-        
+    function notification()
+    {
+        $notifyDb = NotifyModel::where('receiver', auth()->user()->uID)->latest()->get();
+
         $data = NotificationResource::collection($notifyDb);
         return response()->json([
             'status' => 'ok',
             'data' => $data
-        ],200);
+        ], 200);
     }
 
-    function myPost() {
+    function myPost()
+    {
         $allGroup = HobbyModel::get();
         $data = MyPostResource::collection($allGroup)->resolve();
 
@@ -431,8 +471,8 @@ class UserController extends Controller
         //     return $item ? (array) $item : null;
         // }, $data);
 
-        $data = array_filter($data, function($item) {
-            return $item !== null;  
+        $data = array_filter($data, function ($item) {
+            return $item !== null;
         });
 
         $data = array_values($data);
@@ -463,41 +503,42 @@ class UserController extends Controller
         ], 200);
     }
 
-    function leaveGroup($hID) {
-        $groupDb = HobbyModel::where('hID',$hID)->first();
-        if(empty($groupDb)){
+    function leaveGroup($hID)
+    {
+        $groupDb = HobbyModel::where('hID', $hID)->first();
+        if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'hobby not found.',
-            ],404);
+            ], 404);
         }
         $uID = auth()->user()->uID;
-        $memberArray = explode(',',$groupDb->member);
-        if(!in_array($uID, $memberArray)){
+        $memberArray = explode(',', $groupDb->member);
+        if (!in_array($uID, $memberArray)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'you are not a member in this group.',
-            ],400);
-        }else{
+            ], 400);
+        } else {
 
-            if($uID === $groupDb->leader){
+            if ($uID === $groupDb->leader) {
                 return response()->json([
                     'status' => 'failed',
                     'message' => 'leader can not leave the group.',
-                ],400);
+                ], 400);
             }
 
-            $memberArray = array_diff($memberArray,[$uID]);
-            if(HobbyModel::where('hID',$hID)->update(['member' => implode(',',$memberArray)])){
+            $memberArray = array_diff($memberArray, [$uID]);
+            if (HobbyModel::where('hID', $hID)->update(['member' => implode(',', $memberArray)])) {
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'leave group success.',
-                ],200);
-            }else{
+                ], 200);
+            } else {
                 return response()->json([
                     'status' => 'failed',
                     'message' => 'failed to leave group.',
-                ],500);
+                ], 500);
             }
         }
     }

@@ -10,13 +10,13 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $allUser = UserModel::select('uID')->get();
+        $allUser = UserModel::select('id')->get();
         
         $count = count($allUser);
         $randomIndex = rand(0,$count-1);
-        $uID = $allUser[$randomIndex]->uID;
+        $uID = $allUser[$randomIndex]->id;
 
-        $user = UserModel::where('uID', $uID)->first();
+        $user = UserModel::where('id', $uID)->first();
         if (empty($user)) {
             return response()->json([
                 'status' => 'failed',
