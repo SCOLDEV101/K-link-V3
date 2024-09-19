@@ -24,7 +24,7 @@ class LibraryResource extends JsonResource
         $intersect = array_search('-', $arrayname) + 1;
         $fileoriginname = $arrayname[$intersect];
 
-        $filePath = public_path('uploaded/Library/'. $this->library->file);
+        $filePath = public_path('uploaded/Library/'. $this->library->filepath);
         $encodednamenoExt = preg_replace('/\.[^.]+$/', '', $encodedname);
 
         if (file_exists($filePath)) {
@@ -48,6 +48,7 @@ class LibraryResource extends JsonResource
             'detail' => $this->detail,
             'bookmark' => $bookmark ?? null,
             'filename' => $originname,
+            'encodedfilename' => $this->library->filepath,
             'downloads' => $this->library->downloaded,
             'shares' => $this->library->shared,
             'tag' => $this->tag,
