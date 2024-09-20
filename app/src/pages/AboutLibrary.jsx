@@ -1,26 +1,51 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from 'react-router-dom';
 import config from "../constants/function";
 import axios from "axios";
-import { Document, Page } from "react-pdf";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
 import "../index.css";
+import { useInView } from 'react-intersection-observer';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
+function PageImage({ url, pageNumber, setCurrentPage }) {
+  const { ref, inView } = useInView({
+    threshold: 1, 
+  });
+
+  useEffect(() => {
+    if (inView) {
+      setCurrentPage(pageNumber);
+    }
+  }, [inView, pageNumber, setCurrentPage]);
+
+  
+
+  return (
+    <div
+      data-page-number={pageNumber}
+      style={{ 
+        marginBottom: "20px",
+        boxShadow: "0 4px 4px rgba(0, 0, 0, 0.25)", 
+      }}
+    >
+      <img
+        src={`${config.SERVER_PATH}${url}`}
+        alt={`Page ${pageNumber}`}
+        style={{ width: '100%' }} 
+        ref={ref}
+        data-page-number={pageNumber}
+      />
+    </div>
+  );
+}
+
 function AboutLibrary() {
   const { id: hID } = useParams();
-  // const { id: hID } = location.state || {};
   const headersCookie = config.Headers().headers;
   const [fetchdataloading, setFetchdataLoading] = useState(true);
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [FileData, setFileData] = useState(null);
-  const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const containerRef = useRef(null);
-  const pagesRef = useRef([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -36,27 +61,6 @@ function AboutLibrary() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (pagesRef.current.length > 0) {
-      const observer = new IntersectionObserver((entries) => {
-        const visiblePages = entries.filter(entry => entry.isIntersecting);
-        if (visiblePages.length > 0) {
-          const visiblePageNumber = parseInt(visiblePages[0].target.dataset.pageNumber, 10);
-          setCurrentPage(visiblePageNumber);
-        }
-      }, { threshold: 1 });
-  
-      pagesRef.current.forEach(page => {
-        if (page) observer.observe(page); // Only observe if page is not null
-      });
-  
-      return () => {
-        pagesRef.current.forEach(page => {
-          if (page) observer.unobserve(page); // Ensure the element exists before unobserving
-        });
-      };
-    }
-  }, [numPages]);
   
 
   const fetchData = async () => {
@@ -72,36 +76,16 @@ function AboutLibrary() {
       if (response.data.status === "ok") {
         console.log("1");
         setFileData(response.data.data);
-        console.log(response.data.data);
         setFetchdataLoading(false);
       }
     } catch (error) {
       console.error("Error fetching data: ", error);
       setFetchdataLoading(false);
     }
-    
-    // Mock data for testing
-    // const mockData = {
-    //   subject: "Sample Subject",
-    //   filename: "sample.pdf",
-    //   owner: "John Doe",
-    //   uploadDate: "2024-09-08",
-    //   filesizeInBytes: 123456,
-    //   file: "/65010051 Lab 10.pdf", // Provide a path if you have a local file to render with react-pdf
-    // };
-
-    // setFileData(mockData);
-    // setFetchdataLoading(false);
-  };
-
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages);
   };
 
   return (
     <>
-      <Header FileData={FileData} />
-      <Footer FileData={FileData} />
       {!timeoutReached ? (
         fetchdataloading ? (
           <div
@@ -113,33 +97,28 @@ function AboutLibrary() {
         ) : FileData ? (
           <div>
             <div
-              style={{ position: "relative", width: "75vw", margin: "0 auto", overflowY: "scroll", height: "80vh", marginTop: "100px" ,marginBottom:"100px" , scrollbarWidth:"none"}}
-              ref={containerRef}
+              style={{ 
+                position: "relative", 
+                width: "75vw", 
+                margin: "0 auto", 
+                overflowY: "scroll", 
+                height: "80vh", 
+                marginTop: "100px", 
+                marginBottom: "100px", 
+                scrollbarWidth: "none"
+              }}
             >
-              <Document className="my-2"
-                file={FileData.filepageurl}
-                onLoadSuccess={onDocumentLoadSuccess}
-                
-              >
-                {Array.from({ length: numPages }, (_, index) => (
-                  <div
-                    key={index + 1}
-                    data-page-number={index + 1}
-                    ref={(el) => pagesRef.current[index] = el}
-                    style={{ marginBottom: "20px",
-                    boxShadow: "0 4px 4px rgba(0, 0, 0, 0.25)", 
-                    }}
-                  >
-                    <Page
-                      pageNumber={index + 1}
-                      width={window.innerWidth * 0.75}
-                    />
-                  </div>
-                ))}
-              </Document>
+              {FileData.filepageurl.map((url, index) => (
+                <PageImage
+                  key={index}
+                  url={url}
+                  pageNumber={index + 1}
+                  setCurrentPage={setCurrentPage}
+                />
+              ))}
             </div>
             <div
-            className="px-3 py-1"
+              className="px-3 py-1"
               style={{
                 position: "fixed",
                 top: "105px",
@@ -152,7 +131,7 @@ function AboutLibrary() {
                 fontSize:"14px"
               }}
             >
-              {currentPage} จาก {numPages}
+              {currentPage} จาก {FileData.$totalpages}
             </div>
           </div>
         ) : (
@@ -171,29 +150,17 @@ function AboutLibrary() {
           ไม่พบข้อมูล
         </div>
       )}
+
+      
+      {FileData && (
+        <>
+        <Header FileData={FileData} />
+        <Footer FileData={FileData}/>
+        
+        </>
+      )}
     </>
   );
 }
 
 export default AboutLibrary;
-
-
-
-
- // Comment out the API call and use mock data instead
-    // try {
-    //   const response = await axios.get(
-    //     `${config.SERVER_PATH}/api/library/aboutLibrary/${hID}`,
-    //     {
-    //       headers: headersCookie,
-    //     }
-    //   );
-
-    //   if (response.data.status === "ok") {
-    //     setFileData(response.data.data);
-    //     setFetchdataLoading(false);
-    //   }
-    // } catch (error) {
-    //   console.error("Error fetching data: ", error);
-    //   setFetchdataLoading(false);
-    // }
