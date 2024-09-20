@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('member_models', function (Blueprint $table) {
             $table->id();
             $table->string('userID');
-            $table->string('groupID');
+            $table->integer('groupID');
             $table->timestamps();
         });
     }

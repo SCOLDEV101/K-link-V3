@@ -91,19 +91,20 @@ class HobbyModelFactory extends Factory
         ];
 
         // เก็บ id กลุ่มและประเภท ลงใน groupModel โดย groupModel จะเป็นตัวเชื่อมไอดีของกลุ่มและโพสต์ทั้งหมดเพื่อแสดงรายละเอียด
-        GroupModel::create([
+        $createGroup = GroupModel::create([
+            // 'id' => $this->groupIdGenerator(),
             'groupID' => $hobby['id'],
             'type' => 'hobby',
         ]);
 
         // สุ่มสมาชิก โดยเก็บ userID เป็น id ใน members Array
         MemberModel::create([
-            'groupID' => $hobby['id'],
+            'groupID' => $createGroup['id'],
             'userID' => $leader,
         ]);
         foreach ($members as $member) {
             MemberModel::create([
-                'groupID' => $hobby['id'],
+                'groupID' => $createGroup['id'],
                 'userID' => $member,
             ]);
         }
@@ -111,7 +112,7 @@ class HobbyModelFactory extends Factory
         // สุ่ม requeset โดยเก็บ userID เป็น id ใน requests Array ซึ่งเป็นส่วนเหลือจากสมาชิกและหัวหน้า
         foreach ($requests as $request) {
             RequestModel::create([
-                'groupID' => $hobby['id'],
+                'groupID' => $createGroup['id'],
                 'userID' => $request,
             ]);
         }
@@ -120,7 +121,7 @@ class HobbyModelFactory extends Factory
         foreach ($selectedTags as $tagName) {
             $tag = TagModel::firstOrCreate(['name' => $tagName]);
             GroupTagModel::create([
-                'groupID' => $hobby['id'],
+                'groupID' => $createGroup['id'],
                 'tagID' => $tag->id,
                 'type' => 'hobby'
             ]);
@@ -135,7 +136,7 @@ class HobbyModelFactory extends Factory
             $dayModel = DayModel::find($day);
             if ($dayModel) {
                 GroupDayModel::create([
-                    'groupID' => $hobby['id'],
+                    'groupID' => $createGroup['id'],
                     'dayID' => $dayModel->id,
                 ]);
             }
@@ -173,8 +174,7 @@ class HobbyModelFactory extends Factory
     //     }
     // }
 
-    public function idGeneration()
-    {
+    public function idGeneration() {
         $prefix = 'h-' . now()->format('Ymd') . '-';
         $sets = 3; 
         $numbersPerSet = 1000; 
@@ -197,4 +197,28 @@ class HobbyModelFactory extends Factory
         self::$generatedIds[] = $id;
         return $prefix.$id;
     }
+
+    // public static function groupIdGenerator() {
+    //     $prefix = 'g-' . now()->format('Ymd') . '-';
+    //     $sets = 5; 
+    //     $numbersPerSet = 1000; 
+
+    //     $allNumbers = [];
+    //     for ($i = 0; $i < $sets; $i++) {
+    //         $numbers = range(1, 10000);
+    //         shuffle($numbers);
+    //         $allNumbers[] = array_slice($numbers, 0, $numbersPerSet);
+    //     }
+
+    //     $randomSet = $allNumbers[array_rand($allNumbers)];
+    //     $id = $randomSet[array_rand($randomSet)];
+
+    //     // Ensure the ID is unique
+    //     while (in_array($id, self::$generatedIds)) {
+    //         $id = $randomSet[array_rand($randomSet)];
+    //     }
+    //     $id = str_pad($id, 5, '0', STR_PAD_LEFT);
+    //     self::$generatedIds[] = $id;
+    //     return $prefix.$id;
+    // }
 }

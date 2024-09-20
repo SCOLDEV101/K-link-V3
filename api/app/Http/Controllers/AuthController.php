@@ -14,9 +14,9 @@ class AuthController extends Controller
         
         $count = count($allUser);
         $randomIndex = rand(0,$count-1);
-        $uID = $allUser[$randomIndex]->id;
+        $id = $allUser[$randomIndex]->id;
 
-        $user = UserModel::where('id', $uID)->first();
+        $user = UserModel::where('id', $id)->first();
         if (empty($user)) {
             return response()->json([
                 'status' => 'failed',
@@ -35,8 +35,8 @@ class AuthController extends Controller
 
     public function logout()
     {
-        $uID = auth()->user()->uID;
-        $user = UserModel::where('uID', $uID)->first();
+        $id = auth()->user()->id;
+        $user = UserModel::where('id', $id)->first();
         $user->tokens()->delete();
         return response()->json([
             'status' => 'ok',

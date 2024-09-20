@@ -19,11 +19,11 @@ class BookmarkModelFactory extends Factory
     public function definition(): array
     {
         $userID = UserModel::pluck('id')->random();
-        $groupID = GroupModel::pluck('groupID')->random();
+        $groupID = GroupModel::pluck('id')->random();
 
         if (BookmarkModel::where('userID', $userID)->where('groupID', $groupID)->exists()) {
             $userID = UserModel::pluck('id')->random();
-            $groupID = GroupModel::pluck('groupID')->random();
+            $groupID = GroupModel::pluck('id')->random();
         }
 
         return [
