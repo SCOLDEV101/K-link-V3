@@ -195,22 +195,6 @@ class HobbyController extends Controller
             ], 404);
         }
 
-        //-------------------- Find Leader
-        if ((int)$groupDb->leaderGroup->id == (int)auth()->user()->id) {
-            $leaderData = [
-                'username' => $groupDb->leaderGroup->username,
-                'uID' => $groupDb->leaderGroup->id,
-                'isMe' => true
-            ];
-        } else if ((int)$groupDb->leaderGroup->id != (int)auth()->user()->id) {
-            $leaderData = [
-                'username' => $groupDb->leaderGroup->username,
-                'uID' => $groupDb->leaderGroup->id,
-                'isMe' => false
-            ];
-        }
-        //--------------------
-
         //-------------------- Prepare members data
         $member = [];
         $membersDb = (GroupModel::where('groupID', $hID)->with('member')->first())->member;
@@ -224,7 +208,7 @@ class HobbyController extends Controller
                 ];
             }
             else {
-                if ((int)$groupDb->leaderGroup->id != (int)$user->id && (int)$groupDb->leaderGroup->id == (int)$user->id) {
+                if ((int)$groupDb->leaderGroup->id == (int)$user->id && (int)$groupDb->leaderGroup->id != (int)auth()->user()->id) {
                     $leaderData = [
                         'username' => strval($user->username),
                         'uID' => (int)$user->id,
