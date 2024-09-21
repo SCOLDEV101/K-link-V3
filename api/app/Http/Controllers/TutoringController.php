@@ -7,8 +7,9 @@ use App\Models\HobbyModel;
 use App\Models\UserModel; 
 use App\Models\TutoringModel;
 use App\Models\NotifyModel; 
+use App\Models\GroupModel;
 use Illuminate\Support\Facades\File;
-use App\Http\Resources\HobbyGroupResource;
+use App\Http\Resources\GroupResource;
 use App\Http\Resources\HobbyAboutGroupResource;
 use App\Http\Resources\TutoringGroupResource;
 use Illuminate\Support\Facades\Validator;
@@ -16,29 +17,46 @@ use Illuminate\Support\Facades\Validator;
 class TutoringController extends Controller
 {
     function showAllGroup(Request $request) {
-        $tutoringDb = HobbyModel::where('type', 'tutoring')->orderBy('updated_at', 'DESC')->with('leaderGroup')->paginate($request->get('perPage',8));
-        if(!$tutoringDb){
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'hobby not found.',
-            ], 404);
+        {
+            $tutoringDb = GroupModel::where('type', 'tutoring')
+                                    ->where('status', 1)
+                                    ->orderBy('updated_at', 'DESC')
+                                    ->with('tutoring')
+                                    ->with('bookmark')
+                                    ->with(['tutoring.imageOrFile'])
+                                    ->with(['tutoring.leaderGroup'])
+                                    ->with(['tutoring.faculty'])
+                                    ->with(['tutoring.major'])
+                                    ->with(['tutoring.department'])
+                                    ->with('member')
+                                    ->with('request')
+                                    ->with('groupDay') 
+                                    ->with('groupTag')
+                                    ->get(); 
+    
+            if (!$tutoringDb) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'hobby not found.',
+                ], 404);
+            }
+    
+            $data = GroupResource::collection($tutoringDb);
+            if (sizeof($data) != 0) {
+                return response()->json([
+                    // 'prevPageUrl' => $tutoringDb->previousPageUrl(),
+                    'status' => 'ok',
+                    'message' => 'fetch all hobby-group success.',
+                    'listItem' => $data,
+                    // 'nextPageUrl' => $tutoringDb->nextPageUrl()
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'failed to fetch all hobby group.',
+                ], 500);
+            };
         }
-        
-        $data = TutoringGroupResource::collection($tutoringDb);
-        if(sizeof($data) != 0){
-            return response()->json([
-                'prevPageUrl' => $tutoringDb->previousPageUrl(),
-                'status' => 'ok',
-                'message' => 'fetch all hobby-group success.',
-                'data' => $data,
-                'nextPageUrl' => $tutoringDb->nextPageUrl()
-            ],200);
-        } else {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'failed to fetch all hobby group.',
-            ],500);
-        };
     }
 
     function createGroup(Request $request) {

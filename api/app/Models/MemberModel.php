@@ -7,5 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class MemberModel extends Model
 {
+    protected $fillable = [
+        'userID' , 'groupID'
+    ];
+
     use HasFactory;
 }

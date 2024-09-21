@@ -44,13 +44,13 @@ class GroupModel extends Model
         return $this->hasOne(HobbyModel::class,'id','groupID');
     }
 
-    // public function library(): HasOne {
-    //     return $this->hasOne(LibraryModel::class,'id','groupID');
-    // }
+    public function library(): HasOne {
+        return $this->hasOne(LibraryModel::class,'id','groupID');
+    }
 
-    // public function tutoring(): HasOne {
-    //     return $this->hasOne(TutoringModel::class,'id','groupID');
-    // }
+    public function tutoring(): HasOne {
+        return $this->hasOne(TutoringModel::class,'id','groupID');
+    }
 
     use HasFactory;
 }

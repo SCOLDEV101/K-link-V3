@@ -34,4 +34,17 @@ ModelAndFactory { v1.0.0: { - Seeder ใช้ได้ทั้งหมดแ�
                 },
                 v1.3.1: {   - relation ของ groupModel (ไม่สมบูรณ์)
                 },
+                v1.3.2: {   - ฟังก์ชันส่วนใหญ่ใน Hobby
+                                - showAllGroup แสดงกลุ่ม HobbyHome *done
+                                - createGroup *done
+                                - update มี noti *done 
+                                - memberGroup ดูสมาชิก *done
+                                - aboutGroup ดูภายในกลุ่ม *done
+                                - checkRequestGroup ดูคนขอเข้ากลุ่ม *done
+                                - rejectOrAcceptRequest รับหรือปฏิเสธคนขอเข้ากลุ่ม *inprogress
+                                - kickMember เตะสมาชิก มี noti *done
+                                - deleteGroup มี noti *done
+                            - resource รวมของ Hobby, Library, Tutoring ชื่อว่า GroupResource
+                            - เชื่อม relation ใน model
+                }
 }

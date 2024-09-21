@@ -25,7 +25,6 @@ return new class extends Migration
             $table->time('endTime');
             $table->date('date');
             $table->string('leader');
-            $table->integer('downloaded')->default(0);
             $table->string('createdBy');
             $table->timestamps();
         });

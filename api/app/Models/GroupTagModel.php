@@ -7,5 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class GroupTagModel extends Model
 {
+    protected $fillable = [
+        'tagID' , 'groupID' , 'type'
+    ];
+
     use HasFactory;
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -11,6 +12,10 @@ class HobbyModel extends Model
 {
     
     use HasFactory;
+
+    protected $primaryKey = 'id'; 
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id',
@@ -25,10 +30,37 @@ class HobbyModel extends Model
         'createdBy'
     ];
 
-    public function leaderGroup(): BelongsTo
-    {
-        return $this->belongsTo(UserModel::class, 'leader', 'id'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
+    
+
+    public function leaderGroup(): BelongsTo {
+        return $this->belongsTo(UserModel::class, 'leader', 'id')->select('id','username'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
     }
+    
+    public function imageOrFile(): HasOne {
+        return $this->hasOne(imageOrFileModel::class, 'id', 'imageOrFileID')->select('id','name');
+    }
+
+    // public function groupDay(): BelongsToMany {
+    //     return $this->belongsToMany(DayModel::class, 'group_day_models', 'id', 'id'); //
+    // }
+
+    // public function groupTag(): BelongsToMany {
+    //     return $this->belongsToMany(GroupTagModel::class,'hID','hID');
+    // }
+
+    // public function imageOrFile(): HasOne {
+    //     return $this->hasOne(imageOrFileModel::class,'hID','hID');
+    // }
+
+    // public function member() {
+    //     $memberArray = explode(',', $this->member);
+    //     return UserModel::whereIn('id', $memberArray)->get();
+    // } 
+
+    // public function request() {
+    //     $requestArray = explode(',', $this->memberRequest);
+    //     return UserModel::whereIn('id', $requestArray)->get();
+    // } 
 
     public function searchHobby($keyword,$type) {
         if (!empty($keyword)) {
@@ -57,17 +89,22 @@ class HobbyModel extends Model
 
     public static $validator = [
         [
-            'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
-            'actTime' => ['required',''],
+            'activityName' => ['required', 'string'],
+            // 'actTime' => 'required',
             'memberMax' => ['nullable', 'numeric', 'integer', 'max:99'],
-            'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
-            'weekDate' => ['nullable', 'regex:/^[a-zA-Zก-๙,\s]+$/u'],
-            'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'location' => ['required', 'string'],
+            // 'weekDate' => ['nullable', 'string'],
+            'detail' => ['nullable', 'string'],
+            'startTime' => 'required',
+            'endTime' => 'required',
         ],
         [
             'activityName.required' => 'hobby name required',
-            'activityName.regex' => 'hobby name can only contain letters, numbers and whitespaces',
-            'memberMax.numeric' => 'max member type invalid',
+            'activityName.string' => 'hobby name string invalid',
+            'startTime.required' => 'startTime time required',
+            'endTime.required' => 'endTime time required',
+            // 'actTime.required' => 'activity time required',
+            'memberMax.numeric' => 'max member numeric invalid',
             'memberMax.integer' => 'max member integer invalid',
             'memberMax.max' => 'max member exceed 99',
             'location.required' => 'location required',
@@ -79,12 +116,12 @@ class HobbyModel extends Model
 
     public function idGeneration(){
         $prefix = 'h-' . now()->format('Ymd') . '-';
-        $lastGroup = HobbyModel::where('hID', 'LIKE', $prefix . '%')->orderBy('hID', 'desc')->first();
+        $lastGroup = HobbyModel::where('id', 'LIKE', $prefix . '%')->orderBy('id', 'desc')->first();
 
         if (!$lastGroup) {
             $number = '001';
         } else {
-            $lastNumber = (int)substr($lastGroup->hID, -3);
+            $lastNumber = (int)substr($lastGroup->id, -3);
             $number = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
         }
 

@@ -12,6 +12,8 @@ use App\Models\GroupModel;
 use App\Models\TagModel;
 use App\Models\GroupTagModel;
 use App\Models\BookmarkModel;
+use App\Models\DayModel;
+use App\Models\GroupDayModel;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LibraryModel>
@@ -98,6 +100,20 @@ class LibraryModelFactory extends Factory
                 'tagID' => $tag->id,
                 'type' => 'library'
             ]);
+        }
+
+        $days = DayModel::pluck('id')->toArray();
+
+        $selectedDays = array_unique($this->faker->randomElements($days, $this->faker->numberBetween(1, count($days))));
+
+        foreach ($selectedDays as $day) {
+            $dayModel = DayModel::find($day);
+            if ($dayModel) {
+                GroupDayModel::create([
+                    'groupID' => $createGroup['id'],
+                    'dayID' => $dayModel->id,
+                ]);
+            }
         }
 
         //**** ตรงนี้ไม่ใช้ ส่ง date ให้หน้าบ้านแปลงเป็นวันแทน เพราะกลุ่มติวเป็นกลุ่มที่จัดวันต่อวัน ไม่ใช่ประจำวันเหมือน hobby ป่ะ?  */

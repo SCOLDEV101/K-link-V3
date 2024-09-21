@@ -9,12 +9,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\GroupResource;
+use App\Models\GroupModel;
 
 class LibraryController extends Controller
 {
     function showAllLibrary(Request $request)
     {
-        $libraryDb = HobbyModel::where('type', 'library')->orderBy('updated_at', 'DESC')->with('leaderGroup')->paginate($request->get('perPage', 8));
+        $libraryDb = GroupModel::where('type', 'library')
+                                    ->where('status', 1)
+                                    ->orderBy('updated_at', 'DESC')
+                                    ->with('library')
+                                    ->with('bookmark')
+                                    ->with(['library.imageOrFile'])
+                                    ->with(['library.leaderGroup'])
+                                    ->with(['library.faculty'])
+                                    ->with(['library.major'])
+                                    ->with(['library.department'])
+                                    ->with('member')
+                                    ->with('request')
+                                    ->with('groupDay') 
+                                    ->with('groupTag')
+                                    ->get(); 
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -22,13 +38,13 @@ class LibraryController extends Controller
             ], 404);
         }
 
-        $data = LibraryResource::collection($libraryDb);
+        $data = GroupResource::collection($libraryDb);
         if (sizeof($data) != 0) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'fetch all lbrary success.',
                 'data' => $data,
-                'nextPageUrl' => $libraryDb->nextPageUrl()
+                // 'nextPageUrl' => $libraryDb->nextPageUrl()
             ], 200);
         } else {
             return response()->json([

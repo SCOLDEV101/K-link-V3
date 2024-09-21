@@ -103,5 +103,6 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/login', 'login');
+    Route::post('/login', 'login');
     Route::get('/logout', 'logout');
 });
