@@ -30,24 +30,6 @@ class HobbyModel extends Model
         return $this->belongsTo(UserModel::class, 'leader', 'id'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
     }
 
-    public function library(): HasOne {
-        return $this->hasOne(LibraryModel::class,'hID','hID');
-    }
-
-    public function tutoring(): HasOne {
-        return $this->hasOne(TutoringModel::class,'hID','hID');
-    }
-
-    public function member() {
-        $memberArray = explode(',', $this->member);
-        return UserModel::whereIn('id', $memberArray)->get();
-    } 
-
-    public function request() {
-        $requestArray = explode(',', $this->memberRequest);
-        return UserModel::whereIn('id', $requestArray)->get();
-    } 
-
     public function searchHobby($keyword,$type) {
         if (!empty($keyword)) {
             $query = HobbyModel::Select('*')
@@ -75,24 +57,23 @@ class HobbyModel extends Model
 
     public static $validator = [
         [
-            'activityName' => ['required', 'string'],
-            'actTime' => 'required',
+            'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'actTime' => ['required',''],
             'memberMax' => ['nullable', 'numeric', 'integer', 'max:99'],
-            'location' => ['required', 'string'],
-            'weekDate' => ['nullable', 'string'],
-            'detail' => ['nullable', 'string'],
+            'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'weekDate' => ['nullable', 'regex:/^[a-zA-Zก-๙,\s]+$/u'],
+            'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
         ],
         [
             'activityName.required' => 'hobby name required',
-            'activityName.string' => 'hobby name string invalid',
-            'actTime.required' => 'activity time required',
-            'memberMax.numeric' => 'max member numeric invalid',
+            'activityName.regex' => 'hobby name can only contain letters, numbers and whitespaces',
+            'memberMax.numeric' => 'max member type invalid',
             'memberMax.integer' => 'max member integer invalid',
             'memberMax.max' => 'max member exceed 99',
             'location.required' => 'location required',
-            'location.string' => 'location string invalid',
-            'weekDate.string' => 'week date string invalid',
-            'detail.string' => 'detail string invalid',
+            'location.regex' => 'location can only contain letters, numbers and whitespaces',
+            'weekDate.regex' => 'week date type invalid',
+            'detail.regex' => 'detail can only contain letters, numbers and whitespaces.',
         ]
     ];
 

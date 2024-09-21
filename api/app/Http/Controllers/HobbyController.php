@@ -12,6 +12,9 @@ use App\Models\NotifyModel;
 use Illuminate\Support\Facades\File;
 use App\Http\Resources\HobbyGroupResource;
 use App\Http\Resources\HobbyAboutGroupResource;
+use App\Models\MemberModel;
+use App\Models\GroupModel;
+use App\Models\TutoringModel;
 use Illuminate\Support\Facades\Validator;
 
 class HobbyController extends Controller
@@ -134,13 +137,12 @@ class HobbyController extends Controller
         $path = public_path('uploaded/hobbyImage/');
 
         if (!empty($request->file('image'))) {
-            if(!empty($hobbyDb->image)){
+            if (!empty($hobbyDb->image)) {
                 File::delete($path . $hobbyDb->image);
             }
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
-            if($hobbyDb->image){
-                
+            if ($hobbyDb->image) {
             }
             $filename = 'hobby-' . now()->format('YmdHis') . '.' . $extension;
             $file->move($path, $filename);
@@ -179,58 +181,79 @@ class HobbyController extends Controller
 
     function memberGroup($hID)
     {
-        $hobbyDb = HobbyModel::where('hID', $hID)->with('leaderGroup')->first();
-        if (!$hobbyDb) {
+        $groupDb = GroupModel::where('groupID',$hID)->first();
+        if($groupDb->type == 'hobby'){
+            $groupDb = HobbyModel::where('id',$hID)->with('leaderGroup')->first();
+        }
+        else if($groupDb->type == 'tutoring'){
+            $groupDb = TutoringModel::where('id',$hID)->with('leaderGroup')->first();
+        }
+        if (!$groupDb) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'hobby not found.',
             ], 404);
         }
 
-        if ($hobbyDb->leaderGroup->uID == auth()->user()->uID) {
+        //-------------------- Find Leader
+        if ((int)$groupDb->leaderGroup->id == (int)auth()->user()->id) {
             $leaderData = [
-                'username' => $hobbyDb->leaderGroup->username,
-                'uID' => $hobbyDb->leaderGroup->uID,
+                'username' => $groupDb->leaderGroup->username,
+                'uID' => $groupDb->leaderGroup->id,
                 'isMe' => true
             ];
-        } else if($hobbyDb->leaderGroup->uID != auth()->user()->uID) {
+        } else if ((int)$groupDb->leaderGroup->id != (int)auth()->user()->id) {
             $leaderData = [
-                'username' => $hobbyDb->leaderGroup->username,
-                'uID' => $hobbyDb->leaderGroup->uID,
+                'username' => $groupDb->leaderGroup->username,
+                'uID' => $groupDb->leaderGroup->id,
                 'isMe' => false
             ];
         }
+        //--------------------
 
-        $member[] = $leaderData;
+        //-------------------- Prepare members data
+        $member = [];
+        $membersDb = (GroupModel::where('groupID', $hID)->with('member')->first())->member;
 
-        $memberUid = $hobbyDb->member();
-        foreach ($memberUid as $username) {
-            if ((int)$username->uID != $hobbyDb->leaderGroup->uID) {
-                if ((int)$username->uID == auth()->user()->uID) {
+        foreach ($membersDb as $user) {
+            if ($groupDb->leaderGroup->leader == (int)auth()->user()->id) {
+                $leaderData = [
+                    'username' => $groupDb->leaderGroup->username,
+                    'uID' => $groupDb->leaderGroup->id,
+                    'isMe' => true
+                ];
+            }
+            else {
+                if ((int)$groupDb->leaderGroup->id != (int)$user->id && (int)$groupDb->leaderGroup->id == (int)$user->id) {
+                    $leaderData = [
+                        'username' => strval($user->username),
+                        'uID' => (int)$user->id,
+                        'isMe' => false
+                    ];
+                }
+                else if ((int)$user->id == (int)auth()->user()->id) {
                     $member[] = [
-                        'username' => $username->username,
-                        'uID' => (int)$username->uID,
+                        'username' => $user->username,
+                        'uID' => (int)$user->id,
                         'isMe' => true
                     ];
-                } else {
+                }
+                else if ((int)$user->id != (int)auth()->user()->id && (int)$user->id != (int)$groupDb->leaderGroup->id) {
                     $member[] = [
-                        'username' => $username->username,
-                        'uID' => (int)$username->uID,
+                        'username' => $user->username,
+                        'uID' => (int)$user->id,
                         'isMe' => false
                     ];
                 }
             }
         }
+        //--------------------
 
-        $memberArray = explode(',', $hobbyDb->member);
-        if (in_array(auth()->user()->uID, $memberArray)){
-            $userStatus = 'member';
-        }
-
-        if ($hobbyDb->leaderGroup->uID == auth()->user()->uID) {
+        //-------------------- If user is leader
+        if ($groupDb->leaderGroup->id == auth()->user()->id) {
             $role = 'leader';
 
-            $requestmembers = explode(',', $hobbyDb->memberRequest);
+            $requestmembers = explode(',', $groupDb->memberRequest);
             $requestCount = 0;
             foreach ($requestmembers as $request) {
                 if ($request != null && $request != "") {
@@ -238,17 +261,22 @@ class HobbyController extends Controller
                 }
             }
             $data = [
-                'groupName' => $hobbyDb->activityName,
+                'groupName' => $groupDb->name,
+                'leader' => $leaderData,
                 'members' => $member,
                 'requestCount' => $requestCount
             ];
-        } else {
-            $role = null;
+        }
+        //------------------- If user is member 
+        else {
+            $role = 'normal';
             $data = [
-                'groupName' => $hobbyDb->activityName,
+                'groupName' => $groupDb->name,
+                'leader' => $leaderData,
                 'members' => $member
             ];
         }
+        //--------------------
 
         if ($data) {
             return response()->json([
@@ -257,7 +285,6 @@ class HobbyController extends Controller
                 'hID' => $hID,
                 'data' => $data,
                 'role' => $role,
-                'isMe' => $userStatus ?? null
             ], 200);
         } else {
             return response()->json([
