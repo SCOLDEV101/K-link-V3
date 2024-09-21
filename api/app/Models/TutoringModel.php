@@ -79,12 +79,12 @@ class TutoringModel extends Model
 
     public function idGeneration(){
         $prefix = 't-' . now()->format('Ymd') . '-';
-        $lastGroup = TutoringModel::where('tutoringID', 'LIKE', $prefix . '%')->orderBy('tutoringID', 'desc')->first();
+        $lastGroup = GroupModel::where([['type', "tutoring"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('id', 'desc')->first();
 
         if (!$lastGroup) {
             $number = '001';
         } else {
-            $lastNumber = (int) substr($lastGroup->tutoringID, -3);
+            $lastNumber = (int) substr($lastGroup->groupID, -3);
             $number = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
         }
 

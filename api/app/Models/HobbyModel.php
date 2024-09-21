@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+
 class HobbyModel extends Model
 {
-    
+
     use HasFactory;
 
-    protected $primaryKey = 'id'; 
+    protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
@@ -30,14 +31,16 @@ class HobbyModel extends Model
         'createdBy'
     ];
 
-    
 
-    public function leaderGroup(): BelongsTo {
-        return $this->belongsTo(UserModel::class, 'leader', 'id')->select('id','username'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
+
+    public function leaderGroup(): BelongsTo
+    {
+        return $this->belongsTo(UserModel::class, 'leader', 'id')->select('id', 'username'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
     }
-    
-    public function imageOrFile(): HasOne {
-        return $this->hasOne(imageOrFileModel::class, 'id', 'imageOrFileID')->select('id','name');
+
+    public function imageOrFile(): HasOne
+    {
+        return $this->hasOne(imageOrFileModel::class, 'id', 'imageOrFileID')->select('id', 'name');
     }
 
     // public function groupDay(): BelongsToMany {
@@ -62,23 +65,24 @@ class HobbyModel extends Model
     //     return UserModel::whereIn('id', $requestArray)->get();
     // } 
 
-    public function searchHobby($keyword,$type) {
+    public function searchHobby($keyword, $type)
+    {
         if (!empty($keyword)) {
             $query = HobbyModel::Select('*')
-            ->LeftJoin('user_models','hobby_models.leader','=','user_models.id')
-            ->where('hobby_models.type','=',"$type")
-            ->where(function ($query) use ($keyword,$type) {
-                return $query->where('hobby_models.status', '=', 1)
-                    ->where('hobby_models.activityName', 'like', "%$keyword%")
-                    ->orwhere('hobby_models.activityName', 'like', "%$keyword")
-                    ->orwhere('hobby_models.activityName', 'like', "$keyword%")
-                    ->orwhere('hobby_models.tag', 'like', "%$keyword%")
-                    ->orwhere('hobby_models.tag', 'like', "%$keyword")
-                    ->orwhere('hobby_models.tag', 'like', "$keyword%")
-                    ->orwhere('user_models.username', 'like', "%$keyword%")
-                    ->orwhere('user_models.username', 'like', "%$keyword")
-                    ->orwhere('user_models.username', 'like', "$keyword%");
-            });
+                ->LeftJoin('user_models', 'hobby_models.leader', '=', 'user_models.id')
+                ->where('hobby_models.type', '=', "$type")
+                ->where(function ($query) use ($keyword, $type) {
+                    return $query->where('hobby_models.status', '=', 1)
+                        ->where('hobby_models.activityName', 'like', "%$keyword%")
+                        ->orwhere('hobby_models.activityName', 'like', "%$keyword")
+                        ->orwhere('hobby_models.activityName', 'like', "$keyword%")
+                        ->orwhere('hobby_models.tag', 'like', "%$keyword%")
+                        ->orwhere('hobby_models.tag', 'like', "%$keyword")
+                        ->orwhere('hobby_models.tag', 'like', "$keyword%")
+                        ->orwhere('user_models.username', 'like', "%$keyword%")
+                        ->orwhere('user_models.username', 'like', "%$keyword")
+                        ->orwhere('user_models.username', 'like', "$keyword%");
+                });
         } else {
             $query = HobbyModel::select('*');
         }
@@ -89,23 +93,21 @@ class HobbyModel extends Model
 
     public static $validator = [
         [
-            'activityName' => ['required', 'string'],
-            // 'actTime' => 'required',
-            'memberMax' => ['nullable', 'numeric', 'integer', 'max:99'],
-            'location' => ['required', 'string'],
-            // 'weekDate' => ['nullable', 'string'],
-            'detail' => ['nullable', 'string'],
-            'startTime' => 'required',
-            'endTime' => 'required',
+            'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'tag' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙,\s]+$/u'],
+            'startTime' => ['required', 'regex:/^[0-9:]+$/u'],
+            'endTime' => ['required', 'regex:/^[0-9:]+$/u'],
+            'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/', 'max:99'],
+            'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'weekDate' => ['nullable', 'regex:/^[0-9,]+$/u'],
+            'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
         ],
         [
             'activityName.required' => 'hobby name required',
-            'activityName.string' => 'hobby name string invalid',
-            'startTime.required' => 'startTime time required',
-            'endTime.required' => 'endTime time required',
-            // 'actTime.required' => 'activity time required',
-            'memberMax.numeric' => 'max member numeric invalid',
-            'memberMax.integer' => 'max member integer invalid',
+            'activityName.regex' => 'hobby name can only contain letters, numbers and whitespaces',
+            'tag.regex' => 'tag have invalid characters',
+            'actTime.required' => 'activity timer is required',
+            'memberMax.regex' => 'max member type invalid',
             'memberMax.max' => 'max member exceed 99',
             'location.required' => 'location required',
             'location.regex' => 'location can only contain letters, numbers and whitespaces',
@@ -114,14 +116,14 @@ class HobbyModel extends Model
         ]
     ];
 
-    public function idGeneration(){
+    public function idGeneration()
+    {
         $prefix = 'h-' . now()->format('Ymd') . '-';
-        $lastGroup = HobbyModel::where('id', 'LIKE', $prefix . '%')->orderBy('id', 'desc')->first();
-
+        $lastGroup = GroupModel::where([['type', "hobby"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('id', 'desc')->first();
         if (!$lastGroup) {
             $number = '001';
         } else {
-            $lastNumber = (int)substr($lastGroup->id, -3);
+            $lastNumber = (int)substr($lastGroup->groupID, -3);
             $number = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
         }
 
