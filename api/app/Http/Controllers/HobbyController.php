@@ -181,14 +181,14 @@ class HobbyController extends Controller
 
     function memberGroup($hID)
     {
-        $groupDb = GroupModel::where('groupID',$hID)->first();
-        if($groupDb->type == 'hobby'){
-            $groupDb = HobbyModel::where('id',$hID)->with('leaderGroup')->first();
+        $groupDb = GroupModel::where('groupID', $hID)->first();
+        if ($groupDb->type == 'hobby') {
+            $groupDb = HobbyModel::where('id', $hID)->with('leaderGroup')->first();
         }
-        else if($groupDb->type == 'tutoring'){
-            $groupDb = TutoringModel::where('id',$hID)->with('leaderGroup')->first();
+        else if ($groupDb->type == 'tutoring') {
+            $groupDb = TutoringModel::where('id', $hID)->with('leaderGroup')->first();
         }
-        if (!$groupDb) {
+        else {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'hobby not found.',
@@ -207,28 +207,24 @@ class HobbyController extends Controller
                     'isMe' => true
                 ];
             }
-            else {
-                if ((int)$groupDb->leaderGroup->id == (int)$user->id && (int)$groupDb->leaderGroup->id != (int)auth()->user()->id) {
-                    $leaderData = [
-                        'username' => strval($user->username),
-                        'uID' => (int)$user->id,
-                        'isMe' => false
-                    ];
-                }
-                else if ((int)$user->id == (int)auth()->user()->id) {
-                    $member[] = [
-                        'username' => $user->username,
-                        'uID' => (int)$user->id,
-                        'isMe' => true
-                    ];
-                }
-                else if ((int)$user->id != (int)auth()->user()->id && (int)$user->id != (int)$groupDb->leaderGroup->id) {
-                    $member[] = [
-                        'username' => $user->username,
-                        'uID' => (int)$user->id,
-                        'isMe' => false
-                    ];
-                }
+            else if ((int)$groupDb->leaderGroup->id == (int)$user->id) {
+                $leaderData = [
+                    'username' => strval($user->username),
+                    'uID' => (int)$user->id,
+                    'isMe' => false
+                ];
+            } else if ((int)$user->id == (int)auth()->user()->id && (int)$user->id != (int)$groupDb->leaderGroup->id) {
+                $member[] = [
+                    'username' => $user->username,
+                    'uID' => (int)$user->id,
+                    'isMe' => true
+                ];
+            } else if ((int)$user->id != (int)auth()->user()->id && (int)$user->id != (int)$groupDb->leaderGroup->id) {
+                $member[] = [
+                    'username' => $user->username,
+                    'uID' => (int)$user->id,
+                    'isMe' => false
+                ];
             }
         }
         //--------------------
