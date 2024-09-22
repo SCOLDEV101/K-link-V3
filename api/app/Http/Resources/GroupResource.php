@@ -15,47 +15,6 @@ class GroupResource extends JsonResource
      */
     public function toArray($request)
     {
-        // $status = 'join';
-        // $members = explode(',', $this->member);
-        // $requestmembers = explode(',', $this->memberRequest);
-        // $uID = auth()->user()->uID;
-
-        // if ($this->leader == $uID) {
-        //     $role = 'leader';
-        // } else {
-        //     $role = null;
-        // };
-
-        // $count = 0;
-        // foreach ($requestmembers as $request) {
-        //     if ($request != null && $request != "") {
-        //         $count++;
-        //     }
-        // }
-
-        // if (count($members) >= $this->memberMax && $this->memberMax != null && !in_array($uID, $members)) {
-        //     $status = 'full';
-        // }
-
-        // if (in_array($uID, $members)) {
-        //     $status = 'member';
-        // }
-
-        // if (in_array($uID, $requestmembers)) {
-        //     $status = 'request';
-        // }
-
-        // $bookmarkObject = UserModel::bookmark();
-        // if ($bookmarkObject->contains('hID', $this->hID)) {
-        //     $bookmark = true;
-        // }
-
-        // $members = [];
-        // if ($this->member) {
-        //     foreach ($this->member as $member) {
-        //         $members[] = $member->id;  
-        //     }
-        // }
         $uID = auth()->user()->id;
 
         $days = [];

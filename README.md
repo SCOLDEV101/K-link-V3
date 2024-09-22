@@ -46,5 +46,26 @@ ModelAndFactory { v1.0.0: { - Seeder ใช้ได้ทั้งหมดแ�
                                 - deleteGroup มี noti *done
                             - resource รวมของ Hobby, Library, Tutoring ชื่อว่า GroupResource
                             - เชื่อม relation ใน model
+                },
+                 v1.3.3: {   - UserController
+                                - viewBookmark ดู bookmark *done,check
+                                - addOrDeleteBookmark เพิ่ม-ลบ bookmark *done,check
+                                - report รายงาน มี noti *done,check 
+                                - memberInfo ดูข้อมูลโปรไฟล์สมาชิก *done,check
+                                - showAboutUser ดูข้อมูลโปรไฟล์ตัวเอง *done,check
+                                - updateAboutUser แก้ไขข้อมูลโปรไฟล์ตัวเอง *done,check
+                                - invitePage หน้าสำหรับเชิญเพื่อนของกลุ่มนั้นๆ มี noti *done,check
+                                - inviteFriend ชวนเพื่อน มี noti *done,check
+                                - requestToGroup มี noti *done,check
+                                - notification ดูการแจ้งเตือนโดยผู้รับเป็นเรา *done,check
+                                - myPost ดูโพสต์ที่เกี่ยวข้อง *done,check
+                                - leaveGroup ออกกลุ่มที่อยู่(ต้องไม่เป็น leader) *done,check
+                            - resource 
+                                - GroupResource ลบส่วนที่ไม่ได้ใช้
+                                - MyPostResource *done
+                                - NotificationResource *done
+                            - model
+                                - BookmarkModel เพิ่ม relation และ fillable groupID,userID
+                                - NotifyModel เพิ่ม relation
                 }
 }

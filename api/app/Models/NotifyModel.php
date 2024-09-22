@@ -18,12 +18,16 @@ class NotifyModel extends Model
 
     use HasFactory;
 
-    public function sendBy(): BelongsTo {
-        return $this->belongsTo(UserModel::class, 'senderID', 'id');
+    public function group(): BelongsTo {
+        return $this->belongsTo(GroupModel::class, 'postID', 'groupID');
     }
 
-    public function hobby(): BelongsTo {
-        return $this->belongsTo(HobbyModel::class, 'id', 'postID');
+    public function receiver(): BelongsTo {
+        return $this->belongsTo(UserModel::class, 'receiverID', 'id')->select('user_models.username', 'user_models.id');
+    }    
+
+    public function sender(): BelongsTo {
+        return $this->belongsTo(UserModel::class, 'senderID', 'id')->select('user_models.username', 'user_models.id');
     }    
 
     // public function library(): BelongsTo {
