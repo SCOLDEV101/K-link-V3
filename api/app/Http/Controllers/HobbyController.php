@@ -378,16 +378,19 @@ class HobbyController extends Controller
 
     function memberGroup($hID)
     { //done north (mj ขออนุญาตแก้ไข)
-        $groupDb = GroupModel::where('groupID', $hID)->first();
-        if ($groupDb->type == 'hobby') {
-            $groupDb = HobbyModel::where('id', $hID)->with('leaderGroup')->first();
+        $groupDb = GroupModel::where('groupID', $hID)
+            ->where([['type', 'hobby'], ['status', 1]])
+            ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member','request'])
+            ->first();
 
+        if ($groupDb && $groupDb->type == 'hobby') {
+            
             //-------------------- Prepare members data
             $member = [];
             $leader = [];
-            $membersDb = (GroupModel::where('groupID', $hID)->with('member')->first())->member;
-            foreach ($membersDb as $eachMember) {
-                if ($eachMember->id != $groupDb->leaderGroup->id) {
+
+            foreach ($groupDb->member as $eachMember) {
+                if ($eachMember->id != $groupDb->hobby->leader) {
                     $member[] = [
                         'username' => $eachMember->username,
                         'uID' => $eachMember->id,
@@ -401,26 +404,21 @@ class HobbyController extends Controller
                     ];
                 }
             }
-            return response()->json([
-                'member' => $member,
-                'leader' => $leader
-            ], 500);
             //--------------------
 
             //-------------------- If user is leader
-            if ($groupDb->leaderGroup->id == auth()->user()->id) {
+            if ($groupDb->hobby->leader == auth()->user()->id) {
                 $role = 'leader';
 
-                $requestmembers = explode(',', $groupDb->memberRequest);
                 $requestCount = 0;
-                foreach ($requestmembers as $request) {
+                foreach ($groupDb->request as $request) {
                     if ($request != null && $request != "") {
                         $requestCount++;
                     }
                 }
                 $data = [
-                    'groupName' => $groupDb->name,
-                    'leader' => $leaderData,
+                    'groupName' => $groupDb->hobby->name,
+                    'leader' => $leader,
                     'members' => $member,
                     'requestCount' => $requestCount
                 ];
@@ -429,8 +427,8 @@ class HobbyController extends Controller
             else {
                 $role = 'normal';
                 $data = [
-                    'groupName' => $groupDb->name,
-                    'leader' => $leaderData,
+                    'groupName' => $groupDb->hobby->name,
+                    'leader' => $leader,
                     'members' => $member
                 ];
             }
