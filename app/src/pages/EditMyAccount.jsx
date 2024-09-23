@@ -193,7 +193,7 @@ function EditMyAccount() {
             }
             alt="profile"
             className="rounded-circle"
-            style={{ width: "100px", height: "100px" }}
+            style={{ width: "100px", height: "100px" , boxShadow: "inset 0px 4px 4px rgba(0, 0, 0, 0.25)" }}
           />
           </div>
           <input

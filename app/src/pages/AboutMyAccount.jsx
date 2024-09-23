@@ -49,7 +49,7 @@ function AboutMyAccount() {
       console.error("Error fetching data: ", error);
     }
   };
-  
+
   const Logout = async () => {
     const result = await Swal.fire({
       title: "ต้องการออกจากระบบ?",
@@ -120,7 +120,7 @@ function AboutMyAccount() {
               }
               alt=""
               className="mx-auto my-1"
-              style={{ borderRadius: "50%", width: "100px", height: "100px" }}
+              style={{ borderRadius: "50%", width: "100px", height: "100px" , boxShadow: "inset 0px 4px 4px rgba(0, 0, 0, 0.25)"}}
             /> 
              <h3 className="my-2 fw-bold">{profileData.username}</h3>
            </div>
