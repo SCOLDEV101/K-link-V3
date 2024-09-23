@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            // ImageOrFileModelSeeder::class,
             FacultySeeder::class,
             MajorSeeder::class,
             DepartmentSeeder::class,
@@ -29,8 +28,8 @@ class DatabaseSeeder extends Seeder
             HobbySeeder::class,
             TutoringSeeder::class,
             LibrarySeeder::class,
-            BookmarkSeeder::class
-            // SectionSeeder::class,
+            BookmarkSeeder::class,
+            ImageOrFileModelSeeder::class,
         ]);
     }
 }

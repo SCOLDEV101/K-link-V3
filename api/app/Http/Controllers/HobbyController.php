@@ -380,11 +380,11 @@ class HobbyController extends Controller
     { //done north (mj ขออนุญาตแก้ไข)
         $groupDb = GroupModel::where('groupID', $hID)
             ->where([['type', 'hobby'], ['status', 1]])
-            ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member','request'])
+            ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member', 'request'])
             ->first();
 
         if ($groupDb && $groupDb->type == 'hobby') {
-            
+
             //-------------------- Prepare members data
             $member = [];
             $leader = [];
@@ -459,19 +459,11 @@ class HobbyController extends Controller
 
     function aboutGroup($hID)
     { //done
-        $hobbyDb = GroupModel::where('type', 'hobby')
-            ->where('status', 1)
+        $groupDb = GroupModel::where([['groupID', $hID],['type', 'hobby'],['status', 1]])
+            ->with(['hobby','bookmark','member','request','groupDay','groupTag','hobby.imageOrFile','hobby.leaderGroup'])
             ->orderBy('updated_at', 'DESC')
-            ->with('hobby')
-            ->with('bookmark')
-            ->with(['hobby.imageOrFile'])
-            ->with(['hobby.leaderGroup'])
-            ->with('member')
-            ->with('request')
-            ->with('groupDay')
-            ->with('groupTag')
             ->first();
-        if (empty($hobbyDb)) {
+        if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'hobby not found.',
@@ -479,7 +471,7 @@ class HobbyController extends Controller
         }
 
         // กรองข้อมูลด้วย resource
-        $data = new GroupResource($hobbyDb);
+        $data = new GroupResource($groupDb);
 
         if ($data) {
             return response()->json([
@@ -687,12 +679,11 @@ class HobbyController extends Controller
 
     function deleteGroup($hID)
     {
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->where([['type', 'hobby'], ['status', 1]])
-            ->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'groupDay', 'groupTag', 'member'])
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+            ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
-        if ($groupDb->type == "hobby") {
+        if ($groupDb) {
             if (
                 GroupModel::where('groupID', $hID)->delete() && HobbyModel::where('id', $hID)->delete()
                 && MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()

@@ -415,15 +415,19 @@ class TutoringController extends Controller
 
     function aboutGroup($hID)
     {
-        $hobbyDb = TutoringModel::where('hID', $hID)->first();
-        if (empty($hobbyDb)) {
+        $groupDb = GroupModel::where([['groupID',$hID],['type', 'tutoring'],['status', 1]])
+            ->with(['tutoring','bookmark','member','request','groupDay','groupTag','tutoring.imageOrFile','tutoring.leaderGroup'])
+            ->orderBy('updated_at', 'DESC')
+            ->first();
+        return $groupDb;
+        if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'hobby not found.',
+                'message' => 'tutoring not found.',
             ], 404);
         }
 
-        $data = new TutoringGroupResource($hobbyDb);
+        $data = new TutoringGroupResource($groupDb);
 
         if ($data) {
             return response()->json([
@@ -586,13 +590,11 @@ class TutoringController extends Controller
 
     function deleteGroup($hID)
     {
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->where([['type', 'hobby'], ['status', 1]])
-            ->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'groupDay', 'groupTag', 'member'])
+        $groupDb = GroupModel::where([['groupID', $hID],['type', 'tutoring'], ['status', 1]])
+            ->with(['tutoring', 'tutoring.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
-
-        if ($groupDb->type == "tutoring") {
+        if ($groupDb) {
             if (
                 GroupModel::where('groupID', $hID)->delete() && TutoringModel::where('id', $hID)->delete()
                 && MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
@@ -601,7 +603,7 @@ class TutoringController extends Controller
                 foreach ($groupDb->member as $member) {
                     NotifyModel::create([
                         'receiverID' => $member->id,
-                        'senderID' => $groupDb->hobby->leader,
+                        'senderID' => $groupDb->tutoring->leader,
                         'postID' => $groupDb->id,
                         'type' => "delete",
                     ]);
