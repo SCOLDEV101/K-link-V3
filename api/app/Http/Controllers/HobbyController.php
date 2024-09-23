@@ -97,7 +97,6 @@ class HobbyController extends Controller
             ], 400);
         }
         // ------------
-
         try {
             $uID = auth()->user()->id;
             $path = public_path('uploaded/hobbyImage/');
@@ -106,26 +105,26 @@ class HobbyController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $filename = 'hobby-' . date('YmdHi') . '.' . $extension;
                 $file->move($path, $filename);
-                $imageOrFileDb = new imageOrFileModel;
-                $imageOrFileDb->name = $filename;
-                $imageOrFileDb->save();
+                $imageOrFileDb = imageOrFileModel::create([
+                    'name' => $filename
+                ]);
             }
 
             $hobbyModel = new HobbyModel;
             $hID = $hobbyModel->idGeneration();
 
             //-----------group part
-            $groupDb = new GroupModel;
-            $groupDb->groupID = strval($hID);
-            $groupDb->type = "hobby";
-            $groupDb->status = (int)1;
-            $groupDb->created_at = now();
-            $groupDb->updated_at = now();
-            $groupDb->save();
+            $groupDb = GroupModel::create([
+                'groupID' => strval($hID),
+                'type' => "hobby",
+                'status' => (int)1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
             //-----------
 
             //-----------hobby part
-            $hobbydata = [
+            $hobbyDb = HobbyModel::create([
                 'id' => $hID,
                 'imageOrFileID' => $imageOrFileDb->id ?? null,
                 'name' => $request->input('activityName'),
@@ -138,7 +137,7 @@ class HobbyController extends Controller
                 'createdBy' => $uID,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ];
+            ]);
             //-----------
 
 
@@ -193,15 +192,15 @@ class HobbyController extends Controller
             //-----------------------
 
             //----------------member part
-            $memberdata = [
+            $memberDb = MemberModel::create([
                 'userID' => $uID,
                 'groupID' => $groupDb->id,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ];
+            ]);
             //----------------
 
-            if (HobbyModel::insert($hobbydata) && MemberModel::insert($memberdata)) {
+            if ($groupDb && $hobbyDb && $memberDb) {
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create hobby group success.',
@@ -214,8 +213,12 @@ class HobbyController extends Controller
                 'exception' => $e,
                 'trace' => $e->getTraceAsString()
             ]);
-            //delete group with all its related model when failed
-            $groupDb->delete();
+            //delete group with all its related model when failed   
+            GroupTagModel::where('groupID', $groupDb->id)->delete();
+            GroupDayModel::where('groupID', $groupDb->id)->delete();
+            MemberModel::where('groupID', $groupDb->id)->delete();
+            HobbyModel::where('id', $hID)->delete();
+            GroupModel::where('groupID', $hID)->delete();
             return response()->json([
                 'status' => 'failed',
                 'message' => 'failed to create hobby group.'
@@ -242,9 +245,8 @@ class HobbyController extends Controller
         }
 
         //เรียกใช้ relation
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->where([['type', 'hobby'], ['status', 1]])
-            ->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'groupDay', 'groupTag', 'member'])
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+            ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
 
@@ -255,31 +257,34 @@ class HobbyController extends Controller
             ], 404);
         }
 
-        //path รูปภาพ
-        $path = public_path('uploaded/hobbyImage/');
-
         //ถ้ามีการใส่รูป
         if (!empty($request->file('image'))) {
             //เมื่อไม่ใช่รูปเก่า หรือรูป default (มีการอัพรูปใหม่)
             if ($groupDb->hobby->imageOrFile->name !== 'group-default.jpg' && $groupDb->hobby->imageOrFile->name !== $request->file('image')) {
+                //path รูปภาพ
+                $path = public_path('uploaded/hobbyImage/');
                 File::delete($path . $groupDb->hobby->imageOrFile->name); //ลบรูปเก่าทิ้ง
+                imageOrFileModel::where('id',$groupDb->hobby->imageOrFile->id)->delete(); // ลบ data on db
 
                 $file = $request->file('image');
                 $extension = $file->getClientOriginalExtension();
                 $filename = 'hobby-' . now()->format('YmdHis') . '.' . $extension;
-                $file->move($path, $filename);
+                $move = $file->move($path, $filename);
 
-                if (!$filename) {
+                if (!$move) {
                     return response()->json([
                         'status' => 'failed',
                         'message' => 'Can not upload image.'
                     ], 500);
                 } else {
-                    imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->update([
+                    $imageOrFileDb = imageOrFileModel::create([
                         'name' => $filename
                     ]);
                 }
             }
+        }
+        else {
+            $imageOrFileDb = imageOrFileModel::where('id',$groupDb->hobby->imageOrFile->id)->first();
         }
 
         //แตก array นั้นลบ tag เก่าทั้งหมดออก แต่จะไม่ลบตัว static
@@ -340,8 +345,9 @@ class HobbyController extends Controller
 
         //------------------------------ 
 
+        //------------------------------ รูปใหม่                  รูปเก่า                             รูปดั้งเดิม
         $data = [
-            // 'imageOrFileID' => $filename ?? $hobbyDb->hobby->imageOrFile->name ?? 'group-default.jpg', 
+            'imageOrFileID' => $imageOrFileDb->id ?? $groupDb->hobby->imageOrFile->id ?? imageOrFileModel::where('name','group-default.jpg')->first()->id,
             'name' => $request->input('activityName') ?? $groupDb->hobby->activityName,
             'memberMax' => $request->input('memberMax') ?? $groupDb->hobby->memberMax,
             'location' => $request->input('location') ?? $groupDb->hobby->location,
@@ -357,7 +363,7 @@ class HobbyController extends Controller
                 if ($member->id != $uID) {
                     NotifyModel::insert([
                         'receiverID' => $member->id,
-                        'senderID' => $groupDb->hobby->leaderGroup->id,
+                        'senderID' => $groupDb->hobby->leader,
                         'postID' => $hID,
                         'type' => 'updateGroup'
                     ]);
@@ -366,24 +372,22 @@ class HobbyController extends Controller
             return response()->json([
                 'status' => 'ok',
                 'message' => 'update hobby group success.',
-                'update' => $data
             ], 200);
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'can not update'
+                'message' => 'can not update group'
             ], 500);
         };
     }
 
     function memberGroup($hID)
     { //done north (mj ขออนุญาตแก้ไข)
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->where([['type', 'hobby'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member', 'request'])
             ->first();
 
-        if ($groupDb && $groupDb->type == 'hobby') {
+        if ($groupDb) {
 
             //-------------------- Prepare members data
             $member = [];
@@ -452,15 +456,15 @@ class HobbyController extends Controller
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'hobby not found.',
+                'message' => 'group not found.',
             ], 404);
         }
     }
 
     function aboutGroup($hID)
     { //done
-        $groupDb = GroupModel::where([['groupID', $hID],['type', 'hobby'],['status', 1]])
-            ->with(['hobby','bookmark','member','request','groupDay','groupTag','hobby.imageOrFile','hobby.leaderGroup'])
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+            ->with(['hobby', 'bookmark', 'member', 'request', 'groupDay', 'groupTag', 'hobby.imageOrFile', 'hobby.leaderGroup'])
             ->orderBy('updated_at', 'DESC')
             ->first();
         if (empty($groupDb)) {

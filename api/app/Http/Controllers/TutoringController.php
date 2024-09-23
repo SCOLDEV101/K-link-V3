@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\File;
 use App\Http\Resources\GroupResource;
 use App\Http\Resources\HobbyAboutGroupResource;
 use App\Http\Resources\TutoringGroupResource;
+use App\Models\HobbyModel;
 use Illuminate\Support\Facades\Validator;
 use App\Models\imageOrFileModel;
 use App\Models\TagModel;
@@ -90,27 +91,30 @@ class TutoringController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $filename = 'hobby-' . date('YmdHi') . '.' . $extension;
                 $file->move($path, $filename);
-                $imageOrFileDb = new imageOrFileModel;
-                $imageOrFileDb->name = $filename;
-                $imageOrFileDb->save();
+                $imageOrFileDb = imageOrFileModel::create([
+                    'name' => $filename
+                ]);
             }
 
             $TutoringModel = new TutoringModel;
-            $hID = $TutoringModel->idGeneration();
+            $tID = $TutoringModel->idGeneration();
 
             //-----------group part
-            $groupDb = new GroupModel;
-            $groupDb->groupID = strval($hID);
-            $groupDb->type = "hobby";
-            $groupDb->status = (int)1;
-            $groupDb->created_at = now();
-            $groupDb->updated_at = now();
-            $groupDb->save();
+            $groupDb = GroupModel::create([
+                'groupID' => strval($tID),
+                'type' => "tutoring",
+                'status' => (int)1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
             //-----------
 
-            //-----------hobby part
-            $hobbydata = [
-                'id' => $hID,
+            //-----------tutoring part
+            $tutoringDb = TutoringModel::create([
+                'id' => $tID,
+                'facultyID' => (int)$request->input('facultyID'),
+                'majorID' => $request->input('majorID') ?? null,
+                'departmentID' => $request->input('departmentID') ?? null,
                 'imageOrFileID' => $imageOrFileDb->id ?? null,
                 'name' => $request->input('activityName'),
                 'memberMax' => $request->input('memberMax') ?? null,
@@ -118,11 +122,12 @@ class TutoringController extends Controller
                 'detail' =>  $request->input('detail'),
                 'startTime' =>  $request->input('actTime') ?? date_format(now(), "H:i:s"),
                 'endTime' => $request->input('actTime') ?? date("H:i:s", mktime(0, 0, 0)),
+                'date' => $request->input('date') ?? date("Y-m-d"),
                 'leader' => $uID,
                 'createdBy' => $uID,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ];
+            ]);
             //-----------
 
 
@@ -177,19 +182,19 @@ class TutoringController extends Controller
             //-----------------------
 
             //----------------member part
-            $memberdata = [
+            $memberDb = MemberModel::create([
                 'userID' => $uID,
                 'groupID' => $groupDb->id,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ];
+            ]);
             //----------------
 
-            if (TutoringModel::insert($hobbydata) && MemberModel::insert($memberdata)) {
+            if ($groupDb && $tutoringDb && $memberDb) {
                 return response()->json([
                     'status' => 'ok',
-                    'message' => 'create hobby group success.',
-                    'hID' => $hID
+                    'message' => 'create tutoring group success.',
+                    'tID' => $tID
                 ], 200);
             }
         } catch (Exception $e) {
@@ -199,15 +204,19 @@ class TutoringController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             //delete group with all its related model when failed
-            $groupDb->delete();
+            GroupTagModel::where('groupID', $groupDb->id)->delete();
+            GroupDayModel::where('groupID', $groupDb->id)->delete();
+            MemberModel::where('groupID', $groupDb->id)->delete();
+            TutoringModel::where('id', $tID)->delete();
+            GroupModel::where('groupID', $tID)->delete();
             return response()->json([
                 'status' => 'failed',
-                'message' => 'failed to create hobby group.'
+                'message' => 'failed to create tutoring group.'
             ], 500);
         }
     }
 
-    function updateGroup(Request $request, $hID)
+    function updateGroup(Request $request, $tID)
     {
         //done (waitng for checking) **noti to everymem
         $uID = auth()->user()->id;
@@ -227,9 +236,9 @@ class TutoringController extends Controller
         }
 
         //เรียกใช้ relation
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->where([['type', 'hobby'], ['status', 1]])
-            ->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'groupDay', 'groupTag', 'member'])
+        $groupDb = GroupModel::where('groupID', $tID)
+            ->where([['type', 'tutoring'], ['status', 1]])
+            ->with(['tutoring', 'tutoring.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
 
@@ -240,31 +249,34 @@ class TutoringController extends Controller
             ], 404);
         }
 
-        //path รูปภาพ
-        $path = public_path('uploaded/hobbyImage/');
-
         //ถ้ามีการใส่รูป
         if (!empty($request->file('image'))) {
             //เมื่อไม่ใช่รูปเก่า หรือรูป default (มีการอัพรูปใหม่)
-            if ($groupDb->hobby->imageOrFile->name !== 'group-default.jpg' && $groupDb->hobby->imageOrFile->name !== $request->file('image')) {
-                File::delete($path . $groupDb->hobby->imageOrFile->name); //ลบรูปเก่าทิ้ง
+            if ($groupDb->tutoring->imageOrFile->name !== 'group-default.jpg' && $groupDb->tutoring->imageOrFile->name !== $request->file('image')) {
+                //path รูปภาพ
+                $path = public_path('uploaded/hobbyImage/');
+                File::delete($path . $groupDb->tutoring->imageOrFile->name); //ลบรูปเก่าทิ้ง
+                imageOrFileModel::where('id',$groupDb->tutoring->imageOrFile->id)->delete(); // ลบ data on db
 
                 $file = $request->file('image');
                 $extension = $file->getClientOriginalExtension();
-                $filename = 'hobby-' . now()->format('YmdHis') . '.' . $extension;
-                $file->move($path, $filename);
+                $filename = 'tutoring-' . now()->format('YmdHis') . '.' . $extension;
+                $move = $file->move($path, $filename);
 
-                if (!$filename) {
+                if (!$move) {
                     return response()->json([
                         'status' => 'failed',
                         'message' => 'Can not upload image.'
                     ], 500);
                 } else {
-                    imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->update([
+                    $imageOrFileDb = imageOrFileModel::create([
                         'name' => $filename
                     ]);
                 }
             }
+        }
+        else {
+            $imageOrFileDb = imageOrFileModel::where('id',$groupDb->tutoring->imageOrFile->id)->first();
         }
 
         //แตก array นั้นลบ tag เก่าทั้งหมดออก แต่จะไม่ลบตัว static
@@ -274,10 +286,10 @@ class TutoringController extends Controller
         //-----------------------
 
         $newTags = explode(',', $request->input('tag'));
-        $deleteOldTag = GroupTagModel::where('groupID', $groupDb->id)->where('type', 'hobby')->delete();
+        $deleteOldTag = GroupTagModel::where('groupID', $groupDb->id)->where('type', 'tutoring')->delete();
 
         if ($request->input('tag') == '' || $request->input('tag') == null) {
-            $newTags = ['hobby'];
+            $newTags = ['tutoring'];
         }
 
         foreach ($newTags as $tag) {
@@ -294,7 +306,7 @@ class TutoringController extends Controller
             GroupTagModel::create([
                 'groupID' => $groupDb->id,
                 'tagID' => $tagGroup,
-                'type' => 'hobby'
+                'type' => 'tutoring'
             ]);
         };
         // -----------------------------
@@ -326,100 +338,132 @@ class TutoringController extends Controller
         //------------------------------ 
 
         $data = [
-            // 'imageOrFileID' => $filename ?? $hobbyDb->hobby->imageOrFile->name ?? 'group-default.jpg', 
-            'name' => $request->input('activityName') ?? $groupDb->hobby->activityName,
-            'memberMax' => $request->input('memberMax') ?? $groupDb->hobby->memberMax,
-            'location' => $request->input('location') ?? $groupDb->hobby->location,
-            'detail' => $request->input('detail') ?? $groupDb->hobby->detail,
-            'startTime' => $request->input('startTime') ?? $groupDb->hobby->startTime,
-            'endTime' => $request->input('endTime') ?? $groupDb->hobby->endTime,
+            'facultyID' => $request->input('facultyID') ?? $groupDb->tutoring->facultyID,
+            'majorID' => $request->input('majorID') ?? $groupDb->tutoring->majorID,
+            'departmentID' => $request->input('departmentID') ?? $groupDb->tutoring->departmentID,
+            'imageOrFileID' => $imageOrFileDb->id ?? $groupDb->tutoring->imageOrFile->id ?? imageOrFileModel::where('name','group-default.jpg')->first()->id,
+            'name' => $request->input('activityName') ?? $groupDb->tutoring->activityName,
+            'memberMax' => $request->input('memberMax') ?? $groupDb->tutoring->memberMax,
+            'location' => $request->input('location') ?? $groupDb->tutoring->location,
+            'detail' => $request->input('detail') ?? $groupDb->tutoring->detail ?? null,
+            'startTime' => $request->input('startTime') ?? $groupDb->tutoring->startTime,
+            'endTime' => $request->input('endTime') ?? $groupDb->tutoring->endTime,
+            'date' => $request->input('date') ?? date("Y-m-d"),
+            'leader' => $uID,
             'updated_at' => now()
         ];
 
         // อัพเดตข้อมูลทั่วไปของ hobby และส่งแจ้งเตือนอัพเดต
-        if (TutoringModel::where('id', $hID)->update($data)) {
+        if (TutoringModel::where('id', $tID)->update($data)) {
             foreach ($groupDb->member as $member) {
                 if ($member->id != $uID) {
                     NotifyModel::insert([
                         'receiverID' => $member->id,
-                        'senderID' => $groupDb->hobby->leaderGroup->id,
-                        'postID' => $hID,
+                        'senderID' => $groupDb->tutoring->leader,
+                        'postID' => $tID,
                         'type' => 'updateGroup'
                     ]);
                 }
             }
             return response()->json([
                 'status' => 'ok',
-                'message' => 'update hobby group success.',
-                'update' => $data
+                'message' => 'update tutoring group success.',
             ], 200);
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'can not update'
+                'message' => 'can not update group'
             ], 500);
         };
     }
 
     function memberGroup($hID)
     {
-        $hobbyDb = TutoringModel::where('hID', $hID)->with('leaderGroup')->first();
-        if (!$hobbyDb) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'hobby not found.',
-            ], 404);
-        }
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring'], ['status', 1]])
+            ->with(['tutoring', 'tutoring.imageOrFile', 'groupDay', 'groupTag', 'member', 'request'])
+            ->first();
 
-        $leaderData = [
-            'username' => $hobbyDb->leaderGroup->username,
-            'uID' => $hobbyDb->leaderGroup->uID
-        ];
-        $member[] = $leaderData;
-        $memberUid = $hobbyDb->member();
+        if ($groupDb) {
 
-        foreach ($memberUid as $username) {
-            if ((int)$username->uID != $hobbyDb->leaderGroup->uID) {
-                $member[] = [
-                    'username' => $username->username,
-                    'uID' => (int)$username->uID
+            //-------------------- Prepare members data
+            $member = [];
+            $leader = [];
+
+            foreach ($groupDb->member as $eachMember) {
+                if ($eachMember->id != $groupDb->tutoring->leader) {
+                    $member[] = [
+                        'username' => $eachMember->username,
+                        'uID' => $eachMember->id,
+                        'isMe' => ($eachMember->id == auth()->user()->id)
+                    ];
+                } else {
+                    $leader[] = [
+                        'username' => $eachMember->username,
+                        'uID' => $eachMember->id,
+                        'isMe' => ($eachMember->id == auth()->user()->id)
+                    ];
+                }
+            }
+            //--------------------
+
+            //-------------------- If user is leader
+            if ($groupDb->tutoring->leader == auth()->user()->id) {
+                $role = 'leader';
+
+                $requestCount = 0;
+                foreach ($groupDb->request as $request) {
+                    if ($request != null && $request != "") {
+                        $requestCount++;
+                    }
+                }
+                $data = [
+                    'groupName' => $groupDb->tutoring->name,
+                    'leader' => $leader,
+                    'members' => $member,
+                    'requestCount' => $requestCount
                 ];
             }
-        }
+            //------------------- If user is member 
+            else {
+                $role = 'normal';
+                $data = [
+                    'groupName' => $groupDb->tutoring->name,
+                    'leader' => $leader,
+                    'members' => $member
+                ];
+            }
+            //--------------------
 
-        $data = [
-            'groupName' => $hobbyDb->activityName,
-            'members' => $member,
-        ];
-
-        if ($hobbyDb->leaderGroup->uID == auth()->user()->uID) {
-            $role = 'leader';
-        } else {
-            $role = null;
-        }
-
-        if ($data) {
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'fetch member hobby group success.',
-                'data' => $data,
-                'role' => $role
-            ], 200);
+            if ($data) {
+                return response()->json([
+                    'status' => 'ok',
+                    'message' => 'fetch member tutoring group success.',
+                    'hID' => $hID,
+                    'data' => $data,
+                    'role' => $role,
+                    'this' => auth()->user()->id
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'failed to fetch member hobby group.'
+                ], 500);
+            };
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'failed to fetch member hobby group.'
-            ], 500);
+                'message' => 'group not found.',
+            ], 404);
         };
     }
 
     function aboutGroup($hID)
     {
-        $groupDb = GroupModel::where([['groupID',$hID],['type', 'tutoring'],['status', 1]])
-            ->with(['tutoring','bookmark','member','request','groupDay','groupTag','tutoring.imageOrFile','tutoring.leaderGroup'])
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring'], ['status', 1]])
+            ->with(['tutoring', 'bookmark', 'member', 'request', 'groupDay', 'groupTag', 'tutoring.imageOrFile', 'tutoring.leaderGroup'])
             ->orderBy('updated_at', 'DESC')
             ->first();
-        return $groupDb;
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -427,7 +471,7 @@ class TutoringController extends Controller
             ], 404);
         }
 
-        $data = new TutoringGroupResource($groupDb);
+        $data = new GroupResource($groupDb);
 
         if ($data) {
             return response()->json([
@@ -588,15 +632,15 @@ class TutoringController extends Controller
         }
     }
 
-    function deleteGroup($hID)
+    function deleteGroup($tID)
     {
-        $groupDb = GroupModel::where([['groupID', $hID],['type', 'tutoring'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $tID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'tutoring.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
         if ($groupDb) {
             if (
-                GroupModel::where('groupID', $hID)->delete() && TutoringModel::where('id', $hID)->delete()
+                GroupModel::where('groupID', $tID)->delete() && TutoringModel::where('id', $tID)->delete()
                 && MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
                 && GroupDayModel::where('groupID', $groupDb->id)->delete()
             ) {

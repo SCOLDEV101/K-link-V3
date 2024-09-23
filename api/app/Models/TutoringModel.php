@@ -30,6 +30,23 @@ class TutoringModel extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    protected $fillable = [
+        'id',
+        'facultyID',
+        'majorID',
+        'sectionID',
+        'imageOrFileID',
+        'name',
+        'memberMax',
+        'location',
+        'detail',
+        'startTime',
+        'endTime',
+        'date',
+        'leader',
+        'createdBy'
+    ];
+
     public static $validator = [
         [
             'facultyID' => ['required'],
