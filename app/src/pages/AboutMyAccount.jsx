@@ -49,19 +49,21 @@ function AboutMyAccount() {
       console.error("Error fetching data: ", error);
     }
   };
-
+  
   const Logout = async () => {
     const result = await Swal.fire({
-      title: "ต้องการออกจากระบบหรือไม่?",
+      title: "ต้องการออกจากระบบ?",
       showCancelButton: true,
-      confirmButtonText: "ตกลง",
+      reverseButtons: true, 
+      confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
       customClass: {
         container: 'swal-container',
         title: 'swal-title',
         popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
+        cancelButton: 'swal-cancel-button' ,
+        confirmButton: 'swal-confirmRed-button', 
+   
       }
     });
   if (result.isConfirmed) {

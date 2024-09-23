@@ -74,8 +74,9 @@ function EditMyAccount() {
     e.preventDefault();
     
     const result = await Swal.fire({
-      title: "ยืนยันการแก้ไขโปรไฟล์หรือไม่?",
+      title: "ต้องการบันทึกหรือไม่?",
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
@@ -83,7 +84,7 @@ function EditMyAccount() {
         title: 'swal-title',
         popup: 'swal-popup',
         confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
+        cancelButton: 'swal-confirmRed-button'    
       }
     });
   
