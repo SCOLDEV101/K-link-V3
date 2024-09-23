@@ -5,7 +5,6 @@ import { HiSearch } from "react-icons/hi";
 import { MdGroupAdd } from "react-icons/md";
 import { IoMdSettings } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-// import Option from "../components/Option";
 import config from "../constants/function";
 
 const daysOfWeek = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];

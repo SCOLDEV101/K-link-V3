@@ -232,45 +232,6 @@ const InviteFriend = () => {
       }}
     >
       <form className="px-1" onSubmit={(e) => e.preventDefault()}>
-        {/* <div className="form-group mt-4 mx-3">
-          <select
-            className="form-control form-select"
-            name="filter_faculty"
-            value={filter.filter_faculty}
-            onChange={handleChange}
-            style={{
-              border: "1px solid #000000",
-              borderRadius: "5px",
-            }}
-          >
-            <option value="">คณะ</option>
-            {Object.keys(data).map((faculty) => (
-              <option key={faculty} value={faculty}>
-                {faculty}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-group mt-3 mx-3">
-          <select
-            className="form-control form-select"
-            name="filter_major"
-            value={filter.filter_major}
-            onChange={handleChange}
-            style={{
-              border: "1px solid #000000",
-              borderRadius: "5px",
-            }}
-          >
-            <option value="">สาขา</option>
-            {filter.filter_faculty &&
-              getMajors(filter.filter_faculty).map((major) => (
-                <option key={major} value={major}>
-                  {major}
-                </option>
-              ))}
-          </select>
-        </div> */}
         <div className="form-group mt-3">
           <div
             className="d-flex flex-row align-items-center gap-2 rounded-pill px-3 py-1 w-100"
