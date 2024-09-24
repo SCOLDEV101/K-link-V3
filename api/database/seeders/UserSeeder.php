@@ -13,9 +13,9 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // foreach(UserModel::$defaultUser as $User){
-        //     UserModel::create($User);
-        // }
-        UserModel::factory(100)->create();
+        foreach(UserModel::$defaultUser as $User){
+            UserModel::create($User);
+        }
+        // UserModel::factory(100)->create();
     }
 }

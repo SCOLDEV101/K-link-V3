@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('faculty_models', function (Blueprint $table) {
+        Schema::create('department_models', function (Blueprint $table) {
             $table->id('id');
-            $table->string('nameTH')->nullable();
-            $table->string('nameEN')->nullable();
+            $table->integer('majorID');
+            // $table->foreign('majorID')->references('majorID')->on('major_models');
+            $table->string('name');
             $table->boolean('status')->default(1);
             $table->timestamps();
         });
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('faculty_models');
+        Schema::dropIfExists('department_models');
     }
 };

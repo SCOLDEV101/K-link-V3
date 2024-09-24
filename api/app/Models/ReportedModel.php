@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReportedModel extends Model
 {
-    protected $guard = ['reportNumber'];
+    protected $guard = ['id'];
 
     protected $fillable = [
-        'title', 'type', 'detail',
-        'reportedBy', 'reportID', 'status'
+        'id','reportedBy','reportedID',
+        'type','title','detail',
+        'status'
     ];
     
     protected $casts = [
@@ -22,7 +23,7 @@ class ReportedModel extends Model
         [
             'title' => ['required'],
             'type' => ['required'],
-            'detail' => ['nullable'],
+            'detail' => ['nullable','regex:/^[a-zA-Z0-9ก-๙-_!?\s]+$/u','max:1000'],
             'id' => ['required', 'string'],
         ],
         [
@@ -30,6 +31,8 @@ class ReportedModel extends Model
             'type.required' => 'type is required',
             'id.required' => 'report ID is required',
             'id.string' => 'report ID is invalid',
+            'detail.regex' => 'detail can only contain letters, numbers , some special characters (-,_,!,?) and whitespaces.',
+            'detail.max' => 'detail can only contain up to 1,000 characters',
         ]
     ];
 

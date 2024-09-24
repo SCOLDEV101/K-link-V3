@@ -5,9 +5,8 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\UserModel;
-use setasign\Fpdi\Fpdi;
 
-class MyPostResource extends JsonResource
+class GroupResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -49,12 +48,10 @@ class MyPostResource extends JsonResource
 
         if (in_array($uID, $members)) {
             $status = 'member'; //เป็นสมาชิกแล้ว
-            $isMember = true;
         }
 
         if (in_array($uID, $requests)) {
             $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
-            $isRequest = true;
         }
 
         $bookmarkArray = [];
@@ -76,7 +73,6 @@ class MyPostResource extends JsonResource
 
             if ($this->hobby->leaderGroup->id == $uID) {
                 $role = 'leader';
-                $isLeader = true;
             } else {
                 $role = 'normal';
             };
@@ -90,7 +86,7 @@ class MyPostResource extends JsonResource
                 'request' => count($requests),
                 'memberMax' => $this->hobby->memberMax,
                 'activityName' => $this->hobby->name,
-                'leader' => $this->hobby->leaderGroup->username,
+                'leader' => $this->hobby->leaderGroup->id,
                 'weekDate' => $days,
                 'startTime' => $this->hobby->startTime,
                 'endTime' => $this->hobby->endTime,
@@ -99,23 +95,17 @@ class MyPostResource extends JsonResource
                 'userstatus' => $status,
                 'role' => $role,
                 'bookmark' => $bookmark ?? false,
-                'FilterTag' => array(
-                    'isMember'=>$isMember ?? false,
-                    'isRequest'=>$isRequest ?? false,
-                    'isLeader'=>$isLeader ?? false,
-                    // 'isHobby'=> true,
-                ),
             ];
         }
         
         if ($this->type == 'tutoring') {
+
             if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
             
             if ($this->tutoring->leaderGroup->id == $uID) {
                 $role = 'leader';
-                $isLeader = true;
             } else {
                 $role = 'normal';
             };
@@ -129,7 +119,7 @@ class MyPostResource extends JsonResource
                 'request' => count($requests),
                 'memberMax' => $this->tutoring->memberMax,
                 'activityName' => $this->tutoring->name,
-                'leader' => $this->tutoring->leaderGroup->username,
+                'teachBy' => $this->tutoring->leaderGroup->username,
                 'location' => $this->tutoring->location,
                 'detail' => $this->tutoring->detail,
                 'Starttime' => $this->tutoring->startTime,
@@ -140,20 +130,13 @@ class MyPostResource extends JsonResource
                 'section' => $this->tutoring->department->name ?? 'Unknown',
                 'role' => $role,
                 'userstatus' => $status,
-                'bookmark' => $bookmark ?? false,
-                'FilterTag' => array(
-                    'isMember'=>$isMember ?? false,
-                    'isRequest'=>$isRequest ?? false,
-                    'isLeader'=>$isLeader ?? false,
-                    // 'isTutoring'=> true,
-                ),
+                'bookmark' => $bookmark ?? false
             ];
         }
         if ($this->type == 'library') {
 
             if ($this->library->leaderGroup->id == $uID) {
                 $role = 'leader';
-                $isLeader = true;
             } else {
                 $role = 'normal';
             };
@@ -171,13 +154,7 @@ class MyPostResource extends JsonResource
                 'detail' => $this->library->detail,
                 'downloaded' => $this->library->download,
                 'role' => $role,
-                'bookmark' => $bookmark ?? false,
-                'FilterTag' => array(
-                    'isMember'=>$isMember ?? false,
-                    'isRequest'=>$isRequest ?? false,
-                    'isLeader'=>$isLeader ?? false,
-                    // 'isLibrary'=> true,
-                ),
+                'bookmark' => $bookmark ?? false
             ];
         }
     }

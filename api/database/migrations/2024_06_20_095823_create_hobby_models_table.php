@@ -12,22 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('hobby_models', function (Blueprint $table) {
-            $table->string('hID')->primary();
-            $table->string('type');
-            $table->text('activityName');
-            $table->string('weekDate');
-            $table->time('actTime');
-            $table->integer('memberCount')->default(1);
+            $table->string('id')->primary();
+            $table->integer('imageOrFileID')->nullable();
+            $table->string('name');
             $table->integer('memberMax')->nullable();
-            $table->text('member');
-            $table->string('memberRequest')->nullable();
-            $table->string('location');
-            $table->text('image')->nullable();
+            $table->text('location');
             $table->text('detail')->nullable();
-            $table->string('tag')->nullable();
-            $table->integer('createdBy');
-            $table->integer('leader');
-            $table->boolean('status')->default(1);
+            $table->time('startTime');
+            $table->time('endTime');
+            $table->string('leader');
+            $table->string('createdBy');
             $table->timestamps();
         });
     }

@@ -54,8 +54,8 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
             Route::get('viewBookmark', 'viewBookmark');
             Route::post('addOrDeleteBookmark/{id}', 'addOrDeleteBookmark');
             Route::post('report', 'report');
-            Route::get('memberInfo/{uID}', 'memberInfo');
-            Route::get('aboutMyAccount', 'showAboutUser');
+            Route::get('memberInfo/{uID?}', 'memberInfo');
+            // Route::get('aboutMyAccount', 'showAboutUser');
             Route::post('updateMyAccount', 'updateAboutUser');
             Route::get('invitePage/{id}', 'invitePage');
             Route::post('inviteFriend/{hID}', 'inviteFriend');
@@ -103,5 +103,6 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/login', 'login');
+    Route::post('/login', 'login');
     Route::get('/logout', 'logout');
 });

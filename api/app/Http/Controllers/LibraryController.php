@@ -10,11 +10,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 
+// New
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\GroupResource;
+use App\Models\GroupModel;
+use App\Models\GroupTagModel;
+use App\Models\MemberModel;
+use App\Models\NotifyModel;
+use App\Models\GroupDayModel;
+// /New
+
 class LibraryController extends Controller
 {
     function showAllLibrary(Request $request)
     {
-        $libraryDb = HobbyModel::where('type', 'library')->orderBy('updated_at', 'DESC')->with('leaderGroup')->paginate($request->get('perPage', 8));
+        $libraryDb = GroupModel::where([['type', 'library'],['status', 1]])
+            ->with(['library','bookmark','library.imageOrFile','library.faculty','library.major','library.department','groupDay','groupTag'])
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -22,13 +36,13 @@ class LibraryController extends Controller
             ], 404);
         }
 
-        $data = LibraryResource::collection($libraryDb);
-        if (sizeof($data) != 0) {
+        $data = GroupResource::collection($libraryDb);
+        if (sizeof($data) > 0) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'fetch all lbrary success.',
                 'data' => $data,
-                'nextPageUrl' => $libraryDb->nextPageUrl()
+                // 'nextPageUrl' => $libraryDb->nextPageUrl()
             ], 200);
         } else {
             return response()->json([
@@ -234,56 +248,63 @@ class LibraryController extends Controller
 
     function deleteLibrary($hID)
     {
-        $hobbyDb = HobbyModel::where('hID', $hID)->first();
-        $libraryDb = LibraryModel::where('hID', $hID)->first();
-        $path = public_path('uploaded/Library/');
-        if ($hobbyDb->leader == auth()->user()->uID) {
-            $hobbyDeleted = HobbyModel::where('hID', $hID)->delete();
-            $libraryDeleted = LibraryModel::where('hID', $hID)->delete();
-            File::delete($path . $libraryDb->filespath);
-            if ($hobbyDeleted && $libraryDeleted) {
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'library'], ['status', 1]])
+            ->with(['library', 'library.imageOrFile', 'groupDay', 'groupTag'])
+            ->orderBy('updated_at', 'DESC')
+            ->first();
+        if ($groupDb) {
+            if (
+                GroupModel::where('groupID', $hID)->delete() && LibraryModel::where('id', $hID)->delete()
+                && GroupTagModel::where('groupID', $groupDb->id)->delete() && GroupDayModel::where('groupID', $groupDb->id)->delete()
+            ) {
+                NotifyModel::create([
+                    'receiverID' => $groupDb->library->createdBy,
+                    'senderID' => $groupDb->library->createdBy,
+                    'postID' => $groupDb->id,
+                    'type' => "delete",
+                ]);
                 return response()->json([
                     'status' => 'ok',
-                    'message' => 'delete library success.',
+                    'message' => 'delete group success.',
                 ], 200);
             } else {
                 return response()->json([
                     'status' => 'failed',
-                    'message' => 'failed to delete library.',
+                    'message' => 'failed to delete group.',
                 ], 500);
             }
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'unauthorize.',
-            ], 401);
+                'message' => 'group not found.',
+            ], 404);
         }
     }
 
-    function libraryurldownload($hID)
-    {
-        $libraryDb = HobbyModel::with('library', 'leaderGroup')->where('hID', $hID)->first();
-        if (!$libraryDb) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'library not found.',
-            ], 404);
-        }
-        $path = 'uploaded/Library/';
-        $filePath = $path . $libraryDb->library->filepath;
-        if (!file_exists($filePath)) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'file not found.',
-            ], 500);
-        }
-        $signedUrl = '/' . $filePath;
-        return response()->json([
-            'status' => 'failed',
-            'message' => 'get link success.',
-            'url' => $signedUrl
-        ], 404);
-    }
+    // function libraryurldownload($hID)
+    // {
+    //     $libraryDb = HobbyModel::with('library', 'leaderGroup')->where('hID', $hID)->first();
+    //     if (!$libraryDb) {
+    //         return response()->json([
+    //             'status' => 'failed',
+    //             'message' => 'library not found.',
+    //         ], 404);
+    //     }
+    //     $path = 'uploaded/Library/';
+    //     $filePath = $path . $libraryDb->library->filepath;
+    //     if (!file_exists($filePath)) {
+    //         return response()->json([
+    //             'status' => 'failed',
+    //             'message' => 'file not found.',
+    //         ], 500);
+    //     }
+    //     $signedUrl = '/' . $filePath;
+    //     return response()->json([
+    //         'status' => 'failed',
+    //         'message' => 'get link success.',
+    //         'url' => $signedUrl
+    //     ], 404);
+    // }
 
     function libraryshared(Request $request)
     {

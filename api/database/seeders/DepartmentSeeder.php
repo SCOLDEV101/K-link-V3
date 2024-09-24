@@ -4,15 +4,17 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\TutoringModel;
+use App\Models\DepartmentModel;
 
-class TutoringSeeder extends Seeder
+class DepartmentSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        TutoringModel::factory(20)->create();
+        foreach (DepartmentModel::$Department as $departmentData) {
+            DepartmentModel::create($departmentData);
+        }
     }
 }

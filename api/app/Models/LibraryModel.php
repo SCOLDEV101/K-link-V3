@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\FacultyModel;
 
 class LibraryModel extends Model
-{
+{  
     public static $LibraryStaticGroup = [
         ['libraryID'=>'l-20240801-001','hID' => 'h-20240801-025', 'filepath' => 'library-Rev1_1.pdf', 'facultyID' => '1',],
         ['libraryID'=>'l-20240801-002','hID' => 'h-20240802-026', 'filepath' => 'library-th-2.pdf', 'facultyID' => '2',],
@@ -26,7 +27,7 @@ class LibraryModel extends Model
 
     use HasFactory;
     
-    protected $primaryKey = 'libraryID'; 
+    protected $primaryKey = 'id'; 
     public $incrementing = false;
     protected $keyType = 'string';
     protected $filepath;
@@ -61,8 +62,24 @@ class LibraryModel extends Model
         ]
     ];
     
-    public function faculty(): BelongsTo {
-        return $this->belongsTo(FacultyModel::class, 'facultyID', 'facultyID');
+    public function faculty(): HasOne {
+        return $this->hasOne(FacultyModel::class, 'id', 'facultyID');
+    }
+
+    public function major(): HasOne {
+        return $this->hasOne(MajorModel::class, 'id', 'majorID');
+    }
+
+    public function department(): HasOne {
+        return $this->hasOne(DepartmentModel::class, 'id', 'departmentID');
+    }
+
+    public function leaderGroup(): BelongsTo {
+        return $this->belongsTo(UserModel::class, 'createdBy', 'id')->select('id','username'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
+    }
+    
+    public function imageOrFile(): HasOne {
+        return $this->hasOne(imageOrFileModel::class, 'id', 'imageOrFileID')->select('id','name');
     }
 
     public function idGeneration(){

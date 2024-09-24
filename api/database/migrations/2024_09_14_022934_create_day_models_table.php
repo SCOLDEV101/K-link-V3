@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('faculty_models', function (Blueprint $table) {
-            $table->id('id');
-            $table->string('nameTH')->nullable();
-            $table->string('nameEN')->nullable();
-            $table->boolean('status')->default(1);
+        Schema::create('day_models', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
             $table->timestamps();
         });
     }
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('faculty_models');
+        Schema::dropIfExists('day_models');
     }
 };

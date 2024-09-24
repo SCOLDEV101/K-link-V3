@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\FacultyModel;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TutoringModel extends Model
 {
@@ -26,9 +26,26 @@ class TutoringModel extends Model
 
     use HasFactory;
     
-    protected $primaryKey = 'tutoringID';
+    protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
+
+    protected $fillable = [
+        'id',
+        'facultyID',
+        'majorID',
+        'sectionID',
+        'imageOrFileID',
+        'name',
+        'memberMax',
+        'location',
+        'detail',
+        'startTime',
+        'endTime',
+        'date',
+        'leader',
+        'createdBy'
+    ];
 
     public static $validator = [
         [
@@ -57,26 +74,34 @@ class TutoringModel extends Model
         ]
     ];
 
-    public function faculty(): BelongsTo {
-        return $this->belongsTo(FacultyModel::class, 'facultyID', 'facultyID');
+    public function faculty(): HasOne {
+        return $this->hasOne(FacultyModel::class, 'id', 'facultyID');
     }
 
-    public function major(): BelongsTo {
-        return $this->belongsTo(MajorModel::class, 'majorID', 'majorID');
+    public function major(): HasOne {
+        return $this->hasOne(MajorModel::class, 'id', 'majorID');
     }
 
-    public function section(): BelongsTo {
-        return $this->belongsTo(SectionModel::class, 'sectionID', 'sectionID');
+    public function department(): HasOne {
+        return $this->hasOne(DepartmentModel::class, 'id', 'departmentID');
+    }
+
+    public function leaderGroup(): BelongsTo {
+        return $this->belongsTo(UserModel::class, 'leader', 'id')->select('id','username'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์ 
+    }
+    
+    public function imageOrFile(): HasOne {
+        return $this->hasOne(imageOrFileModel::class, 'id', 'imageOrFileID')->select('id','name');
     }
 
     public function idGeneration(){
         $prefix = 't-' . now()->format('Ymd') . '-';
-        $lastGroup = TutoringModel::where('tutoringID', 'LIKE', $prefix . '%')->orderBy('tutoringID', 'desc')->first();
+        $lastGroup = GroupModel::where([['type', "tutoring"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('id', 'desc')->first();
 
         if (!$lastGroup) {
             $number = '001';
         } else {
-            $lastNumber = (int) substr($lastGroup->tutoringID, -3);
+            $lastNumber = (int) substr($lastGroup->groupID, -3);
             $number = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
         }
 
