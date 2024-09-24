@@ -71,6 +71,7 @@ function Report() {
     const result = await Swal.fire({
       title: "ยืนยันการรายงานหรือไม่?",
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {

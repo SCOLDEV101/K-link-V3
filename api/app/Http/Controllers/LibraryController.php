@@ -194,7 +194,7 @@ class LibraryController extends Controller
         $intersect = array_search('-', $arrayname) + 1;
         $fileoriginname = $arrayname[$intersect];
         $filePath = public_path('uploaded\\Library\\'.$libraryDb->library->filepath);
-        echo($filePath);
+        // echo($filePath);
         if (file_exists($filePath)) {
             $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
             $filesize = filesize($filePath);
@@ -204,11 +204,15 @@ class LibraryController extends Controller
         }
         $filename = basename($libraryDb->library->filepath,'.pdf');
         $imagePath = public_path('\\pdfImage\\'.$filename);
+        $allImagePath = [];
         if(File::exists($imagePath)){
-            echo($imagePath);
+            // echo($imagePath);
             $allpages = File::files($imagePath);
             $totalpages = count($allpages);
-            $imagePath='/pdfImage/'.$filename.'/output_page_';     
+            for($index=1;$index<=$totalpages;$index++){
+                $imagePath='/pdfImage/'.$filename.'/output_page_'.$index.'.jpg';
+                array_push($allImagePath,$imagePath);
+            }
         }
         else $imagePath = null;
         $data = [
@@ -218,7 +222,8 @@ class LibraryController extends Controller
             'uploadDate' => $libraryDb->created_at,
             'filesizeInBytes' => $filesize,
             '$totalpages'=>$totalpages ?? '0',
-            'filepageurl' => $imagePath,
+            'filepageurl' => $allImagePath,
+            'downloadlink' => '/uploaded/Library/'.$libraryDb->library->filepath,
         ];
         return response()->json([
             'status' => 'ok',

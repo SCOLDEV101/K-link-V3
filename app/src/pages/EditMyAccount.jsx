@@ -74,8 +74,9 @@ function EditMyAccount() {
     e.preventDefault();
     
     const result = await Swal.fire({
-      title: "ยืนยันการแก้ไขโปรไฟล์หรือไม่?",
+      title: "ต้องการบันทึกหรือไม่?",
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
@@ -83,7 +84,7 @@ function EditMyAccount() {
         title: 'swal-title',
         popup: 'swal-popup',
         confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
+        cancelButton: 'swal-confirmRed-button'    
       }
     });
   
@@ -192,7 +193,7 @@ function EditMyAccount() {
             }
             alt="profile"
             className="rounded-circle"
-            style={{ width: "100px", height: "100px" }}
+            style={{ width: "100px", height: "100px" , boxShadow: "inset 0px 4px 4px rgba(0, 0, 0, 0.25)" }}
           />
           </div>
           <input

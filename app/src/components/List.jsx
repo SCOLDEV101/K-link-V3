@@ -184,21 +184,25 @@ function List({ listItem, fetchData }) {
   const handleStatusUpdate = async (hID, newStatus) => {
     let swalOptions = {
       showCancelButton: true,
-      confirmButtonText: "ตกลง",
+      reverseButtons: true,
       cancelButtonText: "ยกเลิก",
       customClass: {
         container: "swal-container",
         title: "swal-title",
         popup: "swal-popup",
-        confirmButton: "swal-confirm-button",
         cancelButton: "swal-cancel-button",
       },
     };
 
     if (newStatus === "request") {
       swalOptions.title = "ต้องการขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText="ตกลง";
+      swalOptions.customClass.confirmButton="swal-confirm-button";
     } else if (newStatus === "join") {
       swalOptions.title = "ยกเลิกคำขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText="ยกเลิก";
+      swalOptions.customClass.confirmButton="swal-confirmRed-button";
+
     }
 
     const result = await Swal.fire(swalOptions);
