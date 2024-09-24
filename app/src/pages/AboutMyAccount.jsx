@@ -52,16 +52,18 @@ function AboutMyAccount() {
 
   const Logout = async () => {
     const result = await Swal.fire({
-      title: "ต้องการออกจากระบบหรือไม่?",
+      title: "ต้องการออกจากระบบ?",
       showCancelButton: true,
-      confirmButtonText: "ตกลง",
+      reverseButtons: true, 
+      confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
       customClass: {
         container: 'swal-container',
         title: 'swal-title',
         popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
+        cancelButton: 'swal-cancel-button' ,
+        confirmButton: 'swal-confirmRed-button', 
+   
       }
     });
   if (result.isConfirmed) {
@@ -118,7 +120,7 @@ function AboutMyAccount() {
               }
               alt=""
               className="mx-auto my-1"
-              style={{ borderRadius: "50%", width: "100px", height: "100px" }}
+              style={{ borderRadius: "50%", width: "100px", height: "100px" , boxShadow: "inset 0px 4px 4px rgba(0, 0, 0, 0.25)"}}
             /> 
              <h3 className="my-2 fw-bold">{profileData.username}</h3>
            </div>

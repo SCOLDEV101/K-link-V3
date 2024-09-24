@@ -80,17 +80,14 @@ function TutoringHomepage() {
       }}
     >
       <div
-        className="w-75 m-auto p-2 my-2 bg-white"
+        className="w-75 m-auto p-2 my-2"
         style={{ position: "sticky", top: "0", zIndex: 1 }}
       >
         <SearchButton fromFeature={"tutoring"} />
       </div>
       <div
-        className="mx-auto px-4 position-relative"
-        style={{
-          overflow: "auto",
-          overflowY: "scroll",
-        }}
+        className="position-relative"
+        style={{ overflow: "auto", overflowY: "scroll" , maxWidth:"550px" , width:"95vw"}}
       >
         {searchListsArray.length > 0 ? (
           <List listItem={searchListsArray} fetchData={fetchData} />

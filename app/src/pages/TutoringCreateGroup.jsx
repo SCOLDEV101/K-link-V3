@@ -150,6 +150,7 @@ function TutoringCreateGroup() {
       if (status && status === "update") {
         const result = await Swal.fire({
           title: "ยืนยันการบันทึกหรือไม่?",
+          reverseButtons: true,
           showCancelButton: true,
           confirmButtonText: "ตกลง",
           cancelButtonText: "ยกเลิก",

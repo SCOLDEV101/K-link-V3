@@ -1,26 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoShareSocial } from "react-icons/io5";
-import {
-  MdPeopleAlt,
-  MdOutlineInfo,
-  MdOutlineDownload,
-  MdOutlineBookmark,
-  MdOutlineBookmarkBorder,
-} from "react-icons/md";
-import { TbMessageReport } from "react-icons/tb";
-import { FaUserTimes } from "react-icons/fa";
-import { RiErrorWarningFill } from "react-icons/ri";
-import { BiLike } from "react-icons/bi";
-import { FaXmark } from "react-icons/fa6";
-import { HiPlus } from "react-icons/hi";
 import axios from "axios";
-import Option from "./Option";
 import config from "../constants/function";
-import Swal from 'sweetalert2'
-
-
+import Swal from "sweetalert2";
 import { Document, Page, pdfjs } from "react-pdf";
+import { IoGameController } from "react-icons/io5";
+import { FiBookOpen, FiFileText, FiFlag , FiInfo } from "react-icons/fi";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa";
+import { TbEye } from "react-icons/tb";
+import { LuShare2 } from "react-icons/lu";
+import { MdOutlineDownload } from "react-icons/md";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "../index.css";
@@ -29,12 +18,6 @@ function List({ listItem, fetchData }) {
   const [items, setItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [bookmarks, setBookmarks] = useState({});
-  const [option, setoption] = useState({
-    tgg: false,
-    o_hId: "",
-    o_type: "",
-    o_bookmark: null,
-  });
   const headersAuth = config.Headers().headers;
   const navigate = useNavigate();
 
@@ -49,15 +32,6 @@ function List({ listItem, fetchData }) {
     });
     setBookmarks(initialBookmarks);
   }, [items]);
-
-  function toggleOption(HID, Type, bookmark) {
-    setoption({
-      tgg: !option.tgg,
-      o_hId: HID,
-      o_type: Type,
-      o_bookmark: bookmark,
-    });
-  }
 
   const sendBookmark = async (hID) => {
     setBookmarks((prevBookmarks) => ({
@@ -85,47 +59,14 @@ function List({ listItem, fetchData }) {
     }
   };
 
-  const getColorByMajor = (major) => {
-    switch (major) {
-      case "วิศวกรรมศาสตร์":
-        return "#5E1814";
-      case "สถาปัตยกรรมศาสตร์":
-        return "#7C4700";
-      case "ครุศาสตร์อุตสาหกรรม":
-        return "#FF1493";
-      case "เทคโนโลยีการเกษตร":
-        return "#00FF00";
-      case "วิทยาศาสตร์":
-        return "#FFB600";
-      case "เทคโนโลยีสารสนเทศ":
-        return "#0000FF";
-      case "อุตสาหกรรมอาหาร":
-        return "#FF597E";
-      case "วิทยาลัยนาโนเทคโนโลยี":
-        return "#7CB518";
-      case "บริหารธุรกิจ":
-        return "#00BFFF";
-      default:
-        return "#000000";
-    }
-  };
-
   const handleFeatureClick = (item) => {
     console.log("handleFeatureClick :", item);
-    if (item.type === "tutoring" || item.type === "hobby") {
-      handleClick(item.hID, item.userstatus);
-    } else if (item.type === "library") {
-      navigate("/library", { state: { id: item.hID } });
-    }
+    setSelectedItemId(selectedItemId === null ? item.hID : null);
   };
 
   const handleClose = (event) => {
     event.stopPropagation();
     setSelectedItemId(null);
-  };
-
-  const handleClick = (id) => {
-    setSelectedItemId(id);
   };
 
   const handleReportList = (item) => {
@@ -134,330 +75,149 @@ function List({ listItem, fetchData }) {
     });
   };
 
-  const handleButtonClick = async (id, status) => {  
-      try {
-        const res = await axios.post(
-          config.SERVER_PATH + `/api/user/joinGroup/${id}`,
-          {},
-          { headers: headersAuth, withCredentials: true }
-        );
+  function formatDateThai(dateStr) {
+    const monthsThai = [
+      "มกราคม",
+      "กุมภาพันธ์",
+      "มีนาคม",
+      "เมษายน",
+      "พฤษภาคม",
+      "มิถุนายน",
+      "กรกฎาคม",
+      "สิงหาคม",
+      "กันยายน",
+      "ตุลาคม",
+      "พฤศจิกายน",
+      "ธันวาคม",
+    ];
+
+    const dateObj = new Date(dateStr);
+    const day = dateObj.getDate();
+    const month = monthsThai[dateObj.getMonth()];
+    const year = dateObj.getFullYear() + 543;
+
+    return `${day} ${month} ${year}`;
+  }
+
+  function formatTime(timeStr) {
+    const [hour, minute] = timeStr.split(":");
+    return `${hour}.${minute} น.`;
+  }
+
+  const dayColors = {
+    "จ.": "#FFB600",
+    "อ.": "#EFB8C8",
+    "พ.": "#7CB518",
+    "พฤ.": "#F96E20",
+    "ศ.": "#729BC0",
+    "ส.": "#A970C4",
+    "อา.": "#B3261E",
+  };
+
+
+
+  const handleShare = (selectedItemId) => {
+    const shareUrl = `http://localhost:3001/aboutlibrary/${selectedItemId}`; 
+    const shareText = `ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK\n${shareUrl}\nร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK`;
+    navigator.clipboard.writeText(shareText)
   
-        if (res.data.status === "ok") {
-          let successMessage = "ส่งคำขอเข้าร่วมกลุ่มแล้ว";
+    if (navigator.share) {
+      navigator.share({
+        title: "ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK",
+        text: "ร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK",
+        url: shareUrl, 
+      })
+      .then(() => console.log('แชร์สำเร็จ!'))
+      .catch((error) => console.log('การแชร์ล้มเหลว:', error));
+    } else {
+      alert('ไม่รองรับในเบราว์เซอร์ของคุณ');
+    }
+  };
   
-          if (status === "join") {
-            successMessage = "ยกเลิกคำขอเข้าร่วมกลุ่มแล้ว";
-          }
-  
-          Swal.fire({
-            position: "center",
-            title: successMessage,
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-success',
-            }
-          });
-  
-          console.log(status + " group success");
-          // fetchData();
+
+  const handleButtonClick = async (id, status) => {
+    try {
+      const res = await axios.post(
+        config.SERVER_PATH + `/api/user/joinGroup/${id}`,
+        {},
+        { headers: headersAuth, withCredentials: true }
+      );
+
+      if (res.data.status === "ok") {
+        let successMessage = "ส่งคำขอเข้าร่วมกลุ่มแล้ว";
+
+        if (status === "join") {
+          successMessage = "ยกเลิกคำขอเข้าร่วมกลุ่มแล้ว";
         }
-      } catch (err) {
-        console.log(err);
+
         Swal.fire({
           position: "center",
-          title: "เกิดข้อผิดพลาด",
+          title: successMessage,
           showConfirmButton: false,
           timer: 2000,
           customClass: {
-            title: 'swal-title-error',
-            container: 'swal-container',
-            popup: 'swal-popup-error',
-          }
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-success",
+          },
         });
-      }
-  };
-  
-  
 
-  const getItemStatus = (item) => {
-    switch (item.userstatus) {
-      case "request":
-        return "Pending";
-      case "member":
-        return "Joined";
-      case "full":
-        return "Full";
-      default:
-        return "";
+        console.log(status + " group success");
+        // fetchData();
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-error",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
     }
   };
 
   const handleStatusUpdate = async (hID, newStatus) => {
     let swalOptions = {
       showCancelButton: true,
-      confirmButtonText: "ตกลง",
+      reverseButtons: true,
       cancelButtonText: "ยกเลิก",
       customClass: {
-        container: 'swal-container',
-        title: 'swal-title',
-        popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
-      }
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        cancelButton: "swal-cancel-button",
+      },
     };
-  
+
     if (newStatus === "request") {
       swalOptions.title = "ต้องการขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText="ตกลง";
+      swalOptions.customClass.confirmButton="swal-confirm-button";
     } else if (newStatus === "join") {
       swalOptions.title = "ยกเลิกคำขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText="ยกเลิก";
+      swalOptions.customClass.confirmButton="swal-confirmRed-button";
+
     }
-  
+
     const result = await Swal.fire(swalOptions);
-  
+
     if (result.isConfirmed) {
-    setItems((prevItems) => {
-      const updatedItems = prevItems.map((item) =>
-        item.hID === hID ? { ...item, userstatus: newStatus } : item
-      );
-      console.log("Updated items:", updatedItems); // ตรวจสอบค่าที่อัปเดตแล้ว
-      return updatedItems;
-    });
-    handleButtonClick(hID, newStatus);
-  }
+      setItems((prevItems) => {
+        const updatedItems = prevItems.map((item) =>
+          item.hID === hID ? { ...item, userstatus: newStatus } : item
+        );
+        console.log("Updated items:", updatedItems); 
+        return updatedItems;
+      });
+      handleButtonClick(hID, newStatus);
+    }
   };
-
-  
-
-  // const renderButtons = (item) => {
-  //   const status = getItemStatus(item);
-  //   if (item.hID === selectedItemId) {
-  //     switch (status) {
-  //       case "Pending":
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={() => handleButtonClick(item.hID)}
-  //             >
-  //               <FaUserTimes
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ยกเลิกคำขอ
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //       case "Full":
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               disabled
-  //             >
-  //               <RiErrorWarningFill
-  //                 style={{ color: "#FF0101", fontSize: "5vw", margin: "1vw" }}
-  //               />
-  //               กลุ่มเต็ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "4vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //       case "Joined":
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/abouthobbygroup", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdOutlineInfo style={{ fontSize: "3.5vw", margin: "1vw" }} />{" "}
-  //               {/* <============== WTF BRO ========== */}
-  //               เกี่ยวกับกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //       default:
-  //         return (
-  //           <div style={{ maxWidth: "600px" }}>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() => handleJoinGroupClick(item.hID)}
-  //             >
-  //               <HiPlus
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#7CB518",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               เข้าร่วมกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={() =>
-  //                 navigate("/members", { state: { id: item.hID } })
-  //               }
-  //             >
-  //               <MdPeopleAlt
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FFB600",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               สมาชิกกลุ่ม
-  //             </button>
-  //             <button
-  //               className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-  //               style={{ fontSize: "3.5vw", borderRadius: "10px" }}
-  //               onClick={handleClose}
-  //             >
-  //               <FaXmark
-  //                 style={{
-  //                   color: "#FFF",
-  //                   fontSize: "6vw",
-  //                   background: "#FF0101",
-  //                   borderRadius: "50%",
-  //                   padding: "3px",
-  //                   marginRight: "3px",
-  //                 }}
-  //               />
-  //               ปิด
-  //             </button>
-  //           </div>
-  //         );
-  //     }
-  //   }
-  //   return null;
-  // };
 
   return (
     <div onClick={handleClose} style={{ position: "relative" }}>
@@ -488,609 +248,342 @@ function List({ listItem, fetchData }) {
               selectedItemId === item.hID ? "highlighted zIndex-9999" : ""
             }`}
           >
-            {item.type === "hobby" && (
+            <div className="card p-3 border-0 mx-3" style={{ borderRadius: "15px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", }}>
               <div
-                className="card my-2 border border-dark m-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFeatureClick(item);
+                }}
+                className="position-relative mx-auto my-1"
                 style={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  backgroundColor: "white",
-                  boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-                  top: "10%",
-                  cursor: "default",
-                  maxWidth: "500px",
+                  width: "75vw",
+                  height: "25vw",
+                  maxHeight: "100px",
+                  maxWidth: "450px",
                 }}
               >
-                <div className="row">
-                  <div className="col align-self-left d-flex m-0">
-                    <img
-                      src={
-                        item.type === "hobby" ? "./hobby.png" : "./tutoring.png"
-                      }
-                      className="p-0"
-                      alt=""
-                    />
-                  </div>
-                  <div
-                    className="col align-self-left d-flex m-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFeatureClick(item);
-                    }}
-                  >
-                    <div></div>
-                  </div>
-                  <div
-                    className="col"
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      marginRight: "3%",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    <div className="col align-self-right" height={"8vw"}>
-                      <div className="d-flex">
-                        <div
-                          className="text-start fs-5"
-                          style={{ color: "#FF0101" }}
-                          onClick={() => handleReportList(item)}
-                        >
-                          <TbMessageReport className="mx-2 mb-1 fs-2" />
-                        </div>
-                        <div onClick={() => sendBookmark(item.hID)}>
-                          {bookmarks[item.hID] ? (
-                            <MdOutlineBookmark
-                              className="mt-1 fs-2"
-                              style={{ color: "#FFB600" }}
-                            />
-                          ) : (
-                            <MdOutlineBookmarkBorder className="mt-1 fs-2" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p
-                      className={
-                        item.memberMax === null ||
-                        item.memberMax === 0 ||
-                        item.member <= item.memberMax
-                          ? "text-success fw-bold"
-                          : "text-danger fw-bold"
-                      }
-                      style={{
-                        fontSize: "4vw",
-                        textAlign: "right",
-                        margin: "0",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      {item.member}/
-                      {item.memberMax === null || item.memberMax === 0
-                        ? "ไม่จำกัด"
-                        : item.memberMax}
-                    </p>
-                  </div>
-                </div>
-
+                <img
+                  src={
+                    item.type==="library" && item.thumbnail != null  ? `${config.SERVER_PATH}${item.thumbnail}`
+                    : item.image != null
+                      ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
+                      : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
+                  }
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "15px",
+                    boxShadow: "inset 0px 0px 5.6px 0px rgba(0, 0, 0, 0.25)",
+                  }}
+                />
+                  
                 <div
-                  className="row"
-                  style={{ padding: "0% 5%" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFeatureClick(item);
+                  className="position-absolute d-flex align-items-center m-2  fs-1"
+                  style={{
+                    top: "0",
+                    right: "0",
+                    transform: "translate(50%, -50%)",
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0rem",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {item.activityName}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "left",
-                      color: "#DDDCDC",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    {item.leader}
-                  </p>
-                  <p
-                    className={
-                      item.userstatus === "member"
-                        ? "text-success"
-                        : "text-warning"
-                    }
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      margin: "0",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    {item.userstatus}
-                  </p>
-                  <div className="row">
-                    <div className="col align-self-center">
-                      <img
-                        src={
-                          item.image != null
-                            ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
-                            : "https://www.kasandbox.org/programming-images/avatars/leaf-blue.png"
-                        }
-                        style={{ width: "25vw", height: "25vw" }}
+                  {item.type === "hobby" ? (
+                    <div
+                      style={{
+                        backgroundColor: "#FFB600",
+                        padding: "0.3rem",
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <IoGameController
+                        className="text-dark"
+                        style={{ marginLeft: "0.1rem" }}
                       />
                     </div>
-                    <div className="col align-self-center">
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        ทุกๆวัน: {item.weekDate.split(",").join(" ")}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        เวลา: {item.actTime}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        สถานที่: {item.location}
-                      </p>
-                    </div>
-                  </div>
-                  <p
-                    style={{ fontSize: "3vw", textAlign: "left" }}
-                    className="m-0 pt-2"
-                  >
-                    รายละเอียด: {item.detail}
-                  </p>
-                  <div className="p-1 mb-2" style={{ textAlign: "left" }}>
-                    {item.tag &&
-                      item.tag.split(",").map((tag, i) => (
-                        <p
-                          key={i}
-                          className="mx-1 my-0"
-                          style={{
-                            fontSize: "3vw",
-                            borderRadius: "50px",
-                            backgroundColor: "#D9D9D9",
-                            display: "inline-block",
-                            padding: "0.2em 0.5em",
-                          }}
-                        >
-                          {tag}
-                        </p>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {item.type === "tutoring" && (
-              <div
-                className="card my-2 border border-dark m-auto"
-                style={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  backgroundColor: "white",
-                  boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-                  top: "10%",
-                  maxWidth: "500px",
-                  cursor: "default",
-                }}
-              >
-                <div className="row">
-                  <div className="col align-self-left d-flex m-0">
-                    <img
-                      src={
-                        item.feature === "hobby"
-                          ? "./hobby.png"
-                          : "./tutoring.png"
-                      }
-                      className="p-0"
-                      alt=""
-                    />
-                  </div>
-                  <div
-                    className="col align-self-left d-flex m-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFeatureClick(item);
-                    }}
-                  >
-                    <div></div>
-                  </div>
-                  <div
-                    className="col"
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      marginRight: "3%",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    <div className="col align-self-right" height={"8vw"}>
-                      <div className="d-flex">
-                        <div
-                          className="text-start fs-5"
-                          style={{ color: "#FF0101" }}
-                          onClick={() => handleReportList(item)}
-                        >
-                          <TbMessageReport className="mx-2 mb-1 fs-2" />
-                        </div>
-                        <div onClick={() => sendBookmark(item.hID)}>
-                          {bookmarks[item.hID] ? (
-                            <MdOutlineBookmark
-                              className="mt-1 fs-2"
-                              style={{ color: "#FFB600" }}
-                            />
-                          ) : (
-                            <MdOutlineBookmarkBorder className="mt-1 fs-2" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p
-                      className={
-                        item.memberMax === null ||
-                        item.memberMax === 0 ||
-                        item.member <= item.memberMax
-                          ? "text-success fw-bold"
-                          : "text-danger fw-bold"
-                      }
-                      style={{
-                        fontSize: "4vw",
-                        textAlign: "right",
-                        margin: "0",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      {item.member}/
-                      {item.memberMax === null || item.memberMax === 0
-                        ? "ไม่จำกัด"
-                        : item.memberMax}
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  className="row"
-                  style={{ padding: "0% 5%" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFeatureClick(item);
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0rem",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {item.activityName}
-                  </p>
-                  <p
-                    className={
-                      item.userstatus === "member"
-                        ? "text-success"
-                        : "text-warning"
-                    }
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      margin: "0",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    {item.userstatus}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "left",
-                      color: "#DDDCDC",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    ผู้สอน: {item.teachBy}
-                  </p>
-                  <div className="row">
-                    <div className="col align-self-center">
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        วันที่:{" "}
-                        {item.date
-                          ? new Date(item.date).toLocaleDateString()
-                          : "--"}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        {item.Starttime && item.Endtime
-                          ? `เวลา: ${item.Starttime.substring(
-                              0,
-                              5
-                            )} - ${item.Endtime.substring(0, 5)} น.`
-                          : null}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        สถานที่: {item.location}
-                      </p>
-                    </div>
-                  </div>
-                  <p
-                    style={{ fontSize: "3vw", textAlign: "left" }}
-                    className="m-0 pt-2"
-                  >
-                    รายละเอียด: {item.detail}
-                  </p>
-                  <div className="p-1 mb-2" style={{ textAlign: "left" }}>
-                    {item.tag &&
-                      item.tag.split(",").map((tag, i) => (
-                        <p
-                          key={i}
-                          className="mx-1 my-0"
-                          style={{
-                            fontSize: "3vw",
-                            borderRadius: "50px",
-                            backgroundColor: "#D9D9D9",
-                            display: "inline-block",
-                            padding: "0.2em 0.5em",
-                          }}
-                        >
-                          {tag}
-                        </p>
-                      ))}
+                  ) : item.type === "tutoring" ? (
                     <div
-                      className="fw-bold"
                       style={{
-                        fontSize: "4vw",
-                        textAlign: "right",
-                        color: getColorByMajor(item.Major),
+                        backgroundColor: "#21005D",
+                        padding: "0.4rem",
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      {item.Major}
+                      <FiBookOpen className="text-white mt-1" />
                     </div>
-                  </div>
+                  ) : item.type === "library" ? (
+                    <div
+                      style={{
+                        backgroundColor: "#7CB518",
+                        padding: "0.5rem",
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <FiFileText className="text-white" />
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-            )}
 
-            {item.type === "library" && (
+                {item.type !== "library" && item.member && (
+                 <div
+                 className="position-absolute"
+                 style={{
+                   top: "10px",
+                   left: "10px",
+                   padding: "0.2rem 0.5rem",
+                   borderRadius: "5px",
+                   maxWidth: "50%",
+                   position: "relative", 
+                 }}
+               >
+                 <div
+                   style={{
+                     position: "absolute",
+                     top: 0,
+                     left: 0,
+                     right: 0,
+                     bottom: 0,
+                     background:
+                       item.userstatus === "member"
+                         ? "linear-gradient(90deg, rgba(129,255,108,0.8) 0%, rgba(185,255,63,0.8) 100%)"
+                         : "rgba(255, 255, 255, 0.8)",
+                     borderRadius: "5px",
+                     backdropFilter: "blur(3.29px)",
+                     zIndex: 1, 
+                     boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.25)",
+                   }}
+                 ></div>
+                 <div
+                   style={{
+                     position: "relative",
+                     zIndex: 2, 
+                     color: "black",
+                     fontSize: "0.8rem",
+                     whiteSpace: "nowrap",
+                     overflow: "hidden",
+                     textOverflow: "ellipsis",
+                   }}
+                 >
+                   {item.member} / {item.memberMax === 0 || item.memberMax === null ? "ไม่จำกัด" : item.memberMax}
+                 </div>
+               </div>
+               
+                )}
+              </div>
               <div
-                className="card my-2 border border-dark m-auto"
+                className="d-flex mt-2 mx-auto"
                 style={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  backgroundColor: "white",
-                  boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-                  top: "10%",
-                  cursor: "default",
-                  maxWidth: "500px",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "75vw",
+                  maxWidth: "450px",
                 }}
               >
-                <div className="row">
-                  <div
-                    className="col"
-                    style={{
-                      fontSize: "4vw",
-                      textAlign: "right",
-                      marginRight: "3%",
-                      marginBottom: "0.2rem",
-                    }}
-                  >
-                    <div className="col align-self-right" height={"8vw"}>
-                      <div className="d-flex justify-content-end">
-                        <div
-                          className="text-start fs-5"
-                          style={{ color: "#FF0101" }}
-                          onClick={() => handleReportList(item)}
-                        >
-                          <TbMessageReport className="mx-2 mb-1 fs-2" />
-                        </div>
-                        <div onClick={() => sendBookmark(item.hID)}>
-                          {bookmarks[item.hID] ? (
-                            <MdOutlineBookmark
-                              className="mt-1 fs-2"
-                              style={{ color: "#FFB600" }}
-                            />
-                          ) : (
-                            <MdOutlineBookmarkBorder className="mt-1 fs-2" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="row"
-                  style={{ padding: "0% 5%" }}
+                <p
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFeatureClick(item);
                   }}
+                  className="m-0"
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: "55vw",
+                  }}
                 >
+                  {item.activityName}
+                </p>
+                <div className="mb-1" style={{ maxWidth: "20vw" }}>
+                  <FiFlag
+                    className="mx-2"
+                    style={{ fontSize: "20px" }}
+                    onClick={() => handleReportList(item)}
+                  />
+                  {bookmarks[item.hID] ? (
+                    <FaBookmark
+                      style={{ fontSize: "20px", color: "#FFB600" }}
+                      onClick={() => sendBookmark(item.hID)}
+                    />
+                  ) : (
+                    <FaRegBookmark
+                      style={{ fontSize: "20px" }}
+                      onClick={() => sendBookmark(item.hID)}
+                    />
+                  )}
+                </div>
+              </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFeatureClick(item);
+                }}
+                className="d-flex flex-column mx-auto"
+                style={{
+                  alignItems: "start",
+                  width: "75vw",
+                  maxWidth: "450px",
+                }}
+              >
+                <p
+                  className="m-0"
+                  style={{
+                    color: "#625B71",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {item.type === "library" ? item.Major : item.location}
+                </p>
+                <p
+                  className="m-0"
+                  style={{
+                    color: "#625B71",
+                    fontSize: "14px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {item.type === "library" ? (
+                    "PDF | 120 หน้า"
+                  ) : item.type === "hobby" ? (
+                    formatTime(item.actTime)
+                  ) : item.type === "tutoring" ? (
+                    formatDateThai(item.date) +
+                    " | " +
+                    formatTime(item.Starttime) +
+                    " - " +
+                    formatTime(item.Endtime)
+                  ) : (
+                    <></>
+                  )}
+                </p>
+                {item.detail && (
                   <p
+                    className="m-0"
                     style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0",
+                      color: "#7B7B7B",
+                      fontSize: "14px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {item.activityName}
+                    {item.detail}
                   </p>
-                  {/* <p
-                    style={{
-                      fontSize: "5vw",
-                      textAlign: "left",
-                      margin: "0",
-                    }}
-                  >
-                    {item.code}
-                  </p> */}
-                  <div className="row">
-                    <div className="col align-self-center">
-                      {/* <img
-                        src={item.img}
-                        style={{ width: "25vw", height: "35vw" }}
-                      /> */}
-                      <PDF_Document file={item.img[0]} />
-                    </div>
-                    <div className="col align-self-center">
-                      <p
-                        style={{
-                          fontSize: "4vw",
-                          textAlign: "left",
-                          color: "#DDDCDC",
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        โดย: {item.leader}
-                      </p>
-                      <div
-                        className="fw-bold"
-                        style={{
-                          fontSize: "3vw",
-                          color: getColorByMajor(item.Major),
-                        }}
-                      >
-                        {item.Major}
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "3vw",
-                          textAlign: "left",
-                          display: "-webkit-box",
-                          WebkitBoxOrient: "vertical",
-                          WebkitLineClamp: 3,
-                          overflow: "hidden",
-                        }}
-                        className="m-0 pt-2"
-                      >
-                        รายละเอียด: {item.detail}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-1 mb-0" style={{ textAlign: "left" }}>
+                )} 
+                { item.weekDate &&
+                <div className="d-flex gap-2 my-2">
+                  {item.weekDate.split(",").map((day, index) => (
+                    <p
+                      key={index}
+                      className="m-0"
+                      style={{
+                        paddingLeft:".35rem",
+                        paddingRight:".35rem",
+                        color: "#000000",
+                        fontSize: "14px",
+                        border: `1px solid ${dayColors[day] || "#000"}`,
+                        borderRadius:
+                          day === "อา." || day === "พฤ." ? "15px" : "50%",
+                      }}
+                    >
+                      {day}
+                    </p>
+                  ))}
+                </div>
+                  }
+              </div>
+              <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto mx-auto" style={{borderRadius:"40px" , scrollbarWidth:"none" , width:"75vw" , maxWidth:"450px"}}> 
+              <div className="py-1 d-flex flex-row flex-nowrap overflow-auto" style={{ textAlign: "left" , borderRadius:"40px" , scrollbarWidth:"none"}}>
                     {item.tag &&
                       item.tag.split(",").map((tag, i) => (
                         <p
                           key={i}
-                          className="mx-1 my-0"
+                          className="my-0 py-1 px-3 text-nowrap d-flex flex-row justify-content-center align-items-center"
                           style={{
-                            fontSize: "3vw",
-                            borderRadius: "50px",
-                            backgroundColor: "#D9D9D9",
+                            fontSize: "10px",
+                            borderRadius: "40px",
+                            backgroundColor: "#E7E7E7",
                             display: "inline-block",
-                            padding: "0.2em 0.5em",
+                            maxHeight:"23px",
+                            marginRight:"5px"
                           }}
                         >
                           {tag}
                         </p>
                       ))}
-                    <div className="row">
-                      <div
-                        className="d-flex align-items-end col"
-                        style={{
-                          fontSize: "4vw",
-                          marginRight: "3%",
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        {/* <BiLike
-                          style={{ fontSize: "8vw" }}
-                          className="mx-2 "
-                        />
-                        {item.Like} */}
-                      </div>
-                      <div
-                        className="col"
-                        style={{
-                          fontSize: "8vw",
-                          textAlign: "right",
-                          marginRight: "3%",
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        <a href={`${config.SERVER_PATH}/uploaded/Library/${item.filename}`} target="_blank" rel="noopener noreferrer">
-                          <MdOutlineDownload className="mx-2 mt-1 text-dark" />
-                        </a>
-                        {/* <IoShareSocial className="mx-2" /> */}
-                      </div>
-                    </div>
+                  </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            <div className="my-2" style={{ maxWidth: "600px" }}>
+            <div className="mt-3 mb-4 mx-3" style={{ maxWidth: "600px" }}>
               {/* {renderButtons(item)} */}
 
               {item.hID === selectedItemId && (
                 <div style={{ maxWidth: "600px" }}>
                   {/* ==========[ CHANGE BTN ]=========== */}
-                  {item.userstatus === "request" ? (
+                  {item.type === "library" ? (<>
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "4vw", borderRadius: "10px" }}
+                    className="btn py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
+                    onClick={() => navigate(`/aboutlibrary/${selectedItemId}`)}
+                  >
+                    <TbEye style={{ marginRight: "5px" }} />
+                    ดูตัวอย่าง
+                  </button>
+                    <button
+                    className="btn bg-white py-1 px-1 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
+                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.encodedfilename}`, "_blank", "noopener noreferrer")}
+                  >
+                    <MdOutlineDownload style={{marginRight:"5px" }}/>
+                    ดาวน์โหลด
+                  </button>
+                  <button
+                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
+                    onClick={() => handleShare(selectedItemId)}
+                  >
+                    <LuShare2 style={{ marginRight: "5px" }} />
+                    แชร์
+                  </button>
+                  </>) 
+                  : item.userstatus === "request" ? ( <>
+                    <button
+                      className="btn py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" , backgroundColor:"#B3261E" , color:"#E7E7E7" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
                         // handleButtonClick(item.hID);
                         handleStatusUpdate(item.hID, "join");
                       }}
                     >
-                      <FaUserTimes
-                        style={{
-                          color: "#FFF",
-                          fontSize: "6vw",
-                          background: "#FF0101",
-                          borderRadius: "50%",
-                          padding: "3px",
-                          marginRight: "3px",
-                        }}
-                      />
                       ยกเลิกคำขอ
                     </button>
+
+                    </>
                   ) : item.userstatus === "member" ? (
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "3.5vw", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" ,boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
                       onClick={() => {
                         if (item.type === "hobby") {
                           navigate("/abouthobbygroup", {
@@ -1103,86 +596,48 @@ function List({ listItem, fetchData }) {
                         }
                       }}
                     >
-                      <MdOutlineInfo
-                        style={{ fontSize: "3.5vw", margin: "1vw" }}
-                      />{" "}
-                      {/* <============== WTF BRO ========== */}
+                      <FiInfo style={{marginRight:"5px" , marginBottom:"2px"}}/>
                       เกี่ยวกับกลุ่ม
                     </button>
                   ) : item.userstatus === "full" ? (
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "4vw", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
                       disabled
                     >
-                      <RiErrorWarningFill
-                        style={{
-                          color: "#FF0101",
-                          fontSize: "5vw",
-                          margin: "1vw",
-                        }}
-                      />
                       กลุ่มเต็ม
                     </button>
                   ) : (
                     <button
-                      className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                      style={{ fontSize: "3.5vw", borderRadius: "10px" }}
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
-                        // handleJoinGroupClick(item.hID);
                         handleStatusUpdate(item.hID, "request");
                       }}
                     >
-                      <HiPlus
-                        style={{
-                          color: "#FFF",
-                          fontSize: "6vw",
-                          background: "#7CB518",
-                          borderRadius: "50%",
-                          padding: "3px",
-                          marginRight: "3px",
-                        }}
-                      />
                       เข้าร่วมกลุ่ม
                     </button>
                   )}
-                  {/* ==========[ CHANGE BTN ]=========== */}
+                  {item.type !== "library" ? 
+                  <>
                   <button
-                    className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                    style={{ fontSize: "4vw", borderRadius: "10px" }}
+                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={() =>
                       navigate("/members", { state: { id: item.hID } })
                     }
                   >
-                    <MdPeopleAlt
-                      style={{
-                        color: "#FFF",
-                        fontSize: "6vw",
-                        background: "#FFB600",
-                        borderRadius: "50%",
-                        padding: "3px",
-                        marginRight: "3px",
-                      }}
-                    />
                     สมาชิกกลุ่ม
                   </button>
                   <button
-                    className="btn bg-white border border-dark py-1 px-1 my-auto mx-1"
-                    style={{ fontSize: "4vw", borderRadius: "10px" }}
+                    className="btn bg-white py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={handleClose}
                   >
-                    <FaXmark
-                      style={{
-                        color: "#FFF",
-                        fontSize: "6vw",
-                        background: "#FF0101",
-                        borderRadius: "50%",
-                        padding: "3px",
-                        marginRight: "3px",
-                      }}
-                    />
                     ปิด
                   </button>
+                  </>
+                      :<></>  }
                 </div>
               )}
             </div>
@@ -1191,84 +646,8 @@ function List({ listItem, fetchData }) {
       ) : (
         <p></p>
       )}
-      <Option
-        caseId="ListOption"
-        hID={option.o_hId}
-        type={option.o_type}
-        bookmark={option.o_bookmark}
-        show={false}
-      />
     </div>
   );
 }
 
 export default List;
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString(); // Set the workerSrc globally
-
-function PDF_Document({ file }) {
-  const [numPages, setNumPages] = useState(null);
-  const [pdfUrl, setPdfUrl] = useState(null);
-
-  const base64Data = file;
-
-  useEffect(() => {
-    const base64ToBlobUrl = (base64) => {
-      try {
-        if (!base64 || typeof base64 !== "string") {
-          throw new Error("Invalid Base64 string");
-        }
-
-        const byteCharacters = atob(base64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: "application/pdf" });
-        return URL.createObjectURL(blob);
-      } catch (error) {
-        console.error("Error decoding Base64 data:", error);
-        return null;
-      }
-    };
-
-    setPdfUrl(base64ToBlobUrl(base64Data));
-
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
-  }, [base64Data]);
-
-  function onDocumentLoadSuccess({ numPages }) {
-    setNumPages(numPages);
-  }
-
-  return (
-    <div>
-      {pdfUrl ? (
-        <>
-          <Document
-            className="pdf-document"
-            renderMode={"canvas"}
-            // file={pdfUrl}
-            file={`data:application/pdf;base64,${file}`}
-            onLoadSuccess={onDocumentLoadSuccess}
-          >
-            <Page pageNumber={1} width={100} className="pdf-page" />
-          </Document>
-          {/* <a href={pdfUrl} download={pdfUrl + ".pdf"}>
-            <button className="download-button">Download PDF</button>
-          </a> */}
-        </>
-      ) : (
-        <p>Loading PDF...</p>
-      )}
-    </div>
-  );
-}

@@ -123,6 +123,7 @@ function CreateGroupPage() {
     const result = await Swal.fire({
       title: "ยืนยันการสร้างกลุ่มหรือไม่?",
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
@@ -273,6 +274,7 @@ function CreateGroupPage() {
     const result = await Swal.fire({
       title: "ยืนยันการบันทึกหรือไม่?",
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {

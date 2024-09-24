@@ -109,7 +109,6 @@ class MyPostResource extends JsonResource
         }
         
         if ($this->type == 'tutoring') {
-
             if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }

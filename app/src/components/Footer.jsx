@@ -3,8 +3,13 @@ import { IoMdSettings } from "react-icons/io";
 import { IoHome } from "react-icons/io5";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
+import config from "../constants/function";
+import { MdOutlineShare , MdOutlineDownload } from "react-icons/md";
 
-const Footer = () => {
+
+const Footer = ({FileData}) => {
+  console.log("FileData:", FileData);
+
   const Menus = [
     {
       name: "My POST",
@@ -41,7 +46,6 @@ const Footer = () => {
     setActive(currentActive !== -1 ? currentActive : 1);
   }, [location.pathname]);
 
-  // Check if current location is in Menus
   const isInMenu = Menus.some((menu) => menu.route === location.pathname);
   const NoHasFooter = [
     "/",
@@ -62,16 +66,75 @@ const Footer = () => {
     "/librarycreatepost",
   ];
   return (
+    <>
+      {
+  location.pathname.startsWith("/aboutlibrary") && FileData ? (
+    <div
+      class="w-100 fixed-bottom d-flex"
+      style={{
+        backgroundColor: "#FF8500",
+        position: "fixed",
+        boxShadow: "0px -3px 10px rgba(0, 0, 0, .25)",
+        height: "60px",
+      }}
+    >
+      <div
+        style={{ width: "40%", cursor: "pointer" }}
+        className="text-white fs-6 d-flex align-items-center justify-content-center"
+        onClick={() => {
+          if (navigator.share) {
+            navigator
+              .share({
+                title: "ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK",
+                text: "ร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK",
+                url: window.location.href,
+              })
+              .then(() => console.log("Sharing successful!"))
+              .catch((error) => console.log("Sharing failed", error));
+          } else {
+            alert("Web Share API is not supported in your browser.");
+          }
+        }}
+      >
+        <MdOutlineShare className="mx-1" />
+        Share
+      </div>
+
+      <div
+        style={{
+          width: "0.1px",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          height: "100%",
+          alignSelf: "center",
+        }}
+      ></div>
+
+      <div
+        className="text-white fs-6 d-flex align-items-center justify-content-center"
+        style={{ width: "60%" }}
+        onClick={() =>
+          window.open(
+            `${config.SERVER_PATH}${FileData?.downloadlink}`,
+            "_blank",
+            "noopener noreferrer"
+          )
+        }
+      >
+        <MdOutlineDownload className="mx-1 fs-2" />
+        Download
+      </div>
+    </div>
+  ) : !location.pathname.startsWith("/aboutlibrary") ? (
     <div
       className={`d-flex flex-row justify-content-center ${
-        NoHasFooter.includes(location.pathname) && "d-none"
+        NoHasFooter.includes(location.pathname) ? "d-none" : ""
       }`}
       style={{
         backgroundColor: "#FF8500",
-        position:"fixed",
-        right:"0",
-        left:"0",
-        bottom:"-20px",
+        position: "fixed",
+        right: "0",
+        left: "0",
+        bottom: "-20px",
         boxShadow: "0px -3px 10px rgba(0, 0, 0, .25)",
       }}
     >
@@ -89,7 +152,8 @@ const Footer = () => {
                 style={{
                   fontSize: "30px",
                   transitionDuration: "0.4s",
-                  marginTop: active === i ? (isInMenu ? "-1.8rem" : "0") : "0",
+                  marginTop:
+                    active === i ? (isInMenu ? "-1.8rem" : "0") : "0",
                   zIndex: 3,
                 }}
               >
@@ -100,7 +164,9 @@ const Footer = () => {
                 style={{
                   transition: "transform 0.8s, opacity 0.8s",
                   transform:
-                    active === i ? "translateY(1rem)" : "translateY(2.5rem)",
+                    active === i
+                      ? "translateY(1rem)"
+                      : "translateY(2.5rem)",
                   opacity: active === i ? 1 : 0,
                 }}
               >
@@ -125,6 +191,10 @@ const Footer = () => {
         ></span>
       </ul>
     </div>
+  ) : null}
+
+    </>
+    
   );
 };
 

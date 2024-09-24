@@ -6,9 +6,18 @@ import config from "../constants/function";
 
 function Saved() {
   const [bookmark_List, setBookmark_List] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     fetchBookMarkLists();
+
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+
+    return () => clearTimeout(loadingTimeout);
   }, []);
+
 
   const fetchBookMarkLists = async () => {
     try {
@@ -18,9 +27,11 @@ function Saved() {
       );
       console.log(bookMarkLists.data.data);
       if (bookMarkLists.data.status === "ok") {
+        setIsLoading(false);
         setBookmark_List(bookMarkLists.data.data);
       }
     } catch (error) {
+      setIsLoading(false);
       console.error("Error fetching :", error);
     }
   };
@@ -81,10 +92,44 @@ function Saved() {
         />
       </div>
       <div
-        className="mx-auto px-4 position-relative"
-        style={{ overflowY: "auto", flexGrow: 1, width: "100%" }}
+        className="position-relative"
+        style={{
+          overflow: "auto",
+          overflowY: "scroll",
+          maxWidth: "550px",
+          width: "95vw",
+        }}
       >
-        <List listItem={filteredLists} fetchData={null} />{" "}
+        {isLoading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "50vh",
+            }}
+          >
+            <l-tail-chase
+              size="40"
+              speed="1.75"
+              color="rgb(255,133,0)"
+            ></l-tail-chase>
+          </div>
+        ) : bookmark_List.length > 0 ?  (
+        <List listItem={filteredLists} fetchData={null} /> 
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
+            color: "#D9D9D9",
+          }}
+        >
+          ไม่มีโพสต์
+        </div>
+      )}
       </div>
     </div>
   );

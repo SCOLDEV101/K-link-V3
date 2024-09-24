@@ -5,13 +5,15 @@ import { FaRegBookmark } from "react-icons/fa";
 import { FiUser ,FiInfo ,FiLogIn} from "react-icons/fi";
 import { IoMdNotificationsOutline , IoMdNotificationsOff } from "react-icons/io";
 import { TbWorld } from "react-icons/tb";
-import { config } from "../constants/function";
+import config from "../constants/function";
 import Swal from 'sweetalert2'
 import "../index.css";
 
 
 function SettingPage() {
   const navigate = useNavigate();
+  const [profileData, setprofileData] = useState({});
+  const headersCookie = config.Headers().headers;
   const [notifyStatus, setNotifyStatus] = useState(true);
   const settingMenus = [
     {
@@ -58,16 +60,18 @@ function SettingPage() {
 
   const Logout = async () => {
     const result = await Swal.fire({
-      title: "ต้องการออกจากระบบหรือไม่?",
+      title: "ต้องการออกจากระบบ?",
       showCancelButton: true,
-      confirmButtonText: "ตกลง",
+      reverseButtons: true, 
+      confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
       customClass: {
         container: 'swal-container',
         title: 'swal-title',
         popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
+        cancelButton: 'swal-cancel-button' ,
+        confirmButton: 'swal-confirmRed-button', 
+   
       }
     });
   if (result.isConfirmed) {
@@ -99,8 +103,66 @@ function SettingPage() {
     }
   }
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      await axios
+        .get(config.SERVER_PATH + `/api/user/aboutMyAccount`, {
+          headers: headersCookie,
+        })
+        .then((res) => {
+          if (res.data.status === "ok") {
+            console.log(res.data.data);
+            setprofileData(res.data.data);
+          }
+        })
+        .catch((err) => {
+          throw err.response.data;
+        });
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  };
+
   return (
     <>
+    {profileData && 
+          <div
+        className="card m-3 mb-3"
+        style={{
+          top: "100px",
+          height:"70%",
+          background: "#FFFFFF",
+          borderRadius: "15px",
+          boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+          zIndex: 1,
+        }}
+        onClick={() => navigate("/aboutmyaccount")}
+      >
+          <div className="d-flex align-items-center">
+          <img
+              src={
+                profileData.profileImage
+                  ? `${config.SERVER_PATH}/uploaded/profileImage/${profileData.profileImage}`
+                  : "./Empty-Profile-Image.svg"
+              }
+              alt=""
+              className="mx-4 my-2"
+              style={{ borderRadius: "50%", width: "70px", height: "70px" ,boxShadow: "inset 0px 4px 4px rgba(0, 0, 0, 0.25)"}}
+            /> 
+
+            <div className="d-flex flex-column my-2">
+              <p className="m-0 fw-bold" style={{fontSize:"20px"}}>{profileData.username}</p>
+              <p className="m-0"  style={{fontSize:"16px"}}>{profileData.fullname}</p>
+              <p className="m-0 fw-bold mb-3" style={{fontSize:"12px"}}>{profileData.telephone}</p>
+            </div>
+
+          </div>
+      </div>
+        }
       <div
         className="card pt-3 m-3 mb-3"
         style={{

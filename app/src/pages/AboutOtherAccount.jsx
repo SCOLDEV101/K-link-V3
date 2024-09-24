@@ -58,6 +58,7 @@ const AboutOtherAccount = () => {
     const result = await Swal.fire({
       title: "ยืนยันลบสมาชิกหรือไม่?",
       showCancelButton: true,
+      reverseButtons: true,
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
