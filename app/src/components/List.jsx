@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import config from "../constants/function";
 import Swal from "sweetalert2";
-import { Document, Page, pdfjs } from "react-pdf";
 import { IoGameController } from "react-icons/io5";
 import { FiBookOpen, FiFileText, FiFlag , FiInfo } from "react-icons/fi";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa";
@@ -215,6 +214,14 @@ function List({ listItem, fetchData }) {
     }
   };
 
+  const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+
+  const getDayOfWeek = (dateString) => {
+    const date = new Date(dateString);
+    return date.getDay(); 
+  };
+
+
   return (
     <div onClick={handleClose} style={{ position: "relative" }}>
       <style>{`
@@ -244,6 +251,7 @@ function List({ listItem, fetchData }) {
               selectedItemId === item.hID ? "highlighted zIndex-9999" : ""
             }`}
           >
+            <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item?.leader}</p>
             <div className="card p-3 border-0 mx-3" style={{ borderRadius: "15px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", }}>
               <div
                 onClick={(e) => {
@@ -506,6 +514,29 @@ function List({ listItem, fetchData }) {
                       {day}
                     </p>
                   ))}
+                </div>
+                  }
+                { item.type ==="tutoring" &&
+                <div className="d-flex gap-2 my-2">
+                  {daysThai.map((day, index) => {
+                    const currentDayIndex = getDayOfWeek(item.date); 
+                    return(
+                    <p
+                      key={index}
+                      className="m-0"
+                      style={{
+                        paddingLeft:".35rem",
+                        paddingRight:".35rem", 
+                        color: index === currentDayIndex ? "#000000" : "#E7E7E7",
+                        fontSize: "14px",
+                        border:index === currentDayIndex ? `1px solid ${dayColors[day]}` : "1px solid #E7E7E7" ,
+                        borderRadius:
+                          day === "อา." || day === "พฤ." ? "15px" : "50%",
+                      }}
+                    >
+                      {day}
+                    </p>
+                      )})}
                 </div>
                   }
               </div>
