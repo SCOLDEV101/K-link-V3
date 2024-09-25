@@ -10,18 +10,18 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        // $allUser = UserModel::select('id')->get();
+        $allUser = UserModel::select('id')->get();
         
-        // $count = count($allUser);
-        // $randomIndex = rand(0,$count-1);
-        // $id = $allUser[$randomIndex]->id;
-        $id = $request->input('id');
+        $count = count($allUser);
+        $randomIndex = rand(0,$count-1);
+        $id = $allUser[$randomIndex]->id;
+        // $id = $request->input('id');
         $user = UserModel::where('id', $id)->first();
         if (empty($user)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'cannot find user.',
-            ], 200);
+            ], 404);
         }
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;

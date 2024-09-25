@@ -640,9 +640,10 @@ class TutoringController extends Controller
             ->first();
         if ($groupDb) {
             if (
-                GroupModel::where('groupID', $tID)->delete() && TutoringModel::where('id', $tID)->delete()
-                && MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
-                && GroupDayModel::where('groupID', $groupDb->id)->delete()
+                MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
+                && GroupDayModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $tID)->delete()
+                && TutoringModel::where('id', $tID)->delete()
+                
             ) {
                 foreach ($groupDb->member as $member) {
                     NotifyModel::create([
