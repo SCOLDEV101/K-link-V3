@@ -99,10 +99,10 @@ function List({ listItem, fetchData }) {
     return `${day} ${month} ${year}`;
   }
 
-  function formatTime(timeStr) {
-    const [hour, minute] = timeStr.split(":");
-    return `${hour}.${minute} น.`;
-  }
+  // function formatTime(timeStr) {
+  //   const [hour, minute] = timeStr.split(":");
+  //   return `${hour}.${minute} น.`;
+  // }
 
   const dayColors = {
     "จ.": "#FFB600",
@@ -466,13 +466,13 @@ function List({ listItem, fetchData }) {
                   {item.type === "library" ? (
                     "PDF | 120 หน้า"
                   ) : item.type === "hobby" ? (
-                    formatTime(item.actTime)
+                    item.actTime
                   ) : item.type === "tutoring" ? (
                     formatDateThai(item.date) +
                     " | " +
-                    formatTime(item.Starttime) +
+                    item.Starttime +
                     " - " +
-                    formatTime(item.Endtime)
+                    item.Endtime
                   ) : (
                     <></>
                   )}
@@ -493,7 +493,7 @@ function List({ listItem, fetchData }) {
                 )} 
                 { item.weekDate &&
                 <div className="d-flex gap-2 my-2">
-                  {item.weekDate.split(",").map((day, index) => (
+                  {item.weekDate.map((day, index) => (
                     <p
                       key={index}
                       className="m-0"
@@ -516,7 +516,7 @@ function List({ listItem, fetchData }) {
               <div className="d-flex flex-row gap-2 flex-nowrap overflow-auto mx-auto" style={{borderRadius:"40px" , scrollbarWidth:"none" , width:"75vw" , maxWidth:"450px"}}> 
               <div className="py-1 d-flex flex-row flex-nowrap overflow-auto" style={{ textAlign: "left" , borderRadius:"40px" , scrollbarWidth:"none"}}>
                     {item.tag &&
-                      item.tag.split(",").map((tag, i) => (
+                      item.tag.map((tag, i) => (
                         <p
                           key={i}
                           className="my-0 py-1 px-3 text-nowrap d-flex flex-row justify-content-center align-items-center"

@@ -32,7 +32,7 @@ function AboutMyAccount() {
   const fetchData = async () => {
     try {
       await axios
-        .get(config.SERVER_PATH + `/api/user/aboutMyAccount`, {
+        .get(config.SERVER_PATH + `/api/user/memberInfo`, {
           headers: headersCookie,
         })
         .then((res) => {
