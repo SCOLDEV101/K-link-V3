@@ -5,6 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\HobbyModel;
+use App\Models\GroupModel;
+use App\Models\TagModel;
+use App\Models\GroupTagModel;
+use App\Models\DayModel;
+use Illuminate\Support\Facades\DB;
 
 class HobbySeeder extends Seeder
 {
@@ -13,9 +18,6 @@ class HobbySeeder extends Seeder
      */
     public function run(): void
     {
-        HobbyModel::factory()->count(30)->create(); 
-        // foreach (HobbyModel::$HobbyStaticGroup as $HobbyStaticGroupData) {
-        //     HobbyModel::create($HobbyStaticGroupData);
-        // }
+        HobbyModel::factory(20)->create();
     }
 }

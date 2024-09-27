@@ -14,11 +14,37 @@ class NotificationResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
-            'notiType'=>$this->notiType,
-            'sender'=>$this->sendBy->username ?? 'Unknown',
-            'group'=>$this->hobby->activityName ?? null,
-            'createdAt'=>$this->created_at
-        ];
+        if($this->group && $this->group->type == 'hobby') {
+            return [
+                'notiType'=>$this->type,
+                'sender'=>$this->sender->username,
+                'group'=>$this->group->hobby->name ?? null,
+                'hID'=>$this->group->hobby->id,
+                'createdAt'=>$this->created_at
+            ];
+        }else if($this->group && $this->group->type == 'tutoring') {
+            return [
+                'notiType'=>$this->type,
+                'sender'=>$this->sender->username,
+                'group'=>$this->group->tutoring->name ?? null,
+                'tid'=>$this->group->tutoring->id,
+                'createdAt'=>$this->created_at
+            ];
+        }else if($this->group && $this->group->type == 'library') {
+            return [
+                'notiType'=>$this->type,
+                'sender'=>$this->sender->username,
+                'group'=>$this->group->library->name ?? null,
+                'lID'=>$this->group->library->id,
+                'createdAt'=>$this->created_at
+            ];
+        }else {
+            return [
+                'notiType'=>$this->type,
+                'sender'=>$this->sender->username,
+                'group'=>null,
+                'createdAt'=>$this->created_at
+            ];
+        }
     }
 }

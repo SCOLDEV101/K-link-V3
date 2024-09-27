@@ -1,20 +1,34 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Jobs\pdfToImage;
 
-use App\Models\HobbyModel;
+use App\Jobs\pdfToImage;
+use Illuminate\Support\Facades\Log;
+use Spatie\PdfToImage\Pdf;
+use Exception;
+
 use App\Models\LibraryModel;
 use App\Http\Resources\LibraryResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\GroupResource;
+use App\Models\GroupModel;
+use App\Models\TagModel;
+use App\Models\GroupTagModel;
+use App\Models\NotifyModel;
+use App\Models\GroupDayModel;
+use App\Models\imageOrFileModel;
 
 class LibraryController extends Controller
 {
-    function showAllLibrary(Request $request)
+    function showAllGroup(Request $request)
     {
-        $libraryDb = HobbyModel::where('type', 'library')->orderBy('updated_at', 'DESC')->with('leaderGroup')->paginate($request->get('perPage', 8));
+        $libraryDb = GroupModel::where([['type', 'library'], ['status', 1]])
+            ->with(['library', 'bookmark', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupDay', 'groupTag'])
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -22,13 +36,13 @@ class LibraryController extends Controller
             ], 404);
         }
 
-        $data = LibraryResource::collection($libraryDb);
-        if (sizeof($data) != 0) {
+        $data = GroupResource::collection($libraryDb);
+        if (sizeof($data) > 0) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'fetch all lbrary success.',
                 'data' => $data,
-                'nextPageUrl' => $libraryDb->nextPageUrl()
+                // 'nextPageUrl' => $libraryDb->nextPageUrl()
             ], 200);
         } else {
             return response()->json([
@@ -38,8 +52,9 @@ class LibraryController extends Controller
         };
     }
 
-    function createLibrary(Request $request)
+    function createGroup(Request $request)
     {
+        //----------- Validation
         $validationRules = LibraryModel::$validator[0];
         $validationMessages = LibraryModel::$validator[1];
         $allowedfileExtension = ['pdf'];
@@ -52,73 +67,112 @@ class LibraryController extends Controller
                 'message' => $validator->errors()
             ], 400);
         }
+        //--------------------
 
-        $uID = auth()->user()->uID;
-        $path = public_path('uploaded/Library/');
-        if ($request->hasFile('files')) {
-            $file = $request->file('files');
-            $extension = $file->getClientOriginalExtension();
-            if (in_array($extension, $allowedfileExtension)) {
+        try {
+            //------------- file manage path
+            $uID = auth()->user()->id;
+            $path = public_path('uploaded/Library/');
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $extension = $file->getClientOriginalExtension();
                 $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
                 $filename = $name . '.' . $extension;
                 $file->move($path, $filename);
-            } else if (!in_array($extension, $allowedfileExtension)) {
+
+                $imageOrFile = imageOrFileModel::create([
+                    'name' => $filename
+                ]);
+                dispatch(new PdfToImage($filename));
+            }
+            //-----------------------
+
+            //------------ group part
+            $libraryModel = new LibraryModel();
+            $lID = $libraryModel->idGeneration();
+            $groupDb = GroupModel::create([
+                'groupID' => $lID,
+                'type' => 'library',
+                'status' => (int)1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            //------------------------
+
+            //----------------------tag part
+            $tags = explode(',', $request->input('tag'));
+            foreach ($tags as $tag) {
+                if ($tag == '' || $tag == null) {
+                    $tag = "library";
+                }
+                $querytag = TagModel::where('name', $tag)->first();
+                if ($querytag) {
+                    //Tag id if tag is exists
+                    $tagID = $querytag->id;
+                } else {
+                    $tagDb = TagModel::create([
+                        'name' => $tag
+                    ]);
+                    //Tag id if tag is new
+                    $tagID = $tagDb->id;
+                }
+                GroupTagModel::create([
+                    'tagID' => $tagID,
+                    'groupID' => $groupDb->id,
+                    'type' => 'library',
+                ]);
+            }
+            //-----------------------
+
+            //----------- library part
+            $libraryDb = LibraryModel::create([
+                'id' => $lID,
+                'imageOrFileID' => $imageOrFile->id,
+                'facultyID' => $request->input('facultyID'),
+                'majorID' => $request->input('majorID') ?? null,
+                'departmentID' => $request->input('departmentID') ?? null,
+                'name' => $request->input('activityName'),
+                'detail' => $request->input('detail') ?? null,
+                'memberMax' => null,
+                'createdBy' => $uID,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            //-----------------------
+
+            //--- if save success
+            if ($groupDb && $libraryDb) {
                 return response()->json([
-                    'status' => 'failed',
-                    'message' => 'file type should be pdf only.'
+                    'status' => 'ok',
+                    'message' => 'create library success.'
                 ], 200);
             }
-        }
+            //-----------------------
 
-        $hobbyModel = new HobbyModel();
-        $libraryModel = new LibraryModel();
-        $hID = $hobbyModel->idGeneration();
-        $libraryID = $libraryModel->idGeneration();
-        $data = [
-            'hID' => $hID,
-            'type' => 'library',
-            'image' => $filename,
-            'tag' => $request->input('tag') ?? 'library',
-            'member' => $uID,
-            'memberMax' =>  null,
-            'activityName' => $request->input('activityName'),
-            'leader' => $uID,
-            'weekDate' =>  $request->input('weekDate') ?? '-',
-            'actTime' =>  '00:00:00',
-            'location' =>  $request->input('location') ?? '-',
-            'detail' =>  $request->input('detail') ?? null,
-            'createdBy' => $uID,
-            'created_at' => now(),
-            'updated_at' => now()
-        ];
-        $librarydata = [
-            'libraryID' => $libraryID,
-            'hID' => $hID,
-            'filepath' => $filename,
-            'facultyID' => $request->input('facultyID'),
-            'created_at' => now(),
-            'updated_at' => now()
-        ];
-
-        if (HobbyModel::insert($data) && LibraryModel::insert($librarydata)) {
-            dispatch(new PdfToImage($filename));
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'create library success.'
-            ], 200);
-        } else {
+        } catch (Exception $e) {
+            //save error message to laravel log
+            Log::error('Error occurred: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            //delete group with all its related model when failed
+            File::delete(public_path('uploaded/Library/') . $request->file('file')->getClientOriginalName());
+            imageOrFileModel::where('id', $imageOrFile->id)->delete();
+            GroupTagModel::where('groupID', $groupDb->id)->delete();
+            LibraryModel::where('id', $lID)->delete();
+            GroupModel::where('groupID', $lID)->delete();
             return response()->json([
                 'status' => 'failed',
-                'message' => 'failed to create library success.'
+                'message' => 'failed to create library.'
             ], 500);
-        };
+        }
     }
 
-    function updateLibrary(Request $request, $hID)
+    function updateGroup(Request $request, $lID)
     {
+        //----------------- validation part
         $validationRules = LibraryModel::$updatevalidator[0];
         $validationMessages = LibraryModel::$updatevalidator[1];
-        $allowedfileExtension = ['pdf'];
 
         $validator = Validator::make($request->all(), $validationRules, $validationMessages);
         if ($validator->fails()) {
@@ -127,47 +181,63 @@ class LibraryController extends Controller
                 'message' => $validator->errors()
             ], 400);
         }
+        //------------------------
 
-        $hobbyDb = HobbyModel::where('hID', $hID)->first();
-        $libraryDb = LibraryModel::where('hID', $hID)->first();
-        $path = public_path('uploaded/Library/');
-        if ($request->file('files')) {
-            $oldFiles = explode(',', $libraryDb->filepath);
-            $file = $request->file('files');
+        //-------- เรียกใช้ relation
+        $groupDb = GroupModel::where([['groupID', $lID], ['type', 'library'], ['status', 1]])
+            ->with(['library', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupTag'])
+            ->orderBy('updated_at', 'DESC')
+            ->first();
+
+        if (empty($groupDb)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Group not found.'
+            ], 404);
+        }
+        //------------------------
+
+        //----- file manage
+        if ($request->hasFile('file')) {
+            $path = public_path('uploaded/Library/');
+            //delete old file
+
+            $file = $request->file('file');
             $extension = $file->getClientOriginalExtension();
-            if (in_array($extension, $allowedfileExtension)) {
-                $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
-                // var_dump($name);
-                foreach ($oldFiles as $oldFile) {
-                    $intersect = array_search($name, $oldFiles);
-                    if (!$intersect) {
-                        File::delete($path . $oldFile);
-                        unset($oldFiles[$intersect]);
-                    } else continue;
+            if ($groupDb->library->imageOrFile !== $request->input('file')) {
+                if (!empty($groupDb->library->imageOrFile) && File::exists($path . $groupDb->library->imageOrFile->name)) {
+                    imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->delete(); // ลบ data on dby
+                    File::delete($path . $groupDb->library->imageOrFile->name);
                 }
+                //save new file
+                $path = public_path('uploaded/Library/');
+                $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
                 $filename = $name . '.' . $extension;
                 $file->move($path, $filename);
-                array_push($oldFiles, $filename);
-                // var_dump($oldFiles);
+
+                $imageOrFileDb = imageOrFileModel::create([
+                    'name' => $filename
+                ]);
+                dispatch(new PdfToImage($filename));
             }
-
-            $filepath = implode(',', $oldFiles);
+        } else {
+            $imageOrFileDb = imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->first();
         }
+        //--------------------------
 
-        $data = [
-            'tag' => $request->input('tag') ?? $hobbyDb->tag,
-            'activityName' => $request->input('activityName') ?? $hobbyDb->activityName,
-            'detail' =>  $request->input('detail') ?? null,
+        //-------------------------- library part
+        $libraryDb = LibraryModel::where('id', $lID)->update([
+            'facultyID' => $request->input('facultyID') ?? $groupDb->library->facultyID ?? null,
+            'majorID' => $request->input('majorID') ?? $groupDb->library->majorID ?? null,
+            'departmentID' => $request->input('departmentID') ?? $groupDb->library->departmentID ?? null,
+            'imageOrFileID' => $imageOrFileDb->id ?? $groupDb->library->imageOrFileID ?? imageOrFileModel::where('name', 'group-default.jpg')->first()->id,
+            'name' => $request->input('activityName') ?? $groupDb->library->name,
+            'detail' => $request->input('detail') ?? null,
             'updated_at' => now()
-        ];
-        $librarydata = [
-            'facultyID' => $request->input('facultyID'),
-            'filepath' => $filepath,
-            'updated_at' => now()
-        ];
+        ]);
+        //--------------------------
 
-        if (HobbyModel::where('hID', $hID)->update($data) && LibraryModel::where('hID', $hID)->update($librarydata)) {
-            dispatch(new PdfToImage($filename));
+        if ($libraryDb) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'update library success.'
@@ -180,21 +250,26 @@ class LibraryController extends Controller
         };
     }
 
-    function aboutLibrary($hID)
+    function aboutGroup($lID)
     {
-        $libraryDb = HobbyModel::with('library', 'leaderGroup')->where('hID', $hID)->first();
-        if (!$libraryDb) {
+        $groupDb = GroupModel::where([['groupID', $lID], ['type', 'library'], ['status', 1]])
+            ->with(['library', 'library.leaderGroup', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupTag'])
+            ->first();
+
+        if (!$groupDb) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'library not found.',
             ], 404);
         }
-        $encodedname = $libraryDb->library->filepath;
+
+        //--- get original filename
+        $encodedname = $groupDb->library->imageOrFile->name;
         $arrayname = preg_split('/-|[.s]/', $encodedname, -1, PREG_SPLIT_NO_EMPTY);
         $intersect = array_search('-', $arrayname) + 1;
         $fileoriginname = $arrayname[$intersect];
-        $filePath = public_path('uploaded\\Library\\'.$libraryDb->library->filepath);
-        echo($filePath);
+        $filePath = public_path('uploaded\\Library\\' . $groupDb->library->imageOrFile->name);
+
         if (file_exists($filePath)) {
             $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
             $filesize = filesize($filePath);
@@ -202,23 +277,33 @@ class LibraryController extends Controller
             $originname = 'not found';
             $filesize = 0;
         }
-        $filename = basename($libraryDb->library->filepath,'.pdf');
-        $imagePath = public_path('\\pdfImage\\'.$filename);
-        if(File::exists($imagePath)){
-            echo($imagePath);
+        //-------------------------
+
+        //-------- get pages image
+        $filename = basename($groupDb->library->imageOrFile->name, '.pdf');
+        $imagePath = public_path('\\pdfImage\\' . $filename);
+        $allImagePath = [];
+        if (File::exists($imagePath)) {
             $allpages = File::files($imagePath);
             $totalpages = count($allpages);
-            $imagePath='/pdfImage/'.$filename.'/output_page_';     
-        }
-        else $imagePath = null;
+            for ($index = 1; $index <= $totalpages; $index++) {
+                $imagePath = '/pdfImage/' . $filename . '/output_page_' . $index . '.jpg';
+                array_push($allImagePath, $imagePath);
+            }
+        } else $imagePath = null;
+        //---------------------------
+
         $data = [
-            'subject' => $libraryDb->subject ?? 'none',
+            'faculty' => $groupDb->library->faculty->nameEN ?? 'none',
+            'major' => $groupDb->library->major->nameEN ?? 'none',
+            'department' => $groupDb->library->department->name ?? 'none',
             'filename' => $originname,
-            'owner' => $libraryDb->leaderGroup->username,
-            'uploadDate' => $libraryDb->created_at,
+            'owner' => $groupDb->library->leaderGroup->username,
+            'uploadDate' => $groupDb->created_at,
             'filesizeInBytes' => $filesize,
-            '$totalpages'=>$totalpages ?? '0',
-            'filepageurl' => $imagePath,
+            'totalpages' => $totalpages ?? '0',
+            'filepageurl' => $allImagePath,
+            'downloadlink' => '/uploaded/Library/' . $groupDb->library->imageOrFile->name,
         ];
         return response()->json([
             'status' => 'ok',
@@ -227,63 +312,51 @@ class LibraryController extends Controller
         ], 200);
     }
 
-    function deleteLibrary($hID)
+    function deleteGroup($lID)
     {
-        $hobbyDb = HobbyModel::where('hID', $hID)->first();
-        $libraryDb = LibraryModel::where('hID', $hID)->first();
-        $path = public_path('uploaded/Library/');
-        if ($hobbyDb->leader == auth()->user()->uID) {
-            $hobbyDeleted = HobbyModel::where('hID', $hID)->delete();
-            $libraryDeleted = LibraryModel::where('hID', $hID)->delete();
-            File::delete($path . $libraryDb->filespath);
-            if ($hobbyDeleted && $libraryDeleted) {
+        $groupDb = GroupModel::where([['groupID', $lID], ['type', 'library'], ['status', 1]])
+            ->with(['library', 'library.imageOrFile', 'groupDay', 'groupTag'])
+            ->orderBy('updated_at', 'DESC')
+            ->first();
+        if ($groupDb) {
+            if(File::exists(public_path('uploaded\\Library\\') . $groupDb->library->imageOrFile->name)){
+                File::delete(public_path('uploaded\\Library\\') . $groupDb->library->imageOrFile->name);
+            }
+            if(File::exists(public_path('pdfImage\\') . basename($groupDb->library->imageOrFile->name,'.pdf'))){
+                File::deleteDirectory(public_path('pdfImage\\') . basename($groupDb->library->imageOrFile->name,'.pdf'));
+            }
+            if (
+                GroupTagModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $lID)->delete()
+                && LibraryModel::where('id', $lID)->delete()
+            ) {
+                NotifyModel::create([
+                    'receiverID' => $groupDb->library->createdBy,
+                    'senderID' => $groupDb->library->createdBy,
+                    'postID' => $groupDb->id,
+                    'type' => "delete",
+                ]);
                 return response()->json([
                     'status' => 'ok',
-                    'message' => 'delete library success.',
+                    'message' => 'delete group success.',
                 ], 200);
             } else {
                 return response()->json([
                     'status' => 'failed',
-                    'message' => 'failed to delete library.',
+                    'message' => 'failed to delete group.',
                 ], 500);
             }
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'unauthorize.',
-            ], 401);
-        }
-    }
-
-    function libraryurldownload($hID)
-    {
-        $libraryDb = HobbyModel::with('library', 'leaderGroup')->where('hID', $hID)->first();
-        if (!$libraryDb) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'library not found.',
+                'message' => 'group not found.',
             ], 404);
         }
-        $path = 'uploaded/Library/';
-        $filePath = $path . $libraryDb->library->filepath;
-        if (!file_exists($filePath)) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'file not found.',
-            ], 500);
-        }
-        $signedUrl = '/' . $filePath;
-        return response()->json([
-            'status' => 'failed',
-            'message' => 'get link success.',
-            'url' => $signedUrl
-        ], 404);
     }
 
     function libraryshared(Request $request)
     {
         $hID = $request->input('hID');
-        $libraryDb = HobbyModel::with('library')->where('hID', $hID)->first();
+        $libraryDb = LibraryModel::with('library')->where('hID', $hID)->first();
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -309,7 +382,7 @@ class LibraryController extends Controller
     function librarydownloaded(Request $request)
     {
         $hID = $request->input('hID');
-        $libraryDb = HobbyModel::with('library', 'leaderGroup')->where('hID', $hID)->first();
+        $libraryDb = LibraryModel::with('library', 'leaderGroup')->where('hID', $hID)->first();
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',

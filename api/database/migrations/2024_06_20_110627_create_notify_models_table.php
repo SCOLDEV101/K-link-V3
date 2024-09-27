@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notify_models', function (Blueprint $table) {
-            $table->id('notifyID');
-            $table->string('notiType');
-            $table->string('id');
-            $table->integer('sender');
-            $table->integer('receiver');
+            $table->id();
+            $table->integer('receiverID');
+            $table->integer('senderID');
+            $table->string('postID');
+            $table->string('type');
             $table->timestamps();
         });
     }

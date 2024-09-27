@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\UserModel;
-use setasign\Fpdi\Fpdi;
 
 class BookmarkResource extends JsonResource
 {
@@ -16,111 +15,170 @@ class BookmarkResource extends JsonResource
      */
     public function toArray($request)
     {
-        $isMember = false;
-        $isRequest = false;
-        $isCreator = false;
-        $isLeader = false;
-        $isHobby = false;
-        $isLibrary = false;
-        $isTutoring = false;
-        $bookmark = false;
+        $uID = auth()->user()->id;
 
-        $status = 'join';
-        $members = explode(',', $this->member);
-        $requestmembers = explode(',', $this->memberRequest);
-        $uID = auth()->user()->uID;
-        if(in_array($uID,$members)&&($this->type!='library')){
-            $status = 'member';
-            $isMember = true;
+        $days = [];
+        if ($this->group->groupDay) {
+            foreach ($this->group->groupDay as $day) {
+                $days[] = $day->name ?? null;
+            }
         }
-
-        if(in_array($uID,$requestmembers)){
-            $status = 'request';
-            $isRequest = true;
-        }
-        else if(count($members) >= $this->memberMax && $this->memberMax != null){
-            $status = 'full';
-        }
-
-        if($uID == $this->leader){
-            $isLeader = true;
-        }
-
-        if($uID == $this->createdBy){
-            $isCreator = true;
-        }
-
-        if($this->type == 'library'){
-            $isLibrary = true;
-        }
-
-        if($this->type == 'hobby'){
-            $isHobby = true;
-        }
-
-        if($this->type == 'tutoring'){
-            $isTutoring = true;
-        }
-
-        $bookmarkObject = UserModel::bookmark();
-        if ($bookmarkObject->contains('hID', $this->hID)) {
-            $bookmark = true;
-        }
-
-        if($this->type == 'library') {
-            $path = public_path('uploaded/Library/');
-            $files = [];
-            $pdf = new Fpdi();
-            foreach (explode(',', $this->library->filespath) as $file) {
-                $filePath = $path . $file;
-                if (!file_exists($filePath)) {
-                    continue;
-                }
-                $pdf->setSourceFile($filePath);
-                $templatepdf = $pdf->importPage(1);
-                $pdf->AddPage();
-                $pdf->useTemplate($templatepdf);
-                $pdfContent = $pdf->Output('S');
-                $base64Pdf = base64_encode($pdfContent);
-                array_push($files, $base64Pdf);
+    
+        $tags = [];
+        if ($this->group->groupTag) {
+            foreach ($this->group->groupTag as $tag) {
+                $tags[] = $tag->name ?? null;  
             }
         }
 
-        if($bookmark){
+        $status = 'join'; //กลุ่มไม่เต็ม เข้าได้
+        $members = [];
+        if ($this->group->member) {
+            foreach ($this->group->member as $eachMember) {
+                $members[] = $eachMember->id;  
+            }
+        }
+
+        $requests = [];
+        if ($this->group->request) {
+            foreach ($this->group->request as $eachRequest) {
+                $requests[] = $eachRequest->id;  
+            }
+        }
+
+        if (in_array($uID, $members)) {
+            $status = 'member'; //เป็นสมาชิกแล้ว
+            $isMember = true;
+        }
+
+        if (in_array($uID, $requests)) {
+            $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
+            $isRequest = true;
+        }
+
+        $bookmarkArray = [];
+        if ($this->group->bookmark) {
+            foreach ($this->group->bookmark as $eachBookmark) {
+                $bookmarkArray[] = $eachBookmark->id;  
+            }
+        }
+
+        if (in_array($uID, $bookmarkArray)) {
+            $bookmark = true; //บันทึกกลุ่มแล้ว
+        } 
+
+        if ($this->group->type == 'hobby') {
+
+            if (count($members) >= $this->group->hobby->memberMax && $this->group->hobby->memberMax != null && !in_array($uID, $members)) {
+                $status = 'full'; //กลุ่มเต็ม
+            }
+
+            if ($this->group->hobby->leaderGroup->id == $uID) {
+                $role = 'leader';
+                $isLeader = true;
+            } else {
+                $role = 'normal';
+            };
+    
             return [
-                'hID'=>$this->hID,
-                'type'=>$this->type,
-                'image'=>$this->image,
-                'tag'=>$this->tag,
-                'member'=>count($members),
-                'memberMax'=>$this->memberMax,
-                'activityName'=>$this->activityName,
-                'leader'=>$this->leaderGroup->username ?? 'Unknown',
-                'teachBy'=>$this->leaderGroup->username ?? 'Unknown',
-                'weekDate'=>$this->weekDate,
-                'actTime'=>$this->actTime,
-                'location'=>$this->location,
-                'detail'=>$this->detail,
-                'userstatus'=>$status,
-                'tutoringFaculty' =>$this->tutoring->faculty->facultyNameTH ?? null,
-                'tutoringMajor' =>$this->tutoring->major->majorNameTH ?? null,
-                'date'=>$this->tutoring->date ?? null,
-                'Starttime'=>$this->tutoring->startTime ?? null,
-                'Endtime'=>$this->tutoring->endTime ?? null,
-                'img'=>$files ?? null,
-                'libraryFaculty'=>$this->library->faculty->facultyNameTH ?? null,
+                'hID' => $this->group->hobby->id,
+                'type' => $this->group->type,
+                'image' => $this->group->hobby->imageOrFile->name ?? 'group-default.jpg',
+                'tag' => $tags,
+                'member' => count($members),
+                'request' => count($requests),
+                'memberMax' => $this->group->hobby->memberMax,
+                'activityName' => $this->group->hobby->name,
+                'leader' => $this->group->hobby->leaderGroup->username,
+                'weekDate' => $days,
+                'startTime' => $this->group->hobby->startTime,
+                'endTime' => $this->group->hobby->endTime,
+                'location' => $this->group->hobby->location,
+                'detail' => $this->group->hobby->detail,
+                'userstatus' => $status,
+                'role' => $role,
+                'bookmark' => $bookmark ?? false,
                 'FilterTag' => array(
-                    'isMember'=>$isMember ?? null,
-                    'isRequest'=>$isRequest ?? null,
-                    'isLeader'=>$isLeader ?? null,
-                    'isCreator'=>$isCreator ?? null,
-                    'isLibrary'=>$isLibrary ?? null,
-                    'isHobby'=>$isHobby ?? null,
-                    'isTutoring'=>$isTutoring ?? null,
+                    'isMember'=>$isMember ?? false,
+                    'isRequest'=>$isRequest ?? false,
+                    'isLeader'=>$isLeader ?? false,
+                    'isHobby'=> true,
                 ),
-                'bookmark' => $bookmark ?? null,
             ];
         }
-        return null;
+        
+        if ($this->group->type == 'tutoring') {
+
+            if (count($members) >= $this->group->tutoring->memberMax && $this->group->tutoring->memberMax != null && !in_array($uID, $members)) {
+                $status = 'full'; //กลุ่มเต็ม
+            }
+            
+            if ($this->group->tutoring->leaderGroup->id == $uID) {
+                $role = 'leader';
+                $isLeader = true;
+            } else {
+                $role = 'normal';
+            };
+
+            return [
+                'tID' => $this->group->tutoring->id,
+                'type' => $this->group->type,
+                'tag' => $tags,
+                'image' => $this->group->tutoring->imageOrFile->name ?? 'group-default.jpg',
+                'member' => count($members),
+                'request' => count($requests),
+                'memberMax' => $this->group->tutoring->memberMax,
+                'activityName' => $this->group->tutoring->name,
+                'leader' => $this->group->tutoring->leaderGroup->username,
+                'location' => $this->group->tutoring->location,
+                'detail' => $this->group->tutoring->detail,
+                'Starttime' => $this->group->tutoring->startTime,
+                'Endtime' => $this->group->tutoring->endTime,
+                'date' => $this->group->tutoring->date,
+                'faculty' => $this->group->tutoring->faculty->nameTH ?? $this->group->tutoring->major->nameEN ?? 'Unknown',
+                'major' => $this->group->tutoring->major->nameTH ?? $this->group->tutoring->major->nameEN ?? 'Unknown',
+                'section' => $this->group->tutoring->department->name ?? 'Unknown',
+                'role' => $role,
+                'userstatus' => $status,
+                'bookmark' => $bookmark ?? false,
+                'FilterTag' => array(
+                    'isMember'=>$isMember ?? false,
+                    'isRequest'=>$isRequest ?? false,
+                    'isLeader'=>$isLeader ?? false,
+                    'isTutoring'=> true,
+                ),
+            ];
+        }
+        if ($this->group->type == 'library') {
+
+            if ($this->group->library->leaderGroup->id == $uID) {
+                $role = 'leader';
+                $isLeader = true;
+            } else {
+                $role = 'normal';
+            };
+
+            return [
+                'lID' => $this->group->library->id,
+                'type' => $this->group->type,
+                'img' => $this->group->library->imageOrFile->name ?? 'group-default.jpg',
+                'tag' => $tags,
+                'activityName' => $this->group->library->name,
+                'faculty' => $this->group->library->faculty->nameTH ?? $this->group->library->major->nameEN ?? 'Unknown',
+                'major' => $this->group->library->major->nameTH ?? $this->group->library->major->nameEN ?? 'Unknown',
+                'section' => $this->group->library->department->name ?? 'Unknown',
+                'leader' => $this->group->library->leaderGroup->username,
+                'detail' => $this->group->library->detail,
+                'downloaded' => $this->group->library->download,
+                'role' => $role,
+                'bookmark' => $bookmark ?? false,
+                'FilterTag' => array(
+                    'isMember'=>$isMember ?? false,
+                    'isRequest'=>$isRequest ?? false,
+                    'isLeader'=>$isLeader ?? false,
+                    'isLibrary'=>$isLibrary ?? true,
+                ),
+            ];
+        }
     }
 }

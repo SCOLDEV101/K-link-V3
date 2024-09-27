@@ -34,7 +34,7 @@ class pdfToImage implements ShouldQueue
      *
      * @return void
      */
-    
+
     public function handle(): void
     {
         try {
@@ -47,15 +47,13 @@ class pdfToImage implements ShouldQueue
             $imagePath = public_path('pdfImage\\' . $justname);
             if (!File::exists($imagePath)) {
                 File::makeDirectory($imagePath, 0755, true, true);
-
-                // Get page number
-                $totalPages = $pdf->getNumberOfPages();
-                for ($page = 1; $page <= $totalPages; $page++) {
-                    // Save the first page of the PDF as an image
-                    $pdf->setPage($page)->saveImage($imagePath . "\\output_page_$page.jpg");
-                }
             }
-            else true;
+            // Get page number
+            $totalPages = $pdf->getNumberOfPages();
+            for ($page = 1; $page <= $totalPages; $page++) {
+                // Save the first page of the PDF as an image
+                $pdf->setPage($page)->saveImage($imagePath . "\\output_page_$page.jpg");
+            }
         } catch (Exception $error) {
             Log::error('Error occurred: ' . $error->getMessage(), [
                 'exception' => $error

@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('faculty_models', function (Blueprint $table) {
-            $table->id('facultyID');
-            $table->string('facultyNameTH')->nullable();
-            $table->string('facultyNameEN')->nullable();
+            $table->id('id');
+            $table->string('nameTH')->nullable();
+            $table->string('nameEN')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
         });

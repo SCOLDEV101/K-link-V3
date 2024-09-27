@@ -27,15 +27,16 @@ class UserModelFactory extends Factory
         $index = $this->faker->unique()->numberBetween(1, 999);
         $prefix = $this->faker->randomElement(['นาย', 'นางสาว']);
         return [
-            'uID' => '65010' . str_pad($index, 3, '0', STR_PAD_LEFT),
+            'id' => '65010' . str_pad($index, 3, '0', STR_PAD_LEFT),
+            'facultyID' => str_pad(($index % 16) + 1, 2, '0', STR_PAD_LEFT),
+            'majorID' => $this->faker->numberBetween(1,71),//'ENG' . str_pad(($index % 15) + 1, 2, '0', STR_PAD_LEFT),
+            'imageOrFileID' => $this->faker->randomElement([6,7,8]),
+            'roleID' => '100',
             'username' => 'IoT-' . $index,
             'fullname' => $prefix . 'ไอโอที-' . $index,
             'aboutMe' => 'ขอกราบสวัสดีทุกๆคน! ข้าพเจ้าคือ IoT หมายเลข ' . $index,
             'telephone' => '065-065' . str_pad($index, 4, '0', STR_PAD_LEFT),
             'email' => '65010' . str_pad($index, 3, '0', STR_PAD_LEFT) . '@kmitl.ac.th',
-            'facultyID' => str_pad(($index % 16) + 1, 2, '0', STR_PAD_LEFT),
-            'majorID' => 'ENG' . str_pad(($index % 15) + 1, 2, '0', STR_PAD_LEFT),
-            'roleID' => '100',
             'created_at' => now(),
             'updated_at' => now(),
         ];

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('section_models', function (Blueprint $table) {
             $table->id('sectionID');
             $table->string('majorID');
-            $table->foreign('majorID')->references('majorID')->on('major_models');
+            // $table->foreign('majorID')->references('id')->on('major_models');
             $table->string('sectionName')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();

@@ -21,12 +21,15 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FacultySeeder::class,
             MajorSeeder::class,
+            DepartmentSeeder::class,
+            DaySeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
             HobbySeeder::class,
-            SectionSeeder::class,
             TutoringSeeder::class,
-            LibrarySeeder::class
+            LibrarySeeder::class,
+            BookmarkSeeder::class,
+            ImageOrFileModelSeeder::class,
         ]);
     }
 }

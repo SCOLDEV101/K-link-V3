@@ -36,14 +36,14 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
             Route::get('member/{hID}', 'memberGroup');
             Route::get('aboutGroup/{hID}', 'aboutGroup');
             Route::get('showAllGroup', 'showAllGroup');
-            Route::post('create', 'createGroup');
+            Route::post('createGroup', 'createGroup');
 
             Route::group(['middleware' => 'leaderCheck'], function () {
-                Route::post('update/{hID}', 'updateGroup');
+                Route::post('updateGroup/{hID}', 'updateGroup');
                 Route::get('requestMember/{hID}', 'checkRequestGroup');
                 Route::post('rejectOrAcceptMember/{hID}', 'rejectOrAcceptRequest');
                 Route::post('kickMember/{hID}/{uID}', 'kickMember');
-                Route::delete('delete/{hID}', 'deleteGroup');
+                Route::delete('deleteGroup/{hID}', 'deleteGroup');
                 Route::post('changeLeader/{hID}/{uID}', 'changeLeaderGroup');
             });
         });
@@ -54,8 +54,8 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
             Route::get('viewBookmark', 'viewBookmark');
             Route::post('addOrDeleteBookmark/{id}', 'addOrDeleteBookmark');
             Route::post('report', 'report');
-            Route::get('memberInfo/{uID}', 'memberInfo');
-            Route::get('aboutMyAccount', 'showAboutUser');
+            Route::get('memberInfo/{uID?}', 'memberInfo');
+            // Route::get('aboutMyAccount', 'showAboutUser');
             Route::post('updateMyAccount', 'updateAboutUser');
             Route::get('invitePage/{id}', 'invitePage');
             Route::post('inviteFriend/{hID}', 'inviteFriend');
@@ -68,15 +68,15 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
 
     Route::prefix('library')->group(function() {
         Route::controller(LibraryController::class)->group(function(){
-            Route::get('showAllLibrary','showAllLibrary');
-            Route::post('createLibrary','createLibrary');
-            Route::get('aboutLibrary/{hID}','aboutLibrary');
+            Route::get('showAllGroup','showAllGroup');
+            Route::post('createGroup','createGroup');
+            Route::get('aboutGroup/{hID}','aboutGroup');
             Route::get('librarydownload/{hID}','libraryurldownload');
             Route::post('sharedlibrary','libraryshared');
             Route::post('downloadedlibrary','librarydownloaded');
             Route::group(['middleware' => 'leaderCheck'], function() {
-                Route::post('updateLibrary/{hID}','updateLibrary');
-                Route::delete('delete/{hID}','deleteLibrary');
+                Route::post('updateGroup/{hID}','updateGroup');
+                Route::delete('deleteGroup/{hID}','deleteGroup');
             });
         });
     });
@@ -86,14 +86,14 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
             Route::get('member/{hID}', 'memberGroup');
             Route::get('aboutGroup/{hID}', 'aboutGroup');
             Route::get('showAllGroup', 'showAllGroup');
-            Route::post('create', 'createGroup');
+            Route::post('createGroup', 'createGroup');
 
             Route::group(['middleware' => 'leaderCheck'], function () {
-                Route::post('update/{hID}', 'updateGroup');
+                Route::post('updateGroup/{hID}', 'updateGroup');
                 Route::get('requestMember/{hID}', 'checkRequestGroup');
                 Route::post('rejectOrAcceptMember/{hID}', 'rejectOrAcceptRequest');
                 Route::post('kickMember/{hID}/{uID}', 'kickMember');
-                Route::delete('delete/{hID}', 'deleteGroup');
+                Route::delete('deleteGroup/{hID}', 'deleteGroup');
                 Route::post('changeLeader/{hID}/{uID}', 'changeLeaderGroup');
             });
         });
@@ -103,5 +103,6 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/login', 'login');
+    Route::post('/login', 'login');
     Route::get('/logout', 'logout');
 });

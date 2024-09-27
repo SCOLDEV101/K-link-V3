@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('major_models', function (Blueprint $table) {
-            $table->string('majorID')->primary();
-            $table->unsignedBigInteger('facultyID');
-            $table->foreign('facultyID')->references('facultyID')->on('faculty_models');
-            $table->string('majorNameTH')->nullable();
-            $table->string('majorNameEN')->nullable();
+            $table->id('id');
+            $table->integer('facultyID');
+            // $table->foreign('facultyID')->references('facultyID')->on('faculty_models');
+            $table->string('shortName');
+            $table->string('nameTH')->nullable();
+            $table->string('nameEN')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
         });
