@@ -33,7 +33,7 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
     Route::prefix('hobby')->group(function () {
         Route::controller(HobbyController::class)->group(function () {
             Route::get('kmitl', 'fetchKmitl');
-            Route::get('member/{hID}', 'memberGroup');
+            Route::get('memberGroup/{hID}', 'memberGroup');
             Route::get('aboutGroup/{hID}', 'aboutGroup');
             Route::get('showAllGroup', 'showAllGroup');
             Route::post('createGroup', 'createGroup');
@@ -55,8 +55,7 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
             Route::post('addOrDeleteBookmark/{id}', 'addOrDeleteBookmark');
             Route::post('report', 'report');
             Route::get('memberInfo/{uID?}', 'memberInfo');
-            // Route::get('aboutMyAccount', 'showAboutUser');
-            Route::post('updateMyAccount', 'updateAboutUser');
+            Route::post('updateAccount', 'updateAboutUser');
             Route::get('invitePage/{id}', 'invitePage');
             Route::post('inviteFriend/{hID}', 'inviteFriend');
             Route::post('joinGroup/{id}', 'requestToGroup');
@@ -72,8 +71,8 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
             Route::post('createGroup','createGroup');
             Route::get('aboutGroup/{hID}','aboutGroup');
             Route::get('librarydownload/{hID}','libraryurldownload');
-            Route::post('sharedlibrary','libraryshared');
-            Route::post('downloadedlibrary','librarydownloaded');
+            Route::post('shared','libraryshared');
+            Route::post('downloaded','librarydownloaded');
             Route::group(['middleware' => 'leaderCheck'], function() {
                 Route::post('updateGroup/{hID}','updateGroup');
                 Route::delete('deleteGroup/{hID}','deleteGroup');
@@ -83,7 +82,7 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
 
     Route::prefix('tutoring')->group(function () {
         Route::controller(TutoringController::class)->group(function () {
-            Route::get('member/{hID}', 'memberGroup');
+            Route::get('memberGroup/{hID}', 'memberGroup');
             Route::get('aboutGroup/{hID}', 'aboutGroup');
             Route::get('showAllGroup', 'showAllGroup');
             Route::post('createGroup', 'createGroup');

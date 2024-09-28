@@ -78,7 +78,7 @@ class GroupResource extends JsonResource
             };
     
             return [
-                'hID' => $this->hobby->id,
+                'groupID' => $this->hobby->id,
                 'type' => $this->type,
                 'image' => $this->hobby->imageOrFile->name ?? 'group-default.jpg',
                 'tag' => $tags,
@@ -99,7 +99,6 @@ class GroupResource extends JsonResource
         }
         
         if ($this->type == 'tutoring') {
-
             if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
@@ -111,7 +110,7 @@ class GroupResource extends JsonResource
             };
 
             return [
-                'tID' => $this->tutoring->id,
+                'groupID' => $this->tutoring->id,
                 'type' => $this->type,
                 'tag' => $tags,
                 'image' => $this->tutoring->imageOrFile->name ?? 'group-default.jpg',
@@ -142,7 +141,7 @@ class GroupResource extends JsonResource
             };
 
             return [
-                'lID' => $this->library->id,
+                'groupID' => $this->library->id,
                 'type' => $this->type,
                 'img' => '/pdfImage/'.basename($this->library->imageOrFile->name,'.pdf').'/output_page_1.jpg',
                 'tag' => $tags,

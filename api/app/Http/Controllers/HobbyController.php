@@ -10,10 +10,11 @@ use App\Models\HobbyModel;
 use App\Models\UserModel;
 use App\Models\FacultyModel;
 use App\Models\MajorModel;
-use App\Models\SectionModel;
 use App\Models\NotifyModel;
 use Illuminate\Support\Facades\File;
 use App\Http\Resources\GroupResource;
+use App\Http\Resources\HobbyAboutGroupResource;
+use App\Models\DepartmentModel;
 use App\Models\MemberModel;
 use App\Models\GroupModel;
 use Illuminate\Support\Facades\Validator;
@@ -24,7 +25,7 @@ use App\Models\imageOrFileModel;
 
 class HobbyController extends Controller
 {
-    function showAllGroup(Request $request)
+    function showAllGroup(Request $request) // done
     { //done
         //เรียก relatoin มาใช้
         $hobbyDb = GroupModel::where('type', 'hobby')
@@ -66,19 +67,19 @@ class HobbyController extends Controller
 
     function fetchKmitl()
     { //ยังไม่แตะ
-        $faculty = FacultyModel::select('facultyID', 'facultyNameTH', 'facultyNameEN')->where('status', '=', '1')->get();
-        $section = SectionModel::select('majorID', 'sectionID', 'sectionName')->where('status', '=', '1')->get();
-        $major = MajorModel::select('facultyID', 'majorID', 'majorNameTH', 'majorNameEN')->where('status', '=', '1')->get();
+        $faculty = FacultyModel::where('status', '=', '1')->get();
+        $department = DepartmentModel::where('status', '=', '1')->get();
+        $major = MajorModel::where('status', '=', '1')->get();
         return response()->json([
             'status' => 'ok',
             'message' => 'fetched faculty, section, major',
             'faculty' => $faculty,
-            'section' => $section,
+            'section' => $department,
             'major' => $major
         ], 500);
     }
 
-    function createGroup(Request $request)
+    function createGroup(Request $request) // done
     { //done (waitng for checking)
         // validation
         $validationRules = HobbyModel::$validator[0];
@@ -95,7 +96,7 @@ class HobbyController extends Controller
         // ------------
         try {
             $uID = auth()->user()->id;
-            $path = public_path('uploaded/hobbyImage/');
+            $path = public_path('uploaded\\hobbyImage\\');
             if ($request->file('image') != null) {
                 $file = $request->file('image');
                 $extension = $file->getClientOriginalExtension();
@@ -126,16 +127,15 @@ class HobbyController extends Controller
                 'name' => $request->input('activityName'),
                 'memberMax' => $request->input('memberMax') ?? null,
                 'location' =>  $request->input('location'),
-                'detail' =>  $request->input('detail'),
-                'startTime' =>  $request->input('actTime') ?? date_format(now(), "H:i:s"),
-                'endTime' => $request->input('actTime') ?? date("H:i:s", mktime(0, 0, 0)),
+                'detail' =>  $request->input('detail') ?? null,
+                'startTime' =>  $request->input('startTime') ?? date_format(now(), "H:i:s"),
+                'endTime' => $request->input('endTime') ?? date("H:i:s", mktime(0, 0, 0)),
                 'leader' => $uID,
                 'createdBy' => $uID,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
             //-----------
-
 
             //----------------------groupday part
             if ($request->has('weekDate')) {
@@ -210,11 +210,17 @@ class HobbyController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             //delete group with all its related model when failed   
-            GroupTagModel::where('groupID', $groupDb->id)->delete();
-            GroupDayModel::where('groupID', $groupDb->id)->delete();
-            MemberModel::where('groupID', $groupDb->id)->delete();
-            HobbyModel::where('id', $hID)->delete();
-            GroupModel::where('groupID', $hID)->delete();
+            if (GroupTagModel::where('groupID', $groupDb->id)->first()) {
+                GroupTagModel::where('groupID', $groupDb->id)->delete();
+            } else if (GroupDayModel::where('groupID', $groupDb->id)->first()) {
+                GroupDayModel::where('groupID', $groupDb->id)->delete();
+            } else if (MemberModel::where('groupID', $groupDb->id)->first()) {
+                MemberModel::where('groupID', $groupDb->id)->delete();
+            } else if (HobbyModel::where('id', $hID)->first()) {
+                HobbyModel::where('id', $hID)->delete();
+            } else if (GroupModel::where('groupID', $hID)->first()) {
+                GroupModel::where('groupID', $hID)->delete();
+            }
             return response()->json([
                 'status' => 'failed',
                 'message' => 'failed to create hobby group.'
@@ -222,7 +228,7 @@ class HobbyController extends Controller
         }
     }
 
-    function updateGroup(Request $request, $hID)
+    function updateGroup(Request $request, $hID) // done
     { //done (waitng for checking) **noti to everymem
         $uID = auth()->user()->id;
 
@@ -240,7 +246,7 @@ class HobbyController extends Controller
             ], 400);
         }
 
-        //เรียกใช้ relation
+        //----- เรียกใช้ relation
         $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
@@ -252,73 +258,78 @@ class HobbyController extends Controller
                 'message' => 'Group not found.'
             ], 404);
         }
+        //---------------
 
-        //ถ้ามีการใส่รูป
+        //----------------- ถ้ามีการใส่รูป
+        $path = public_path('uploaded\\hobbyImage\\');
+        $defaultFiles = [];
+        foreach (imageOrFileModel::$groupImageStatic as $file) {
+            array_push($defaultFiles, $file['name']);
+        }
         if (!empty($request->file('image'))) {
-            //เมื่อไม่ใช่รูปเก่า หรือรูป default (มีการอัพรูปใหม่)
-            if ($groupDb->hobby->imageOrFile->name !== 'group-default.jpg' && $groupDb->hobby->imageOrFile->name !== $request->file('image')) {
-                //path รูปภาพ
-                $path = public_path('uploaded/hobbyImage/');
-                File::delete($path . $groupDb->hobby->imageOrFile->name); //ลบรูปเก่าทิ้ง
-                imageOrFileModel::where('id',$groupDb->hobby->imageOrFile->id)->delete(); // ลบ data on db
-
-                $file = $request->file('image');
-                $extension = $file->getClientOriginalExtension();
-                $filename = 'hobby-' . now()->format('YmdHis') . '.' . $extension;
-                $move = $file->move($path, $filename);
-
-                if (!$move) {
-                    return response()->json([
-                        'status' => 'failed',
-                        'message' => 'Can not upload image.'
-                    ], 500);
-                } else {
-                    $imageOrFileDb = imageOrFileModel::create([
-                        'name' => $filename
-                    ]);
+            $file = $request->file('image');
+            if (imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->first() && !in_array(strval($groupDb->hobby->imageOrFile->name), $defaultFiles)) {
+                if (File::exists($path . $groupDb->hobby->imageOrFile->name)) {
+                    File::delete($path . $groupDb->hobby->imageOrFile->name); //ลบไฟล์รูปเก่าทิ้ง
+                }
+                imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
+            }
+            $extension = $file->getClientOriginalExtension();
+            $filename = 'hobby-' . now()->format('YmdHis') . '.' . $extension;
+            $move = $file->move($path, $filename);
+            if (!$move) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Can not upload image.'
+                ], 500);
+            } else {
+                $imageOrFileDb = imageOrFileModel::create([
+                    'name' => $filename
+                ]);
+            }
+        } else if (empty($request->file('image')) && !$request->has('deleteimage')) {
+            $imageOrFileDb = imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->first();
+        } else if ($request->has('deleteimage')) {
+            if (imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->first() && !in_array(strval($groupDb->hobby->imageOrFile->name), $defaultFiles)) {
+                imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
+                if (File::exists($path . $groupDb->hobby->imageOrFile->name)) {
+                    File::delete($path . $groupDb->hobby->imageOrFile->name); //ลบไฟล์รูปเก่าทิ้ง
                 }
             }
         }
-        else {
-            $imageOrFileDb = imageOrFileModel::where('id',$groupDb->hobby->imageOrFile->id)->first();
-        }
+        //----------------------
 
-        //แตก array นั้นลบ tag เก่าทั้งหมดออก แต่จะไม่ลบตัว static
-        //จากนั้นสร้างใหม่ใน GroupTagModel โดยเก็บ tag ใหม่ใน TagModel
         //----------------------tag part
+        if ($request->input('tag')) {
+            $deleteOldTag = GroupTagModel::where('groupID', $groupDb->id)->where('type', 'hobby')->delete();
+            $newTags = explode(',', $request->input('tag'));
 
-        //-----------------------
+            foreach ($newTags as $tag) {
+                if ($tag != '' || $tag != null) {
+                    $tag = ['hobby'];
+                }
+                $querytag = TagModel::where('name', $tag)->first();
+                if (empty($querytag)) {
+                    $newTag = TagModel::create([
+                        'name' => $tag
+                    ]);
+                    $tagGroup = $newTag->id;
+                } else {
+                    $tagGroup = $querytag->id;
+                }
 
-        $newTags = explode(',', $request->input('tag'));
-        $deleteOldTag = GroupTagModel::where('groupID', $groupDb->id)->where('type', 'hobby')->delete();
-
-        if ($request->input('tag') == '' || $request->input('tag') == null) {
-            $newTags = ['hobby'];
-        }
-
-        foreach ($newTags as $tag) {
-            $tagInTagModel = TagModel::where('name', $tag)->first();
-            if (empty($tagInTagModel) && $tag != '') {
-                $newTag = TagModel::create([
-                    'name' => $tag
+                GroupTagModel::create([
+                    'groupID' => $groupDb->id,
+                    'tagID' => $tagGroup,
+                    'type' => 'hobby'
                 ]);
-                $tagGroup = $newTag->id;
-            } else {
-                $tagGroup = $tagInTagModel->id;
-            }
-
-            GroupTagModel::create([
-                'groupID' => $groupDb->id,
-                'tagID' => $tagGroup,
-                'type' => 'hobby'
-            ]);
-        };
+            };
+        }
         // -----------------------------
 
-        // แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน
-        $deleteOldDay = GroupDayModel::where('groupID', $groupDb->id)->delete();
-
+        //-------- แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน
         if ($request->has('weekDate')) {
+            $deleteOldDay = GroupDayModel::where('groupID', $groupDb->id)->delete();
             $days = explode(',', $request->input('weekDate'));
             //loop through array of days input and save to Db
             foreach ($days as $day) {
@@ -326,24 +337,27 @@ class HobbyController extends Controller
                 if ($day == '' || $day == null) {
                     $day = (int)date('w');
                 }
+                if(empty(GroupDayModel::where([['groupID', $groupDb->id],['dayID',$day]])->first())){
+                    GroupDayModel::create([
+                        'dayID' => (int)$day,
+                        'groupID' => $groupDb->id,
+                    ]);
+                }
+            }
+        } else {
+            $day = (int)date('w');
+            if(empty(GroupDayModel::where([['groupID', $groupDb->id],['dayID',$day]])->first())){
                 GroupDayModel::create([
                     'dayID' => (int)$day,
                     'groupID' => $groupDb->id,
                 ]);
             }
-        } else {
-            $day = (int)date('w');
-            GroupDayModel::create([
-                'dayID' => (int)$day,
-                'groupID' => $groupDb->id,
-            ]);
         }
+        //------------------------------
 
-        //------------------------------ 
-
-        //------------------------------ รูปใหม่                  รูปเก่า                             รูปดั้งเดิม
+        //---------- hobby data
         $data = [
-            'imageOrFileID' => $imageOrFileDb->id ?? $groupDb->hobby->imageOrFile->id ?? imageOrFileModel::where('name','group-default.jpg')->first()->id,
+            'imageOrFileID' => $imageOrFileDb->id ??  imageOrFileModel::where('name', 'group-default.jpg')->first()->id,
             'name' => $request->input('activityName') ?? $groupDb->hobby->activityName,
             'memberMax' => $request->input('memberMax') ?? $groupDb->hobby->memberMax,
             'location' => $request->input('location') ?? $groupDb->hobby->location,
@@ -353,7 +367,7 @@ class HobbyController extends Controller
             'updated_at' => now()
         ];
 
-        // อัพเดตข้อมูลทั่วไปของ hobby และส่งแจ้งเตือนอัพเดต
+        //-------- อัพเดตข้อมูลของ tutoring และส่งแจ้งเตือนอัพเดต
         if (HobbyModel::where('id', $hID)->update($data)) {
             foreach ($groupDb->member as $member) {
                 if ($member->id != $uID) {
@@ -688,7 +702,6 @@ class HobbyController extends Controller
                 MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
                 && GroupDayModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $hID)->delete()
                 && HobbyModel::where('id', $hID)->delete()
-                
             ) {
                 foreach ($groupDb->member as $member) {
                     NotifyModel::create([

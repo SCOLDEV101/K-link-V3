@@ -97,7 +97,7 @@ class LibraryModel extends Model
 
     public function idGeneration(){
         $prefix = 'l-' . now()->format('Ymd') . '-';
-        $lastGroup = GroupModel::where([['type', "library"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('id', 'desc')->first();
+        $lastGroup = GroupModel::where([['type', "library"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
 
         if (!$lastGroup) {
             $number = '001';

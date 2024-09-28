@@ -97,7 +97,9 @@ class HobbyModel extends Model
             'tag' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙,\s]+$/u'],
             'startTime' => ['required', 'regex:/^[0-9:]+$/u'],
             'endTime' => ['required', 'regex:/^[0-9:]+$/u'],
-            'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/', 'max:99'],
+            'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+            'deleteimage'=> ['sometimes','nullable'],
+            'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
             'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
             'weekDate' => ['nullable', 'regex:/^[0-9,]+$/u'],
             'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
@@ -105,10 +107,13 @@ class HobbyModel extends Model
         [
             'activityName.required' => 'hobby name required',
             'activityName.regex' => 'hobby name can only contain letters, numbers and whitespaces',
+            'image.mimes'=>"group image only allow png,jpg,jpeg,gif",
             'tag.regex' => 'tag have invalid characters',
-            'actTime.required' => 'activity timer is required',
+            'startTime.required' => 'activity start time is required',
+            'startTime.regex' => 'start time type invalid',
+            'endTime.required' => 'end time is required',
+            'endTime.regex' => 'end time type invalid',
             'memberMax.regex' => 'max member type invalid',
-            'memberMax.max' => 'max member exceed 99',
             'location.required' => 'location required',
             'location.regex' => 'location can only contain letters, numbers and whitespaces',
             'weekDate.regex' => 'week date type invalid',
@@ -119,7 +124,7 @@ class HobbyModel extends Model
     public function idGeneration()
     {
         $prefix = 'h-' . now()->format('Ymd') . '-';
-        $lastGroup = GroupModel::where([['type', "hobby"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('id', 'desc')->first();
+        $lastGroup = GroupModel::where([['type', "hobby"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
         if (!$lastGroup) {
             $number = '001';
         } else {

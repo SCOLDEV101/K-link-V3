@@ -232,7 +232,6 @@ class UserController extends Controller
 
     function updateAboutUser(Request $request)
     { // done (north) *check
-
         $validationRules = UserModel::$validator[0];
         $validationMessages = UserModel::$validator[1];
 
@@ -246,43 +245,44 @@ class UserController extends Controller
         }
 
         $uID = auth()->user()->id;
-        $userDb = UserModel::where('id', $uID)->first();
-        $path = public_path('uploaded/profileImage/');
-
-        if (!empty($userDb->imageOrFileID)) {
-            // echo ('have imageOrFileID/');
-            $imageOrFileDb = imageOrFileModel::where('id', $userDb->imageOrFileID)->first();
-        } else {
-            // echo ('not have imageOrFileID/');
-            $imageOrFileDb = new imageOrFileModel;
-            $imageOrFileDb->id = null;
-            $imageOrFileDb->name = null;
-        };
-
-        if ($userDb->imageOrFileID != null && $imageOrFileDb->name != $request->input('profileImage')) {
-            // echo ("delete image/");
-            imageOrFileModel::where('id', $userDb->imageOrFileID)->delete();
-            File::delete($path . $imageOrFileDb->name);
-            $imageOrFileDb->id = null;
-        };
-
-        if ($request->file('profileImage')) {
-            // echo ("new image/");
-            $file = $request->file('profileImage');
+        $userDb = UserModel::where('id', $uID)->with('imageOrFile')->first();
+        $path = public_path('uploaded\\profileImage\\');
+        $defaultFiles = [];
+        foreach (imageOrFileModel::$profileImageStatic as $file){
+            array_push($defaultFiles, $file['name']);
+        }
+        if (!empty($request->file('image'))) {
+            if (imageOrFileModel::where('id', $userDb->imageOrFileID)->first() && !in_array(strval($userDb->imageOrFile->name),$defaultFiles)) {
+                imageOrFileModel::where('id', $userDb->imageOrFileID)->delete();
+                if (File::exists(($path . $userDb->imageOrFile->name))) {
+                    File::delete($path . $userDb->imageOrFile->name);
+                }
+            }
+            $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
             $filename = 'profile-' . date('YmdHi') . rand(0, 99) . '.' . $extension;
             $file->move($path, $filename);
-            $imageOrFileDb->name = $filename;
-            $imageOrFileDb->save();
+            $imageOrFileDb = imageOrFileModel::create([
+                "name" => $filename
+            ]);
+        } else if (empty($request->file('image')) && !empty($request->input('image')) && $request->input('image') == $userDb->imageOrFile->name) {
+            $imageOrFileDb = imageOrFileModel::where('id', $userDb->imageOrFileID)->first();
         } else {
-            $filename = null;
+            if (imageOrFileModel::where('id', $userDb->imageOrFileID)->first() && !in_array(strval($userDb->imageOrFile->name),$defaultFiles)) {
+                imageOrFileModel::where('id', $userDb->imageOrFileID)->delete();
+                if (File::exists(($path . $userDb->imageOrFile->name))) {
+                    File::delete($path . $userDb->imageOrFile->name);
+                }
+            }
+            $imageOrFileDb = imageOrFileModel::where('name', 'profile-default.jpg')->first();
         }
+
         $data = [
             'username' => $request->input('username') ?? $userDb->username,
             'fullname' => $request->input('fullname') ?? $userDb->fullname,
             'aboutMe' => $request->input('aboutMe') ?? $userDb->aboutMe,
             'telephone' => $request->input('telephone') ?? $userDb->telephone,
-            'imageOrFileID' => $imageOrFileDb->id,
+            'imageOrFileID' => $imageOrFileDb->id ?? $userDb->imageOrFile->id,
         ];
 
         if (UserModel::where('id', $uID)->update($data)) {

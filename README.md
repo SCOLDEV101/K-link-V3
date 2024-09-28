@@ -113,4 +113,48 @@ ModelAndFactory { v1.0.0: { - Seeder ใช้ได้ทั้งหมดแ�
                                 - แก้ไขชื่อ route และชื่อฟังก์ชั่นของ Hobby
                                 - เปลี่ยน createGroup , updateGroup , deleteGroup
                 },
+                v1.3.5: {
+                            - HobbyModel
+                                - แก้ validate
+                                    'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+                                    'deleteimage'=> ['sometimes','nullable'],
+                                    'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
+                                - แก้ id generate
+                                    $lastGroup = GroupModel::where([['type', "hobby"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
+                            - LibraryModel
+                                - แก้ id generate
+                                    $lastGroup = GroupModel::where([['type', "library"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
+                            - TutoringModel
+                                -แก้ validate
+                                    'startTime' => ['required','regex:/^[0-9:]+$/u'],
+                                    'endTime' => ['required','regex:/^[0-9:]+$/u'],
+                                    'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+                                    'deleteimage'=> ['sometimes','nullable'],
+                                    'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+                                    'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
+                                - แก้ id generate
+                                    $lastGroup = GroupModel::where([['type', "tutoring"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
+                            - UserModel
+                                -เพิ่ม hasOne imageOrFile
+                                -แก้ validate
+                                    'image'=> ['sometimes','mimes:png,jpg,jpeg,gif']
+                            - HobbyController
+                                - แก้ createGroup
+                                - แก้ updateGroup
+                            - TutoringController
+                                - แก้ createGroup
+                                - แก้ updateGroup
+                            - LibraryController
+                                - แก้ createGroup,updateGroup
+                            - migrate
+                                - ลบ section ออก
+                                - แก้ tutoring
+                                    imageOrFileID -> nullable
+                            - api
+                                - แก้ชื่อ route hobby/member/ -> hobby/memberGroup/
+                                - แก้ชื่อ route user/updateMyAccount -> user/updateAccount
+                                - แก้ชื่อ route library/sharedlibrary -> library/shared
+                                - แก้ชื่อ route library/downloadedlibrary -> library/downloaded
+                                - แก้ชื่อ route tutoring/member/ -> tutoring/memberGroup/
+                }
 }

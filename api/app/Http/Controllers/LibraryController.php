@@ -4,20 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Jobs\pdfToImage;
 use Illuminate\Support\Facades\Log;
-use Spatie\PdfToImage\Pdf;
 use Exception;
-
 use App\Models\LibraryModel;
-use App\Http\Resources\LibraryResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\GroupResource;
 use App\Models\GroupModel;
-use App\Models\TagModel;
 use App\Models\GroupTagModel;
+use App\Models\TagModel;
 use App\Models\NotifyModel;
-use App\Models\GroupDayModel;
 use App\Models\imageOrFileModel;
 
 class LibraryController extends Controller
@@ -27,7 +23,7 @@ class LibraryController extends Controller
         $libraryDb = GroupModel::where([['type', 'library'], ['status', 1]])
             ->with(['library', 'bookmark', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupDay', 'groupTag'])
             ->orderBy('updated_at', 'DESC')
-            ->get();
+            ->paginate(8);
 
         if (!$libraryDb) {
             return response()->json([
@@ -41,7 +37,7 @@ class LibraryController extends Controller
             return response()->json([
                 'status' => 'ok',
                 'message' => 'fetch all lbrary success.',
-                'data' => $data,
+                'listItem' => $data,
                 // 'nextPageUrl' => $libraryDb->nextPageUrl()
             ], 200);
         } else {
@@ -144,7 +140,8 @@ class LibraryController extends Controller
             if ($groupDb && $libraryDb) {
                 return response()->json([
                     'status' => 'ok',
-                    'message' => 'create library success.'
+                    'message' => 'create library success.',
+                    'lID' => $lID,
                 ], 200);
             }
             //-----------------------
@@ -198,8 +195,9 @@ class LibraryController extends Controller
         //------------------------
 
         //----- file manage
+
         if ($request->hasFile('file')) {
-            $path = public_path('uploaded/Library/');
+            $path = public_path('uploaded\\Library\\');
             //delete old file
 
             $file = $request->file('file');
@@ -222,8 +220,10 @@ class LibraryController extends Controller
             }
         } else {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->first();
+
         }
         //--------------------------
+
 
         //-------------------------- library part
         $libraryDb = LibraryModel::where('id', $lID)->update([
@@ -319,11 +319,11 @@ class LibraryController extends Controller
             ->orderBy('updated_at', 'DESC')
             ->first();
         if ($groupDb) {
-            if(File::exists(public_path('uploaded\\Library\\') . $groupDb->library->imageOrFile->name)){
+            if (File::exists(public_path('uploaded\\Library\\') . $groupDb->library->imageOrFile->name)) {
                 File::delete(public_path('uploaded\\Library\\') . $groupDb->library->imageOrFile->name);
             }
-            if(File::exists(public_path('pdfImage\\') . basename($groupDb->library->imageOrFile->name,'.pdf'))){
-                File::deleteDirectory(public_path('pdfImage\\') . basename($groupDb->library->imageOrFile->name,'.pdf'));
+            if (File::exists(public_path('pdfImage\\') . $groupDb->library->imageOrFile->name)) {
+                File::deleteDirectory(public_path('pdfImage\\') . $groupDb->library->imageOrFile->name);
             }
             if (
                 GroupTagModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $lID)->delete()
@@ -355,18 +355,18 @@ class LibraryController extends Controller
 
     function libraryshared(Request $request)
     {
-        $hID = $request->input('hID');
-        $libraryDb = LibraryModel::with('library')->where('hID', $hID)->first();
-        if (!$libraryDb) {
+        $lID = $request->input('groupID');
+        $groupDb = GroupModel::where('groupID', $lID)->with('library')->first();
+        if (!$groupDb) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'library not found.',
             ], 404);
         }
         $librarydata = [
-            'shared' => ($libraryDb->library->shared) + 1,
+            'shared' => ($groupDb->library->shared) + 1,
         ];
-        if (LibraryModel::where('hID', $hID)->update($librarydata)) {
+        if (LibraryModel::where('id', $lID)->update($librarydata)) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'shared library success.'
@@ -381,8 +381,8 @@ class LibraryController extends Controller
 
     function librarydownloaded(Request $request)
     {
-        $hID = $request->input('hID');
-        $libraryDb = LibraryModel::with('library', 'leaderGroup')->where('hID', $hID)->first();
+        $lID = $request->input('groupID');
+        $libraryDb = GroupModel::where('groupID', $lID)->with('library', 'leaderGroup')->first();
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -390,9 +390,10 @@ class LibraryController extends Controller
             ], 404);
         }
         $librarydata = [
-            'downloaded' => ($libraryDb->library->downloaded) + 1,
+            'download' => ($libraryDb->library->download) + 1,
+            'updated_at' => now(),
         ];
-        if (LibraryModel::where('hID', $hID)->update($librarydata)) {
+        if (LibraryModel::where('id', $lID)->update($librarydata)) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'downloaded library success.'
