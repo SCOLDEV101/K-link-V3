@@ -94,5 +94,23 @@ ModelAndFactory { v1.0.0: { - Seeder ใช้ได้ทั้งหมดแ�
                             - model
                                 - BookmarkModel เพิ่ม relation และ fillable groupID,userID
                                 - NotifyModel เพิ่ม relation
-                }
+                },
+                v1.3.4: {   - HobbyController
+                                - แก้ deleteGroup
+                            - TutoringController
+                                - แก้ deleteGroup
+                            - LibraryController
+                                - แก้ createGroup,updateGroup,deleteGroup
+                            - resource 
+                                - GroupResource แก้ส่วน hobby
+                            - job
+                                - แก้ไขโค้ดแปลง pdf to image
+                            - model
+                                - librarymodel แก้การ validate
+                            - api
+                                - แก้ไขชื่อ route และชื่อฟังก์ชั่นของ Library
+                                - แก้ไขชื่อ route และชื่อฟังก์ชั่นของ Tutoring
+                                - แก้ไขชื่อ route และชื่อฟังก์ชั่นของ Hobby
+                                - เปลี่ยน createGroup , updateGroup , deleteGroup
+                },
 }

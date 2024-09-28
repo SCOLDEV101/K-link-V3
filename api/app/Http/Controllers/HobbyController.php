@@ -14,17 +14,13 @@ use App\Models\SectionModel;
 use App\Models\NotifyModel;
 use Illuminate\Support\Facades\File;
 use App\Http\Resources\GroupResource;
-use App\Http\Resources\HobbyAboutGroupResource;
 use App\Models\MemberModel;
 use App\Models\GroupModel;
 use Illuminate\Support\Facades\Validator;
-use App\Models\DayModel;
 use App\Models\GroupDayModel;
 use App\Models\TagModel;
 use App\Models\GroupTagModel;
-use App\Models\RequestModel;
 use App\Models\imageOrFileModel;
-use App\Models\BookmarkModel;
 
 class HobbyController extends Controller
 {
@@ -689,9 +685,10 @@ class HobbyController extends Controller
             ->first();
         if ($groupDb) {
             if (
-                GroupModel::where('groupID', $hID)->delete() && HobbyModel::where('id', $hID)->delete()
-                && MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
-                && GroupDayModel::where('groupID', $groupDb->id)->delete()
+                MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
+                && GroupDayModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $hID)->delete()
+                && HobbyModel::where('id', $hID)->delete()
+                
             ) {
                 foreach ($groupDb->member as $member) {
                     NotifyModel::create([
