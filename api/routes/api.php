@@ -26,8 +26,8 @@ use App\Http\Controllers\TutoringController;
 
 Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
     Route::controller(SearchController::class)->group(function () {
-        Route::post('/searching/search/{type?}', 'searchKeyword');
-        Route::post('/searching/searchInvite/{hID}', 'searchInvite');
+        Route::post('/search/{type?}', 'searchGroup');
+        Route::post('/searchInvite/{groupID}', 'searchInvite');
     });
 
     Route::prefix('hobby')->group(function () {
@@ -52,16 +52,16 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
     Route::prefix('user')->group(function () {
         Route::controller(UserController::class)->group(function () {
             Route::get('viewBookmark', 'viewBookmark');
-            Route::post('addOrDeleteBookmark/{id}', 'addOrDeleteBookmark');
+            Route::post('addOrDeleteBookmark/{groupID}', 'addOrDeleteBookmark');
             Route::post('report', 'report');
             Route::get('memberInfo/{uID?}', 'memberInfo');
             Route::post('updateAccount', 'updateAboutUser');
-            Route::get('invitePage/{id}', 'invitePage');
-            Route::post('inviteFriend/{hID}', 'inviteFriend');
-            Route::post('joinGroup/{id}', 'requestToGroup');
+            Route::get('invitePage/{groupID}', 'invitePage');
+            Route::post('inviteFriend/{groupID}', 'inviteFriend');
+            Route::post('joinGroup/{groupID}', 'requestToGroup');
             Route::get('notification', 'notification');
             Route::get('myPost', 'myPost');
-            Route::delete('leaveGroup/{hID}','leaveGroup');
+            Route::post('leaveGroup/{groupID}','leaveGroup');
         });
     });
 

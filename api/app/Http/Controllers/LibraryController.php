@@ -235,9 +235,12 @@ class LibraryController extends Controller
             'detail' => $request->input('detail') ?? null,
             'updated_at' => now()
         ]);
+        $groupDb = GroupModel::where('groupID',$lID)->update([
+            'updated_at' => now()
+        ]);
         //--------------------------
 
-        if ($libraryDb) {
+        if ($libraryDb && $groupDb) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'update library success.'

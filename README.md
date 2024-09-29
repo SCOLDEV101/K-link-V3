@@ -156,5 +156,47 @@ ModelAndFactory { v1.0.0: { - Seeder ใช้ได้ทั้งหมดแ�
                                 - แก้ชื่อ route library/sharedlibrary -> library/shared
                                 - แก้ชื่อ route library/downloadedlibrary -> library/downloaded
                                 - แก้ชื่อ route tutoring/member/ -> tutoring/memberGroup/
-                }
+            },
+            v1.3.6: {
+                        - HobbyController
+                            แก้ rejectOrAcceptRequest รับ / ไม่รับ คำขอเข้ากลุ่ม
+                            แก้ kickMember เตะสมาชิกออก
+                            แก้ changeLeader เปลี่ยนหัวหน้ากลุ่ม
+                            แก้ requestMember ดูคำขอทั้งหมด
+                            แก้ updateGroup ให้ update เวลา group ด้วย
+                        - TutoringController
+                            แก้ rejectOrAcceptRequest รับ / ไม่รับ คำขอเข้ากลุ่ม
+                            แก้ kickMember เตะสมาชิกออก
+                            แก้ changeLeader เปลี่ยนหัวหน้ากลุ่ม
+                            แก้ requestMember ดูคำขอทั้งหมด
+                            แก้ updateGroup ให้ update เวลา group ด้วย
+                        - LibraryController
+                            แก้ updateGroup ให้ update เวลา group ด้วย
+                        - UserController
+                            แก้ addOrDeleteBookmark เพิ่ม / ลบ บุ๊คมาร์ค
+                            แก้ invitePage เชิญเพื่อน
+                            แก้ requestToGroup สร้างคำขอเข้ากลุ่ม
+                            แก้ notification เรียกดู notify
+                            แก้ leaveGroup
+                        - GroupResource 
+                            แก้โค้ดที่เช็ค memberMax และ userstatus
+                        - GroupModel
+                            เพิ่ม searchValidators กรองคำที่ใช้ได้ใน keyword
+                        - HobbyModel
+                            ลบ searchHobby() ออก ไปใส่ใน SearchController -> searchGroup
+                        - RequestModel
+                            เพิ่ม validator กรอง method และ userID ที่จะใช้ใน rejectOrAcceptRequest หรือ ตอบคำขอเข้าร่วมกลุ่ม
+                        - UserModel
+                            ลบ searchInvite() ออก ไปใส่ใน SearchController -> searchInvite
+                            แก้ faculty , major relation
+                        - api
+                            ในส่วน search
+                            - แก้ชื่อ route /searching/search/{type?} -> /search/{type?}
+                            - แก้ชื่อ route /searching/searchInvite/{hID} -> /searchInvite/{groupID}
+                            ในส่วน user
+                            - แก้ชื่อ route addOrDeleteBookmark/{id} -> addOrDeleteBookmark/{groupID}
+                            - แก้ชื่อ route invitePage/{id} -> invitePage/{groupID}
+                            - แก้ชื่อ route inviteFriend/{hID} -> inviteFriend/{groupID}
+                            - แก้ชื่อ route leaveGroup/{hID} -> leaveGroup/{groupID} และเปลี่ยน method จาก delete เป็น post
+            }
 }

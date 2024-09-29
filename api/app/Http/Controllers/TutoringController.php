@@ -15,12 +15,10 @@ use App\Models\NotifyModel;
 use App\Models\GroupModel;
 use Illuminate\Support\Facades\File;
 use App\Http\Resources\GroupResource;
-use App\Http\Resources\HobbyAboutGroupResource;
-use App\Http\Resources\TutoringGroupResource;
-use App\Models\HobbyModel;
 use Illuminate\Support\Facades\Validator;
 use App\Models\imageOrFileModel;
 use App\Models\TagModel;
+use App\Models\RequestModel;
 
 class TutoringController extends Controller
 {
@@ -29,34 +27,36 @@ class TutoringController extends Controller
             $tutoringDb = GroupModel::where('type', 'tutoring')
                 ->where('status', 1)
                 ->orderBy('updated_at', 'DESC')
-                // ->with('tutoring')
-                // ->with('bookmark')
-                // ->with(['tutoring.imageOrFile'])
-                // ->with(['tutoring.leaderGroup'])
-                // ->with(['tutoring.faculty'])
-                // ->with(['tutoring.major'])
-                // ->with(['tutoring.department'])
-                // ->with('member')
-                // ->with('request')
-                // ->with('groupDay')
-                // ->with('groupTag')
+                ->with([
+                    'tutoring',
+                    'bookmark',
+                    'tutoring.imageOrFile',
+                    'tutoring.leaderGroup',
+                    'tutoring.faculty',
+                    'tutoring.major',
+                    'tutoring.department',
+                    'member',
+                    'request',
+                    'groupDay',
+                    'groupTag'
+                ])
                 ->paginate(8);
 
             if (!$tutoringDb) {
                 return response()->json([
                     'status' => 'failed',
-                    'message' => 'hobby not found.',
+                    'message' => 'group not found.',
                 ], 404);
             }
 
             $data = GroupResource::collection($tutoringDb);
             if (sizeof($data) != 0) {
                 return response()->json([
-                    // 'prevPageUrl' => $tutoringDb->previousPageUrl(),
+                    'prevPageUrl' => $tutoringDb->previousPageUrl(),
                     'status' => 'ok',
                     'message' => 'fetch all tutoring group success.',
                     'listItem' => $data,
-                    // 'nextPageUrl' => $tutoringDb->nextPageUrl()
+                    'nextPageUrl' => $tutoringDb->nextPageUrl()
                 ], 200);
             } else {
                 return response()->json([
@@ -134,7 +134,7 @@ class TutoringController extends Controller
             $tags = explode(',', $request->input('tag'));
             foreach ($tags as $tag) {
                 if ($tag == '' || $tag == null) {
-                    $tag = "hobby";
+                    $tag = "tutoring";
                 }
                 $querytag = TagModel::where('name', $tag)->first();
                 if ($querytag) {
@@ -150,7 +150,7 @@ class TutoringController extends Controller
                 GroupTagModel::create([
                     'tagID' => $tagID,
                     'groupID' => $groupDb->id,
-                    'type' => 'hobby',
+                    'type' => 'tutoring',
                 ]);
             }
             //-----------------------
@@ -261,7 +261,7 @@ class TutoringController extends Controller
         } else if (empty($request->file('image')) && !$request->has('deleteimage')) {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->first();
         } else if ($request->has('deleteimage')) {
-            if (imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->first() && !in_array(strval($groupDb->tutoring->imageOrFile->name), $defaultFiles,true)) {
+            if (imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->first() && !in_array(strval($groupDb->tutoring->imageOrFile->name), $defaultFiles, true)) {
                 imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
                 if (File::exists($path . $groupDb->tutoring->imageOrFile->name)) {
                     File::delete($path . $groupDb->tutoring->imageOrFile->name); //ลบไฟล์รูปเก่าทิ้ง
@@ -316,7 +316,7 @@ class TutoringController extends Controller
         ];
 
         // อัพเดตข้อมูลทั่วไปของ tutoring และส่งแจ้งเตือนอัพเดต
-        if (TutoringModel::where('id', $tID)->update($data)) {
+        if (TutoringModel::where('id', $tID)->update($data) && GroupModel::where('groupID', $tID)->update(['updated_at' => now()])) {
             foreach ($groupDb->member as $member) {
                 if ($member->id != $uID) {
                     NotifyModel::insert([
@@ -408,7 +408,7 @@ class TutoringController extends Controller
             } else {
                 return response()->json([
                     'status' => 'failed',
-                    'message' => 'failed to fetch member hobby group.'
+                    'message' => 'failed to fetch member tutoring group.'
                 ], 500);
             };
         } else {
@@ -449,148 +449,194 @@ class TutoringController extends Controller
         };
     }
 
-    function checkRequestGroup($hID)
+    function checkRequestGroup($tID)
     {
-        $hobbyDb = TutoringModel::where('hID', $hID)->first();
-        $requestUid = $hobbyDb->request();
-        $data = [];
-        foreach ($requestUid as $username) {
-            $data[] = [
-                'username' => $username->username,
-                'uID' => (int)$username->uID,
-            ];
-        }
-        if ($hobbyDb) {
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'fetch all request success.',
-                'data' => $data
-            ], 200);
-        } else {
+        $groupDb = GroupModel::where([['groupID', $tID], ['type', 'tutoring'], ['status', 1]])
+            ->with(['tutoring', 'tutoring.leaderGroup', 'request'])
+            ->orderBy('updated_at', 'DESC')
+            ->first();
+
+        if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'failed to fetch all request.',
-            ], 500);
-        };
+                'message' => 'group not found.',
+            ], 404);
+        }
+
+        if (sizeof($groupDb->request) <= 0) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'no request.',
+            ], 200);
+        }
+
+        // เอา request มาเก็บเป็น array
+        $requestArray = [];
+        foreach ($groupDb->request as $request) {
+            if ($request != null && $request != "") {
+                $requestArray[] = [
+                    'username' => $request->username,
+                    'uID' => (int)$request->id,
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'fetch all request success.',
+            'data' => $requestArray
+        ], 200);
     }
 
     function rejectOrAcceptRequest(Request $request, $hID)
     {
-        $groupDb = TutoringModel::where('hID', $hID)->first();
-        if (!UserModel::where('uID', (int)$request->input('uID'))->first()) {
+        $validationRules = RequestModel::$validator[0];
+        $validationMessages = RequestModel::$validator[1];
+
+        $validator = Validator::make($request->all(), $validationRules, $validationMessages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => $validator->errors()
+            ], 400);
+        }
+
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring']])
+            ->with(['tutoring', 'member', 'request'])
+            ->first();
+
+        if (!UserModel::where('id', (int)$request->input('uID'))->first()) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'user not found.',
             ], 404);
-        }
+        } else $userID = (int)$request->input('uID');
 
-        $requestArray = explode(',', $groupDb->memberRequest);
-        $memberArray = explode(',', $groupDb->member);
-
-        if ($request->input('method') == 'accept') {
-            if (!in_array((int)$request->input('uID'), $requestArray) || $requestArray == '') {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'request not found.',
-                ], 404);
-            } else if (in_array((int)$request->input('uID'), $memberArray)) {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'user already be a member.',
-                ], 400);
-            } else {
-                $action = 'acceptRequest';
-                $memberArray[] = (int)$request->input('uID');
-                $requestArray = array_diff($requestArray, [(int)$request->input('uID')]);
-            }
-        } else if ($request->input('method') == 'reject') {
-            if (!in_array((int)$request->input('uID'), $requestArray) || $requestArray == '') {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'request not found.',
-                ], 404);
-            } else {
-                $action = 'rejectRequest';
-                $requestArray = array_diff($requestArray, [(int)$request->input('uID')]);
-            }
-        } else {
+        if (empty($groupDb->request)) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'method not found.',
+                'message' => 'request not found.',
+            ], 404);
+        } else {
+            $requestArray = $groupDb->request->pluck('id')->toArray();
+        }
+
+        if (empty($groupDb->member)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'members not found.',
+            ]);
+        } else {
+            $memberArray = $groupDb->member->pluck('id')->toArray();
+        }
+
+        if (in_array($userID, $memberArray)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'This user already is a member.',
             ], 400);
         }
 
-        $notifyData = [
-            'notiType' => $action,
-            'id' => (int)$request->input('uID'),
-            'sender' => (int)$groupDb->leader,
-            'receiver' => (int)$request->input('uID'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
+        if (!in_array($userID, $requestArray)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'This user not found in request.',
+            ], 400);
+        }
 
-        $data = [
-            'member' => implode(',', $memberArray),
-            'memberRequest' => implode(',', $requestArray)
-        ];
+        if ($request->input('method') == 'accept') {
+            MemberModel::create([
+                'userID' => $userID,
+                'groupID' => $groupDb->id
+            ]);
+            $requestDb = RequestModel::where([['userID', $userID], ['groupID', $groupDb->id]])->delete();
+            $notifyDb = NotifyModel::create([
+                'receiverID' => $userID,
+                'senderID' => $groupDb->tutoring->leader,
+                'postID' => $groupDb->groupID,
+                'type' => "acceptRequest",
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } else if ($request->input('method') == 'reject') {
+            $requestDb = RequestModel::where([['userID', $userID], ['groupID', $groupDb->id]])->delete();
+            $notifyDb = NotifyModel::create([
+                'receiverID' => $userID,
+                'senderID' => $groupDb->tutoring->leader,
+                'postID' => $groupDb->groupID,
+                'type' => "rejectRequest",
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
-        if (TutoringModel::where('hID', $hID)->update($data)) {
-            $sendRequestNotify = NotifyModel::create($notifyData);
-            if (!$sendRequestNotify) {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'failed to accept request.',
-                ], 500);
-            }
+        if ($requestDb && $notifyDb) {
             return response()->json([
                 'status' => 'ok',
-                'message' => 'update member and request success.',
+                'message' => 'manage member and request success.',
             ], 200);
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'failed to update member and request.',
+                'message' => 'failed to manage member and request.',
             ], 500);
         }
     }
 
-    function kickMember($hID, $uID)
+    function kickMember($tID, $uID)
     {
-        $hobbyDb = TutoringModel::where('hID', $hID)->first();
+        $groupDb = GroupModel::where('groupID', $tID)
+            ->with(['tutoring', 'member', 'tutoring.leaderGroup'])
+            ->first();
 
-        if (!UserModel::where('uID', $uID)->first()) {
+        if (empty($groupDb)) { //เช็คว่ามี group ในระบบมั้ย
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'group not found.',
+            ], 404);
+        }
+
+        if (!Usermodel::where('id', (int)$uID)->first()) { //เช็คว่ามี user ในระบบมั้ย
             return response()->json([
                 'status' => 'failed',
                 'message' => 'user not found.',
             ], 404);
         }
-
-        if ($hobbyDb->leader == $uID) {
+        // การเช็ค leader ว่า uID == leader จริง จะอยู่ที่ middleware checkLeader
+        // หากไม่ใช่ จะส่ง 403
+        if ($groupDb->tutoring->leader == $uID) { //เช็คกรณี leader เตะตัวเอง
             return response()->json([
                 'status' => 'failed',
-                'message' => 'can not kick yourself.',
+                'message' => 'can not kick yourself, You are the leader.',
+            ], 400);
+        }
+
+        if (!MemberModel::where([['groupID', $groupDb->id], ['userID', $uID]])->first()) { //เช็คว่ามี user ในกลุ่มที่จะลบมั้ย
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'this user is not in the group.',
             ], 404);
         }
 
-        $memberArray = explode(',', $hobbyDb->member);
-        if (in_array($uID, $memberArray)) {
-            $memberArray = array_diff($memberArray, [$uID]);
-            if (TutoringModel::where('hID', $hID)->update(['member' => implode(',', $memberArray)])) {
-                return response()->json([
-                    'status' => 'ok',
-                    'message' => 'kick member success.',
-                ], 200);
-            } else {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'failed to kick member.',
-                ], 500);
-            }
+        $deleteUser = MemberModel::where([['groupID', $groupDb->id], ['userID', $uID]])->delete();
+        $notifyDb = NotifyModel::create([ //หากลบสำเร็จ จะส่งแจ้งเตือนไปยังคนที่ถูกลบ
+            'receiverID' => $uID,
+            'senderID' => $groupDb->tutoring->leader,
+            'postID' => $tID,
+            'type' => 'kick'
+        ]);
+
+        if ($deleteUser && $notifyDb) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'kick member success.',
+            ], 200);
         } else {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'member not found.',
-            ], 404);
+                'message' => 'failed to kick member.',
+            ], 500);
         }
     }
 
@@ -634,29 +680,53 @@ class TutoringController extends Controller
 
     function changeLeaderGroup($hID, $uID)
     {
-        $hobbyDb = TutoringModel::where('hID', $hID)->first();
+        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring'], ['status', 1]])
+            ->with(['tutoring', 'member'])
+            ->first();
 
-        if (!UserModel::where('uID', $uID)->first()) {
+        if (empty($groupDb)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'group not found.',
+            ], 404);
+        }
+
+        if (!UserModel::where('id', $uID)->first()) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'user not found.',
             ], 404);
         }
 
-        if (!in_array($uID, explode(',', $hobbyDb->member))) {
+        if (empty($groupDb->member)) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'member not found.',
+                'message' => 'members not found.',
             ], 404);
+        } else {
+            foreach ($groupDb->member as $index => $member) {
+                $memberArray = array($index => $member->pivot->userID);
+            }
         }
 
-        if ($uID == $hobbyDb->leader) {
+        if (!in_array($uID, $memberArray)) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'already be.',
+                'message' => 'this member is not in the group.',
+            ], 400);
+        }
+
+        if ((int)$uID == (int)$groupDb->tutoring->leader) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'this user already is leader.',
             ], 400);
         } else {
-            if ($hobbyDb->where('hID', $hID)->update(['leader' => $uID])) {
+            $tutoringDb = TutoringModel::where([['id', $hID]])->update([
+                'leader' => $uID,
+                'updated_at' => now()
+            ]);
+            if ($tutoringDb) {
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'change leader group success.',

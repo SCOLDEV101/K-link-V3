@@ -65,32 +65,6 @@ class HobbyModel extends Model
     //     return UserModel::whereIn('id', $requestArray)->get();
     // } 
 
-    public function searchHobby($keyword, $type)
-    {
-        if (!empty($keyword)) {
-            $query = HobbyModel::Select('*')
-                ->LeftJoin('user_models', 'hobby_models.leader', '=', 'user_models.id')
-                ->where('hobby_models.type', '=', "$type")
-                ->where(function ($query) use ($keyword, $type) {
-                    return $query->where('hobby_models.status', '=', 1)
-                        ->where('hobby_models.activityName', 'like', "%$keyword%")
-                        ->orwhere('hobby_models.activityName', 'like', "%$keyword")
-                        ->orwhere('hobby_models.activityName', 'like', "$keyword%")
-                        ->orwhere('hobby_models.tag', 'like', "%$keyword%")
-                        ->orwhere('hobby_models.tag', 'like', "%$keyword")
-                        ->orwhere('hobby_models.tag', 'like', "$keyword%")
-                        ->orwhere('user_models.username', 'like', "%$keyword%")
-                        ->orwhere('user_models.username', 'like', "%$keyword")
-                        ->orwhere('user_models.username', 'like', "$keyword%");
-                });
-        } else {
-            $query = HobbyModel::select('*');
-        }
-        $query->orderBy('hobby_models.updated_at', 'DESC');
-        $result = $query->get();
-        return $result;
-    }
-
     public static $validator = [
         [
             'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],

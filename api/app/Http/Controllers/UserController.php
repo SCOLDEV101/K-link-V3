@@ -17,9 +17,6 @@ use App\Http\Resources\UserResource;
 use App\Http\Resources\MyPostResource;
 use App\Http\Resources\NotificationResource;
 use Illuminate\Support\Facades\Validator;
-use App\Models\TutoringModel;
-use App\Models\LibraryModel;
-use App\Http\Resources\GroupResource;
 use App\Http\Resources\BookmarkResource;
 
 class UserController extends Controller
@@ -61,18 +58,17 @@ class UserController extends Controller
         }
     }
 
-    function addOrDeleteBookmark($id)
+    function addOrDeleteBookmark($groupID)
     { // done *check
         $uID = auth()->user()->id;
-        $userDb = UserModel::where('id', $uID)->first();
-        if (empty($userDb)) {
+        if (empty(UserModel::where('id', (int)$uID)->first())) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'unauthorize.'
-            ], 401);
+                'message' => 'user can not be found.'
+            ], 404);
         }
 
-        $selectedGroup = GroupModel::where('groupID', $id)->first();
+        $groupDb = GroupModel::where('groupID', $groupID)->first();
         if (empty($selectedGroup)) {
             return response()->json([
                 'status' => 'failed',
@@ -80,13 +76,14 @@ class UserController extends Controller
             ], 404);
         }
 
-        $checkBookmark = BookmarkModel::where('userID', $uID)->where('groupID', $selectedGroup->id)->first();
-        if (empty($checkBookmark)) {
+        $bookmarkDb = BookmarkModel::where(['userID', $uID],['groupID', $groupDb->id])->first();
+        if (empty($bookmarkDb)) {
             $created = BookmarkModel::create([
                 'userID' => $uID,
-                'groupID' => $selectedGroup->id
+                'groupID' => $selectedGroup->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-
             if ($created) {
                 return response()->json([
                     'status' => 'ok',
@@ -99,7 +96,7 @@ class UserController extends Controller
                 ], 500);
             }
         } else {
-            $deleted = $checkBookmark->delete();
+            $deleted = BookmarkModel::where(['userID', $uID],['groupID', $groupDb->id])->delete();
 
             if ($deleted) {
                 return response()->json([
@@ -298,13 +295,13 @@ class UserController extends Controller
         };
     }
 
-    function invitePage($id)
+    function invitePage($groupID)
     { // done *check
         $uID = auth()->user()->id;
-        $groupDb = GroupModel::where('groupID', $id)
-            ->with('member')
-            ->with('request')
+        $groupDb = GroupModel::where('groupID', $groupID)
+            ->with(['member','request'])
             ->first();
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -349,7 +346,7 @@ class UserController extends Controller
                 $data[] = [
                     'username' => $user->username,
                     'uID' => $user->id,
-                    'status' => null
+                    'status' => 'none'
                 ];
             }
         }
@@ -360,12 +357,12 @@ class UserController extends Controller
         ], 200);
     }
 
-    function inviteFriend(Request $request, $hID)
+    function inviteFriend(Request $request, $groupID)
     { // done *check
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->with('member')
-            ->with('request')
+        $groupDb = GroupModel::where([['groupID', $groupID],['status',1]])
+            ->with(['member','request'])
             ->first();
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -373,6 +370,14 @@ class UserController extends Controller
             ], 404);
         };
 
+        if(!UserModel::where('userID',(int)$request->input('receiver'))->first()){
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'user not found.',
+            ], 404);
+        }
+        else $userID = (int)$request->input('receiver');
+        
         $memberArray = [];
         foreach ($groupDb->member as $eachMember) {
             $memberArray[] = $eachMember->id;
@@ -382,34 +387,33 @@ class UserController extends Controller
             $requestArray[] = $eachRequest->id;
         }
 
-        if (in_array($request->input('receiver'), $memberArray)) {
+        if (in_array($userID, $memberArray)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'already be a member.',
             ], 400);
         }
 
-        if (in_array($request->input('receiver'), $requestArray)) {
+        if (in_array($userID, $requestArray)) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'already be a request.',
+                'message' => 'already have a request.',
             ], 400);
         }
 
-        $data = [
+        $notifyDb = NotifyModel::create([
             'type' => 'invite',
             'postID' => $groupDb->groupID,
             'senderID' => auth()->user()->id,
-            'receiverID' => $request->input('receiver'),
+            'receiverID' => (int)$request->input('receiver'),
             'created_at' => now(),
             'updated_at' => now(),
-        ];
+        ]);
 
-        if (NotifyModel::insert($data)) {
+        if ($notifyDb) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'invite friend success.',
-                'data' => $data
             ], 200);
         } else {
             return response()->json([
@@ -419,13 +423,12 @@ class UserController extends Controller
         }
     }
 
-    function requestToGroup(Request $request, $id)
+    function requestToGroup($groupID)
     { // done *check
-        $groupDb = GroupModel::where('groupID', $id)
-            ->with('member')
-            ->with('request')
-            ->with(['hobby.leaderGroup'])
+        $groupDb = GroupModel::where([['groupID', $groupID],['status',1]])
+            ->with(['member','request','group.hobby.leaderGroup','group.tutoring.leaderGroup'])
             ->first();
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -434,10 +437,12 @@ class UserController extends Controller
         }
 
         $uID = auth()->user()->id;
+
         $memberArray = [];
         foreach ($groupDb->member as $eachMember) {
             $memberArray[] = $eachMember->id;
         }
+
         $requestArray = [];
         foreach ($groupDb->request as $eachRequest) {
             $requestArray[] = $eachRequest->id;
@@ -467,7 +472,7 @@ class UserController extends Controller
                 ], 500);
             }
         } else {
-            $addRequest = RequestModel::insert([
+            $addRequest = RequestModel::create([
                 'userID' => $uID,
                 'groupID' => $groupDb->id,
                 'created_at' => now(),
@@ -475,20 +480,25 @@ class UserController extends Controller
             ]);
 
             if ($addRequest) {
-                $notifyData = [
+                if($groupDb->type == 'hobby'){
+                    $groupLeader = $groupDb->hobby->leaderGroup->id;
+                }
+                else if($groupDb->type == 'tutoring'){
+                    $groupLeader = $groupDb->tutoring->leaderGroup->id;
+                }
+                $notifyDb = NotifyModel::create([
                     'type' => 'request',
                     'postID' => $groupDb->groupID,
                     'senderID' => auth()->user()->id,
-                    'receiverID' => $groupDb->hobby->leaderGroup->id,
+                    'receiverID' => $groupLeader,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ];
-                $sendRequestNotify = NotifyModel::insert($notifyData);
-                if ($sendRequestNotify) {
+                ]);
+
+                if ($notifyDb) {
                     return response()->json([
                         'status' => 'ok',
                         'message' => 'send request success.',
-                        'data' => $notifyData
                     ], 200);
                 } else {
                     return response()->json([
@@ -508,11 +518,7 @@ class UserController extends Controller
     function notification()
     { // done *check
         $notifyDb = NotifyModel::where('receiverID', auth()->user()->id)
-            ->with('receiver')
-            ->with('sender')
-            ->with(['group.hobby.leaderGroup'])
-            ->with(['group.tutoring.leaderGroup'])
-            ->with(['group.library.leaderGroup'])
+            ->with(['receiver','sender','group.hobby.leaderGroup','group.tutoring.leaderGroup','group.library.leaderGroup'])
             ->latest()
             ->get();
 
@@ -525,14 +531,9 @@ class UserController extends Controller
 
     function myPost()
     { // done *check
-        $uID =  auth()->user()->id;
-        $allGroup = GroupModel::with('member')
-            ->with('hobby')
-            ->with('library')
-            ->with('tutoring')
+        $allGroup = GroupModel::with(['member','hobby','library','tutoring'])
             ->orderBy('updated_at', 'DESC')
             ->paginate(8);
-
 
         $data = MyPostResource::collection($allGroup);
 
@@ -545,11 +546,11 @@ class UserController extends Controller
         ], 200);
     }
 
-    function leaveGroup($hID)
+    function leaveGroup($groupID)
     { //done *check
         $uID = auth()->user()->id;
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->with(['hobby.leaderGroup'])
+        $groupDb = GroupModel::where(['groupID', $groupID])
+            ->with(['hobby.leaderGroup','tutoring.leaderGroup'])
             ->first();
 
         if (empty($groupDb)) {
@@ -559,25 +560,35 @@ class UserController extends Controller
             ], 404);
         }
 
-        $deleteMember = MemberModel::where('userID', $uID)
-            ->where('groupID', $groupDb->id)
+        $memberDb = MemberModel::where([['userID', $uID],['groupID', $groupDb->id]])
             ->first();
 
-        if (empty($deleteMember)) {
+        if (empty($memberDb)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'you are not a member in this group.',
             ], 404);
         }
 
-        if ($uID == $groupDb->hobby->leaderGroup->id) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'leader can not leave the group.',
-            ], 400);
+        if($groupDb->type == "hobby"){
+            if ($uID == $groupDb->hobby->leaderGroup->id) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'leader can not leave the group.',
+                ], 400);
+            }
         }
-
-        if ($deleteMember->delete()) {
+        else if($groupDb->type == "tutoring"){
+            if ($uID == $groupDb->tutoring->leaderGroup->id) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'leader can not leave the group.',
+                ], 400);
+            }
+        }
+        
+        $deleteMember = MemberModel::where([['userID', $uID],['groupID', $groupDb->id]])->delete();
+        if ($deleteMember) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'leave group success.',

@@ -112,7 +112,12 @@ class UserModel extends Model
 
     public function faculty(): BelongsTo
     {
-        return $this->belongsTo(FacultyModel::class, 'facultyID', 'id'); //ใช้คอลัมน์ id ของ UserModel เป็นคีย์
+        return $this->belongsTo(FacultyModel::class, 'id', 'facultyID'); //facultyModel key , user key
+    }
+
+    public function major(): BelongsTo
+    {
+        return $this->belongsTo(MajorModel::class, 'id', 'majorID'); // majorModel key , user key
     }
 
     public static function bookmark()
@@ -125,37 +130,6 @@ class UserModel extends Model
     public function imageOrFile(): HasOne
     {
         return $this->hasOne(imageOrFileModel::class, 'id', 'imageOrFileID')->select('id', 'name');
-    }
-
-    public function searchUser($keyword)
-    {
-        if (!empty($keyword)) {
-            $query = UserModel::Select('*')
-                ->leftJoin('faculty_models', 'faculty_models.facultyID', '=', 'user_models.facultyID')
-                ->where(function ($query) use ($keyword) {
-                    return $query->where('user_models.status', '=', 1)
-                        ->where('user_models.id', 'like', "%$keyword%")
-                        ->orwhere('user_models.id', 'like', "%$keyword")
-                        ->orwhere('user_models.id', 'like', "$keyword%")
-                        ->orwhere('user_models.fullname', 'like', "%$keyword%")
-                        ->orwhere('user_models.fullname', 'like', "%$keyword")
-                        ->orwhere('user_models.fullname', 'like', "$keyword%")
-                        ->orwhere('user_models.username', 'like', "%$keyword%")
-                        ->orwhere('user_models.username', 'like', "%$keyword")
-                        ->orwhere('user_models.username', 'like', "$keyword%")
-                        ->orwhere('faculty_models.facultyNameTH', 'like', "%$keyword%")
-                        ->orwhere('faculty_models.facultyNameTH', 'like', "%$keyword")
-                        ->orwhere('faculty_models.facultyNameTH', 'like', "$keyword%")
-                        ->orwhere('faculty_models.facultyNameEN', 'like', "%$keyword%")
-                        ->orwhere('faculty_models.facultyNameEN', 'like', "%$keyword")
-                        ->orwhere('faculty_models.facultyNameEN', 'like', "$keyword%");
-                });
-        } else {
-            $query = UserModel::select('*');
-        }
-        $query->orderBy('user_models.updated_at', 'DESC');
-        $result = $query->get();
-        return $result;
     }
 
     public static $validator = [

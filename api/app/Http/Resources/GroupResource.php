@@ -23,11 +23,11 @@ class GroupResource extends JsonResource
                 $days[] = $day->name ?? null;
             }
         }
-    
+
         $tags = [];
         if ($this->groupTag) {
             foreach ($this->groupTag as $tag) {
-                $tags[] = $tag->name ?? null;  
+                $tags[] = $tag->name ?? null;
             }
         }
 
@@ -35,39 +35,39 @@ class GroupResource extends JsonResource
         $members = [];
         if ($this->member) {
             foreach ($this->member as $eachMember) {
-                $members[] = $eachMember->id;  
+                $members[] = $eachMember->id;
             }
         }
 
         $requests = [];
         if ($this->request) {
             foreach ($this->request as $eachRequest) {
-                $requests[] = $eachRequest->id;  
+                $requests[] = $eachRequest->id;
             }
         }
 
-        if (in_array($uID, $members)) {
-            $status = 'member'; //เป็นสมาชิกแล้ว
-        }
 
-        if (in_array($uID, $requests)) {
-            $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
-        }
 
         $bookmarkArray = [];
         if ($this->bookmark) {
             foreach ($this->bookmark as $eachBookmark) {
-                $bookmarkArray[] = $eachBookmark->id;  
+                $bookmarkArray[] = $eachBookmark->id;
             }
         }
 
         if (in_array($uID, $bookmarkArray)) {
             $bookmark = true; //บันทึกกลุ่มแล้ว
-        } 
+        }
 
         if ($this->type == 'hobby') {
-
-            if (count($members) >= $this->hobby->memberMax && $this->hobby->memberMax != null && !in_array($uID, $members)) {
+            if ($this->hobby->memberMax == null) {
+                $status = 'join';
+                if (in_array($uID, $requests)) {
+                    $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
+                } else if (in_array($uID, $members)) {
+                    $status = 'member'; //เป็นสมาชิกแล้ว
+                }
+            } else if (count($members) >= $this->hobby->memberMax && $this->hobby->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
 
@@ -76,7 +76,7 @@ class GroupResource extends JsonResource
             } else {
                 $role = 'normal';
             };
-    
+
             return [
                 'groupID' => $this->hobby->id,
                 'type' => $this->type,
@@ -86,7 +86,7 @@ class GroupResource extends JsonResource
                 'request' => count($requests),
                 'memberMax' => $this->hobby->memberMax,
                 'activityName' => $this->hobby->name,
-                'leader' => $this->hobby->leaderGroup->id,
+                'leader' => $this->hobby->leaderGroup->username,
                 'weekDate' => $days,
                 'startTime' => $this->hobby->startTime,
                 'endTime' => $this->hobby->endTime,
@@ -97,12 +97,21 @@ class GroupResource extends JsonResource
                 'bookmark' => $bookmark ?? false,
             ];
         }
-        
+
         if ($this->type == 'tutoring') {
-            if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
+            if ($this->tutoring->memberMax == null) {
+                $status = 'join';
+                if (in_array($uID, $requests)) {
+                    $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
+                }
+                else if (in_array($uID, $members)) {
+                    $status = 'member'; //เป็นสมาชิกแล้ว
+                }
+            }
+            else if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
-            
+
             if ($this->tutoring->leaderGroup->id == $uID) {
                 $role = 'leader';
             } else {
@@ -143,7 +152,7 @@ class GroupResource extends JsonResource
             return [
                 'groupID' => $this->library->id,
                 'type' => $this->type,
-                'img' => '/pdfImage/'.basename($this->library->imageOrFile->name,'.pdf').'/output_page_1.jpg',
+                'img' => '/pdfImage/' . basename($this->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
                 'tag' => $tags,
                 'activityName' => $this->library->name,
                 'faculty' => $this->library->faculty->nameTH ?? $this->library->major->nameEN ?? 'Unknown',
