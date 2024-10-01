@@ -21,7 +21,7 @@ class LibraryController extends Controller
     function showAllGroup(Request $request)
     {
         $libraryDb = GroupModel::where([['type', 'library'], ['status', 1]])
-            ->with(['library', 'bookmark', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupDay', 'groupTag'])
+            ->with(['library', 'bookmark', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupTag'])
             ->orderBy('updated_at', 'DESC')
             ->paginate(8);
 
@@ -85,9 +85,9 @@ class LibraryController extends Controller
 
             //------------ group part
             $libraryModel = new LibraryModel();
-            $lID = $libraryModel->idGeneration();
+            $groupID = $libraryModel->idGeneration();
             $groupDb = GroupModel::create([
-                'groupID' => $lID,
+                'groupID' => $groupID,
                 'type' => 'library',
                 'status' => (int)1,
                 'created_at' => now(),
@@ -122,7 +122,7 @@ class LibraryController extends Controller
 
             //----------- library part
             $libraryDb = LibraryModel::create([
-                'id' => $lID,
+                'id' => $groupID,
                 'imageOrFileID' => $imageOrFile->id,
                 'facultyID' => $request->input('facultyID'),
                 'majorID' => $request->input('majorID') ?? null,
@@ -141,7 +141,7 @@ class LibraryController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create library success.',
-                    'lID' => $lID,
+                    'hID' => $groupID,
                 ], 200);
             }
             //-----------------------
@@ -156,8 +156,8 @@ class LibraryController extends Controller
             File::delete(public_path('uploaded/Library/') . $request->file('file')->getClientOriginalName());
             imageOrFileModel::where('id', $imageOrFile->id)->delete();
             GroupTagModel::where('groupID', $groupDb->id)->delete();
-            LibraryModel::where('id', $lID)->delete();
-            GroupModel::where('groupID', $lID)->delete();
+            LibraryModel::where('id', $groupID)->delete();
+            GroupModel::where('groupID', $groupID)->delete();
             return response()->json([
                 'status' => 'failed',
                 'message' => 'failed to create library.'
@@ -165,7 +165,7 @@ class LibraryController extends Controller
         }
     }
 
-    function updateGroup(Request $request, $lID)
+    function updateGroup(Request $request, $groupID)
     {
         //----------------- validation part
         $validationRules = LibraryModel::$updatevalidator[0];
@@ -181,7 +181,7 @@ class LibraryController extends Controller
         //------------------------
 
         //-------- เรียกใช้ relation
-        $groupDb = GroupModel::where([['groupID', $lID], ['type', 'library'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'library'], ['status', 1]])
             ->with(['library', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupTag'])
             ->orderBy('updated_at', 'DESC')
             ->first();
@@ -226,7 +226,7 @@ class LibraryController extends Controller
 
 
         //-------------------------- library part
-        $libraryDb = LibraryModel::where('id', $lID)->update([
+        $libraryDb = LibraryModel::where('id', $groupID)->update([
             'facultyID' => $request->input('facultyID') ?? $groupDb->library->facultyID ?? null,
             'majorID' => $request->input('majorID') ?? $groupDb->library->majorID ?? null,
             'departmentID' => $request->input('departmentID') ?? $groupDb->library->departmentID ?? null,
@@ -235,7 +235,7 @@ class LibraryController extends Controller
             'detail' => $request->input('detail') ?? null,
             'updated_at' => now()
         ]);
-        $groupDb = GroupModel::where('groupID',$lID)->update([
+        $groupDb = GroupModel::where('groupID',$groupID)->update([
             'updated_at' => now()
         ]);
         //--------------------------
@@ -253,9 +253,9 @@ class LibraryController extends Controller
         };
     }
 
-    function aboutGroup($lID)
+    function aboutGroup($groupID)
     {
-        $groupDb = GroupModel::where([['groupID', $lID], ['type', 'library'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'library'], ['status', 1]])
             ->with(['library', 'library.leaderGroup', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department', 'groupTag'])
             ->first();
 
@@ -315,9 +315,9 @@ class LibraryController extends Controller
         ], 200);
     }
 
-    function deleteGroup($lID)
+    function deleteGroup($groupID)
     {
-        $groupDb = GroupModel::where([['groupID', $lID], ['type', 'library'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'library'], ['status', 1]])
             ->with(['library', 'library.imageOrFile', 'groupDay', 'groupTag'])
             ->orderBy('updated_at', 'DESC')
             ->first();
@@ -329,8 +329,8 @@ class LibraryController extends Controller
                 File::deleteDirectory(public_path('pdfImage\\') . $groupDb->library->imageOrFile->name);
             }
             if (
-                GroupTagModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $lID)->delete()
-                && LibraryModel::where('id', $lID)->delete()
+                GroupTagModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $groupID)->delete()
+                && LibraryModel::where('id', $groupID)->delete()
             ) {
                 NotifyModel::create([
                     'receiverID' => $groupDb->library->createdBy,
@@ -358,8 +358,8 @@ class LibraryController extends Controller
 
     function libraryshared(Request $request)
     {
-        $lID = $request->input('groupID');
-        $groupDb = GroupModel::where('groupID', $lID)->with('library')->first();
+        $groupID = $request->input('groupID');
+        $groupDb = GroupModel::where('groupID', $groupID)->with('library')->first();
         if (!$groupDb) {
             return response()->json([
                 'status' => 'failed',
@@ -369,7 +369,7 @@ class LibraryController extends Controller
         $librarydata = [
             'shared' => ($groupDb->library->shared) + 1,
         ];
-        if (LibraryModel::where('id', $lID)->update($librarydata)) {
+        if (LibraryModel::where('id', $groupID)->update($librarydata)) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'shared library success.'
@@ -384,8 +384,8 @@ class LibraryController extends Controller
 
     function librarydownloaded(Request $request)
     {
-        $lID = $request->input('groupID');
-        $libraryDb = GroupModel::where('groupID', $lID)->with('library', 'leaderGroup')->first();
+        $groupID = $request->input('groupID');
+        $libraryDb = GroupModel::where('groupID', $groupID)->with('library', 'leaderGroup')->first();
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -396,7 +396,7 @@ class LibraryController extends Controller
             'download' => ($libraryDb->library->download) + 1,
             'updated_at' => now(),
         ];
-        if (LibraryModel::where('id', $lID)->update($librarydata)) {
+        if (LibraryModel::where('id', $groupID)->update($librarydata)) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'downloaded library success.'

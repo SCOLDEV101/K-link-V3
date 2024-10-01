@@ -9,6 +9,11 @@ class RequestModel extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'userID',
+        'groupID'
+    ];
+
     public static $validator = [
         [
             'userID' => ['required', 'regex:/^[0-9]+$/u'],

@@ -32,19 +32,20 @@ class SearchController extends Controller
         }
         if (!empty($keyword)) {
             $groupDb = $groupDb
-                ->LeftJoin('hobby_models', 'group_models.groupID', '=', "hobby_models.id")
+                ->LeftJoin($type.'_models', 'group_models.groupID', '=', $type."_models.id")
                 ->LeftJoin('group_tag_models', 'group_models.id', '=', 'group_tag_models.groupID')
                 ->LeftJoin('tag_models', 'group_tag_models.tagID', '=', 'tag_models.id')
-                ->LeftJoin('user_models', 'hobby_models.leader', '=', 'user_models.id')
-                ->where(function ($query) use ($keyword) {
-                    return $query
-                        ->where('hobby_models.name', 'like', "%$keyword%")
-                        ->orwhere('hobby_models.location', 'like', "%$keyword%")
+                ->LeftJoin('user_models', $type.'_models.leader', '=', 'user_models.id')
+                ->where(function ($groupDb) use ($keyword,$type) {
+                    return $groupDb
+                        ->where("$type".'_models.name', 'like', "%$keyword%")
+                        ->orwhere("$type".'_models.location', 'like', "%$keyword%")
                         ->orwhere('tag_models.name', 'like', "%$keyword%")
                         ->orwhere('user_models.id', 'like', "%$keyword%")
                         ->orwhere('user_models.username', 'like', "%$keyword%")
                     ;
-                })->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'member', 'request', 'groupDay', 'groupTag', 'bookmark',])
+                })->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'member', 'request', 'groupDay', 'groupTag', 'bookmark','tutoring','tutoring.imageOrFile','tutoring.leaderGroup','tutoring.faculty','tutoring.major',
+                    'tutoring.department','library', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department'])
                 ->orderBy('group_models.updated_at', 'DESC')
                 ->paginate(8);
         } else {

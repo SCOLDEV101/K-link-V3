@@ -26,25 +26,25 @@ use App\Http\Controllers\TutoringController;
 
 Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
     Route::controller(SearchController::class)->group(function () {
-        Route::post('/search/{type?}', 'searchGroup');
+        Route::post('/search/{type?}', 'searchGroup')->where('type', 'hobby|tutoring|library');;
         Route::post('/searchInvite/{groupID}', 'searchInvite');
     });
 
     Route::prefix('hobby')->group(function () {
         Route::controller(HobbyController::class)->group(function () {
             Route::get('kmitl', 'fetchKmitl');
-            Route::get('memberGroup/{hID}', 'memberGroup');
-            Route::get('aboutGroup/{hID}', 'aboutGroup');
+            Route::get('memberGroup/{groupID}', 'memberGroup');
+            Route::get('aboutGroup/{groupID}', 'aboutGroup');
             Route::get('showAllGroup', 'showAllGroup');
             Route::post('createGroup', 'createGroup');
 
             Route::group(['middleware' => 'leaderCheck'], function () {
-                Route::post('updateGroup/{hID}', 'updateGroup');
-                Route::get('requestMember/{hID}', 'checkRequestGroup');
-                Route::post('rejectOrAcceptMember/{hID}', 'rejectOrAcceptRequest');
-                Route::post('kickMember/{hID}/{uID}', 'kickMember');
-                Route::delete('deleteGroup/{hID}', 'deleteGroup');
-                Route::post('changeLeader/{hID}/{uID}', 'changeLeaderGroup');
+                Route::post('updateGroup/{groupID}', 'updateGroup');
+                Route::get('requestMember/{groupID}', 'checkRequestGroup');
+                Route::post('rejectOrAcceptMember/{groupID}', 'rejectOrAcceptRequest');
+                Route::post('kickMember/{groupID}/{uID}', 'kickMember');
+                Route::delete('deleteGroup/{groupID}', 'deleteGroup');
+                Route::post('changeLeader/{groupID}/{uID}', 'changeLeaderGroup');
             });
         });
     });
@@ -69,31 +69,30 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
         Route::controller(LibraryController::class)->group(function(){
             Route::get('showAllGroup','showAllGroup');
             Route::post('createGroup','createGroup');
-            Route::get('aboutGroup/{hID}','aboutGroup');
-            Route::get('librarydownload/{hID}','libraryurldownload');
-            Route::post('shared','libraryshared');
+            Route::get('aboutGroup/{groupID}','aboutGroup');
+            Route::get('librarydownload/{groupID}','libraryurldownload');
             Route::post('downloaded','librarydownloaded');
             Route::group(['middleware' => 'leaderCheck'], function() {
-                Route::post('updateGroup/{hID}','updateGroup');
-                Route::delete('deleteGroup/{hID}','deleteGroup');
+                Route::post('updateGroup/{groupID}','updateGroup');
+                Route::delete('deleteGroup/{groupID}','deleteGroup');
             });
         });
     });
 
     Route::prefix('tutoring')->group(function () {
         Route::controller(TutoringController::class)->group(function () {
-            Route::get('memberGroup/{hID}', 'memberGroup');
-            Route::get('aboutGroup/{hID}', 'aboutGroup');
+            Route::get('memberGroup/{groupID}', 'memberGroup');
+            Route::get('aboutGroup/{groupID}', 'aboutGroup');
             Route::get('showAllGroup', 'showAllGroup');
             Route::post('createGroup', 'createGroup');
-
+            
             Route::group(['middleware' => 'leaderCheck'], function () {
-                Route::post('updateGroup/{hID}', 'updateGroup');
-                Route::get('requestMember/{hID}', 'checkRequestGroup');
-                Route::post('rejectOrAcceptMember/{hID}', 'rejectOrAcceptRequest');
-                Route::post('kickMember/{hID}/{uID}', 'kickMember');
-                Route::delete('deleteGroup/{hID}', 'deleteGroup');
-                Route::post('changeLeader/{hID}/{uID}', 'changeLeaderGroup');
+                Route::post('updateGroup/{groupID}', 'updateGroup');
+                Route::get('requestMember/{groupID}', 'checkRequestGroup');
+                Route::post('rejectOrAcceptMember/{groupID}', 'rejectOrAcceptRequest');
+                Route::post('kickMember/{groupID}/{uID}', 'kickMember');
+                Route::delete('deleteGroup/{groupID}', 'deleteGroup');
+                Route::post('changeLeader/{groupID}/{uID}', 'changeLeaderGroup');
             });
         });
     });

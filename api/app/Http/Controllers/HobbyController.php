@@ -101,11 +101,11 @@ class HobbyController extends Controller
             }
 
             $hobbyModel = new HobbyModel;
-            $hID = $hobbyModel->idGeneration();
+            $groupID = $hobbyModel->idGeneration();
 
             //-----------group part
             $groupDb = GroupModel::create([
-                'groupID' => strval($hID),
+                'groupID' => strval($groupID),
                 'type' => "hobby",
                 'status' => (int)1,
                 'created_at' => now(),
@@ -115,7 +115,7 @@ class HobbyController extends Controller
 
             //-----------hobby part
             $hobbyDb = HobbyModel::create([
-                'id' => $hID,
+                'id' => $groupID,
                 'imageOrFileID' => $imageOrFileDb->id ?? null,
                 'name' => $request->input('activityName'),
                 'memberMax' => $request->input('memberMax') ?? null,
@@ -193,7 +193,7 @@ class HobbyController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create hobby group success.',
-                    'hID' => $hID
+                    'hID' => $groupID
                 ], 200);
             }
         } catch (Exception $e) {
@@ -209,10 +209,10 @@ class HobbyController extends Controller
                 GroupDayModel::where('groupID', $groupDb->id)->delete();
             } else if (MemberModel::where('groupID', $groupDb->id)->first()) {
                 MemberModel::where('groupID', $groupDb->id)->delete();
-            } else if (HobbyModel::where('id', $hID)->first()) {
-                HobbyModel::where('id', $hID)->delete();
-            } else if (GroupModel::where('groupID', $hID)->first()) {
-                GroupModel::where('groupID', $hID)->delete();
+            } else if (HobbyModel::where('id', $groupID)->first()) {
+                HobbyModel::where('id', $groupID)->delete();
+            } else if (GroupModel::where('groupID', $groupID)->first()) {
+                GroupModel::where('groupID', $groupID)->delete();
             }
             return response()->json([
                 'status' => 'failed',
@@ -221,7 +221,7 @@ class HobbyController extends Controller
         }
     }
 
-    function updateGroup(Request $request, $hID) // done
+    function updateGroup(Request $request, $groupID) // done
     { //done (waitng for checking) **noti to everymem
         $uID = auth()->user()->id;
 
@@ -240,7 +240,7 @@ class HobbyController extends Controller
         }
 
         //----- เรียกใช้ relation
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
@@ -361,13 +361,13 @@ class HobbyController extends Controller
         ];
 
         //-------- อัพเดตข้อมูลของ hobby และส่งแจ้งเตือนอัพเดต
-        if (HobbyModel::where('id', $hID)->update($data) && GroupModel::where('groupID', $hID)->update(['updated_at' => now()])) {
+        if (HobbyModel::where('id', $groupID)->update($data) && GroupModel::where('groupID', $groupID)->update(['updated_at' => now()])) {
             foreach ($groupDb->member as $member) {
                 if ($member->id != $uID) {
                     NotifyModel::insert([
                         'receiverID' => $member->id,
                         'senderID' => $groupDb->hobby->leader,
-                        'postID' => $hID,
+                        'postID' => $groupID,
                         'type' => 'updateGroup'
                     ]);
                 }
@@ -384,9 +384,9 @@ class HobbyController extends Controller
         };
     }
 
-    function memberGroup($hID)
+    function memberGroup($groupID)
     { //done north (mj ขออนุญาตแก้ไข)
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member', 'request'])
             ->first();
 
@@ -445,7 +445,7 @@ class HobbyController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'fetch member hobby group success.',
-                    'hID' => $hID,
+                    'hID' => $groupID,
                     'data' => $data,
                     'role' => $role,
                     'this' => auth()->user()->id
@@ -464,9 +464,9 @@ class HobbyController extends Controller
         }
     }
 
-    function aboutGroup($hID)
+    function aboutGroup($groupID)
     { //done
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'bookmark', 'member', 'request', 'groupDay', 'groupTag', 'hobby.imageOrFile', 'hobby.leaderGroup'])
             ->orderBy('updated_at', 'DESC')
             ->first();
@@ -494,9 +494,9 @@ class HobbyController extends Controller
         };
     }
 
-    function checkRequestGroup($hID)
+    function checkRequestGroup($groupID)
     { //done
-        $hobbyDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+        $hobbyDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'hobby.leaderGroup', 'request'])
             ->orderBy('updated_at', 'DESC')
             ->first();
@@ -533,7 +533,7 @@ class HobbyController extends Controller
         ], 200);
     }
 
-    function rejectOrAcceptRequest(Request $request, $hID)
+    function rejectOrAcceptRequest(Request $request, $groupID)
     {
         $validationRules = RequestModel::$validator[0];
         $validationMessages = RequestModel::$validator[1];
@@ -548,7 +548,7 @@ class HobbyController extends Controller
         }
 
         $userID = (int)$request->input('userID');
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'member', 'request'])
             ->first();
 
@@ -632,9 +632,9 @@ class HobbyController extends Controller
         }
     }
 
-    function kickMember($hID, $uID)
+    function kickMember($groupID, $uID)
     {  //done noti to kicked mem
-        $groupDb = GroupModel::where('groupID', $hID)
+        $groupDb = GroupModel::where('groupID', $groupID)
             ->with(['hobby', 'member', 'hobby.leaderGroup'])
             ->first();
 
@@ -671,7 +671,7 @@ class HobbyController extends Controller
         $notifyDb = NotifyModel::create([ //หากลบสำเร็จ จะส่งแจ้งเตือนไปยังคนที่ถูกลบ
             'receiverID' => $uID,
             'senderID' => $groupDb->hobby->leader,
-            'postID' => $hID,
+            'postID' => $groupID,
             'type' => 'kick'
         ]);
 
@@ -688,17 +688,17 @@ class HobbyController extends Controller
         }
     }
 
-    function deleteGroup($hID)
+    function deleteGroup($groupID)
     {
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'hobby.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
         if ($groupDb) {
             if (
                 MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
-                && GroupDayModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $hID)->delete()
-                && HobbyModel::where('id', $hID)->delete()
+                && GroupDayModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $groupID)->delete()
+                && HobbyModel::where('id', $groupID)->delete()
             ) {
                 foreach ($groupDb->member as $member) {
                     NotifyModel::create([
@@ -726,9 +726,9 @@ class HobbyController extends Controller
         }
     }
 
-    function changeLeaderGroup($hID, $uID)
+    function changeLeaderGroup($groupID, $uID)
     {
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'hobby'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'member'])
             ->first();
 
@@ -768,7 +768,7 @@ class HobbyController extends Controller
                 'message' => 'this user already is leader.',
             ], 400);
         } else {
-            $hobbyDb = HobbyModel::where([['id', $hID]])->update([
+            $hobbyDb = HobbyModel::where([['id', $groupID]])->update([
                 'leader' => $uID,
                 'updated_at' => now()
             ]);

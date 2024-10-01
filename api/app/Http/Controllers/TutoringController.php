@@ -24,21 +24,10 @@ class TutoringController extends Controller
 {
     function showAllGroup(Request $request)
     { {
-            $tutoringDb = GroupModel::where('type', 'tutoring')
-                ->where('status', 1)
+            $tutoringDb = GroupModel::where([['type', 'tutoring'],['status', 1]])
                 ->orderBy('updated_at', 'DESC')
-                ->with([
-                    'tutoring',
-                    'bookmark',
-                    'tutoring.imageOrFile',
-                    'tutoring.leaderGroup',
-                    'tutoring.faculty',
-                    'tutoring.major',
-                    'tutoring.department',
-                    'member',
-                    'request',
-                    'groupDay',
-                    'groupTag'
+                ->with(['tutoring','bookmark','tutoring.imageOrFile','tutoring.leaderGroup','tutoring.faculty','tutoring.major',
+                    'tutoring.department','member','request','groupDay','groupTag'
                 ])
                 ->paginate(8);
 
@@ -97,11 +86,11 @@ class TutoringController extends Controller
             }
 
             $TutoringModel = new TutoringModel;
-            $tID = $TutoringModel->idGeneration();
+            $groupID = $TutoringModel->idGeneration();
 
             //-----------group part
             $groupDb = GroupModel::create([
-                'groupID' => strval($tID),
+                'groupID' => strval($groupID),
                 'type' => "tutoring",
                 'status' => (int)1,
                 'created_at' => now(),
@@ -111,7 +100,7 @@ class TutoringController extends Controller
 
             //-----------tutoring part
             $tutoringDb = TutoringModel::create([
-                'id' => $tID,
+                'id' => $groupID,
                 'facultyID' => (int)$request->input('facultyID'),
                 'majorID' => $request->input('majorID') ?? null,
                 'departmentID' => $request->input('departmentID') ?? null,
@@ -168,7 +157,7 @@ class TutoringController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create tutoring group success.',
-                    'tID' => $tID
+                    'hID' => $groupID
                 ], 200);
             }
         } catch (Exception $e) {
@@ -184,11 +173,11 @@ class TutoringController extends Controller
             if (MemberModel::where('groupID', $groupDb->id)->first()) {
                 MemberModel::where('groupID', $groupDb->id)->delete();
             }
-            if (TutoringModel::where('id', $tID)->first()) {
-                TutoringModel::where('id', $tID)->delete();
+            if (TutoringModel::where('id', $groupID)->first()) {
+                TutoringModel::where('id', $groupID)->delete();
             }
-            if (GroupModel::where('groupID', $tID)->first()) {
-                GroupModel::where('groupID', $tID)->delete();
+            if (GroupModel::where('groupID', $groupID)->first()) {
+                GroupModel::where('groupID', $groupID)->delete();
             }
             return response()->json([
                 'status' => 'failed',
@@ -197,7 +186,7 @@ class TutoringController extends Controller
         }
     }
 
-    function updateGroup(Request $request, $tID)
+    function updateGroup(Request $request, $groupID)
     {
         //done (waitng for checking) **noti to everymem
         $uID = auth()->user()->id;
@@ -215,7 +204,7 @@ class TutoringController extends Controller
         }
 
         //----- เรียกใช้ relation
-        $groupDb = GroupModel::where('groupID', $tID)
+        $groupDb = GroupModel::where('groupID', $groupID)
             ->where([['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'tutoring.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
@@ -316,13 +305,13 @@ class TutoringController extends Controller
         ];
 
         // อัพเดตข้อมูลทั่วไปของ tutoring และส่งแจ้งเตือนอัพเดต
-        if (TutoringModel::where('id', $tID)->update($data) && GroupModel::where('groupID', $tID)->update(['updated_at' => now()])) {
+        if (TutoringModel::where('id', $groupID)->update($data) && GroupModel::where('groupID', $groupID)->update(['updated_at' => now()])) {
             foreach ($groupDb->member as $member) {
                 if ($member->id != $uID) {
                     NotifyModel::insert([
                         'receiverID' => $member->id,
                         'senderID' => $groupDb->tutoring->leader,
-                        'postID' => $tID,
+                        'postID' => $groupID,
                         'type' => 'updateGroup'
                     ]);
                 }
@@ -339,14 +328,13 @@ class TutoringController extends Controller
         };
     }
 
-    function memberGroup($hID)
+    function memberGroup($groupID)
     {
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'tutoring.imageOrFile', 'groupDay', 'groupTag', 'member', 'request'])
             ->first();
 
         if ($groupDb) {
-
             //-------------------- Prepare members data
             $member = [];
             $leader = [];
@@ -400,7 +388,7 @@ class TutoringController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'fetch member tutoring group success.',
-                    'hID' => $hID,
+                    'hID' => $groupID,
                     'data' => $data,
                     'role' => $role,
                     'this' => auth()->user()->id
@@ -419,9 +407,9 @@ class TutoringController extends Controller
         };
     }
 
-    function aboutGroup($hID)
+    function aboutGroup($groupID)
     {
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'bookmark', 'member', 'request', 'groupDay', 'groupTag', 'tutoring.imageOrFile', 'tutoring.leaderGroup'])
             ->orderBy('updated_at', 'DESC')
             ->first();
@@ -449,9 +437,9 @@ class TutoringController extends Controller
         };
     }
 
-    function checkRequestGroup($tID)
+    function checkRequestGroup($groupID)
     {
-        $groupDb = GroupModel::where([['groupID', $tID], ['type', 'tutoring'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'tutoring.leaderGroup', 'request'])
             ->orderBy('updated_at', 'DESC')
             ->first();
@@ -488,7 +476,7 @@ class TutoringController extends Controller
         ], 200);
     }
 
-    function rejectOrAcceptRequest(Request $request, $hID)
+    function rejectOrAcceptRequest(Request $request, $groupID)
     {
         $validationRules = RequestModel::$validator[0];
         $validationMessages = RequestModel::$validator[1];
@@ -502,7 +490,7 @@ class TutoringController extends Controller
             ], 400);
         }
 
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring']])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring']])
             ->with(['tutoring', 'member', 'request'])
             ->first();
 
@@ -584,9 +572,9 @@ class TutoringController extends Controller
         }
     }
 
-    function kickMember($tID, $uID)
+    function kickMember($groupID, $uID)
     {
-        $groupDb = GroupModel::where('groupID', $tID)
+        $groupDb = GroupModel::where('groupID', $groupID)
             ->with(['tutoring', 'member', 'tutoring.leaderGroup'])
             ->first();
 
@@ -623,7 +611,7 @@ class TutoringController extends Controller
         $notifyDb = NotifyModel::create([ //หากลบสำเร็จ จะส่งแจ้งเตือนไปยังคนที่ถูกลบ
             'receiverID' => $uID,
             'senderID' => $groupDb->tutoring->leader,
-            'postID' => $tID,
+            'postID' => $groupID,
             'type' => 'kick'
         ]);
 
@@ -640,17 +628,17 @@ class TutoringController extends Controller
         }
     }
 
-    function deleteGroup($tID)
+    function deleteGroup($groupID)
     {
-        $groupDb = GroupModel::where([['groupID', $tID], ['type', 'tutoring'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'tutoring.imageOrFile', 'groupDay', 'groupTag', 'member'])
             ->orderBy('updated_at', 'DESC')
             ->first();
         if ($groupDb) {
             if (
                 MemberModel::where('groupID', $groupDb->id)->delete() && GroupTagModel::where('groupID', $groupDb->id)->delete()
-                && GroupDayModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $tID)->delete()
-                && TutoringModel::where('id', $tID)->delete()
+                && GroupDayModel::where('groupID', $groupDb->id)->delete() && GroupModel::where('groupID', $groupID)->delete()
+                && TutoringModel::where('id', $groupID)->delete()
             ) {
                 foreach ($groupDb->member as $member) {
                     NotifyModel::create([
@@ -678,12 +666,12 @@ class TutoringController extends Controller
         }
     }
 
-    function changeLeaderGroup($hID, $uID)
+    function changeLeaderGroup($groupID, $uID)
     {
-        $groupDb = GroupModel::where([['groupID', $hID], ['type', 'tutoring'], ['status', 1]])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'member'])
             ->first();
-
+        
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -722,7 +710,7 @@ class TutoringController extends Controller
                 'message' => 'this user already is leader.',
             ], 400);
         } else {
-            $tutoringDb = TutoringModel::where([['id', $hID]])->update([
+            $tutoringDb = TutoringModel::where([['id', $groupID]])->update([
                 'leader' => $uID,
                 'updated_at' => now()
             ]);
