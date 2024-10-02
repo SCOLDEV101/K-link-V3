@@ -105,10 +105,7 @@ function LibraryHomePage() {
         overflow: "hidden",
       }}
     >
-      <div
-        className="w-75 m-auto p-2 my-2"
-        style={{ position: "sticky", top: "0", zIndex: 1 }}
-      >
+     <div className="card p-3 border-0 mx-3 w-100 " style={{borderRadius:"0",borderBottomRightRadius: "15px" ,borderBottomLeftRadius:"15px", boxShadow: "0px 0px px rgba(0, 0, 0, 0.25)", }}>
         <SearchButton fromFeature={"library"} />
       </div>
       <div

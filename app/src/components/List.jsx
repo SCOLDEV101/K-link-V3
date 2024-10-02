@@ -199,7 +199,7 @@ function List({ listItem, fetchData }) {
       swalOptions.customClass.confirmButton="swal-confirm-button";
     } else if (newStatus === "join") {
       swalOptions.title = "ยกเลิกคำขอเข้าร่วมกลุ่มหรือไม่?";
-      swalOptions.confirmButtonText="ยกเลิก";
+      swalOptions.confirmButtonText="ยกเลิกคำขอ";
       swalOptions.customClass.confirmButton="swal-confirmRed-button";
 
     }
@@ -273,6 +273,8 @@ function List({ listItem, fetchData }) {
                 <img
                   src={
                     item.type==="library" && item.thumbnail != null  ? `${config.SERVER_PATH}${item.thumbnail}`
+                     :item.image != null && item.image === "group-default.jpg"
+                      ? "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
                     : item.image != null
                       ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
                       : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
