@@ -28,7 +28,7 @@ function EditMyAccount() {
     const fetchData = async () => {
       console.log("13");
       try {
-        const res = await axios.get(config.SERVER_PATH + `/api/user/aboutMyAccount`, {
+        const res = await axios.get(config.SERVER_PATH + `/api/user/memberInfo/`, {
           headers: config.Headers().headers,
         });
         if (res.data.status === "ok") {
@@ -105,9 +105,9 @@ function EditMyAccount() {
         } else {
           formData.append("profileImage", originalProfileImage); 
         }
-  
+        console.log("formData :",formData)
         const responseUpdateProfile = await axios.post(
-          config.SERVER_PATH + "/api/user/updateMyAccount",
+          config.SERVER_PATH + "/api/user/updateAccount",
           formData,
           { headers: config.Headers().headers, withCredentials: true }
         );
