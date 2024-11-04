@@ -10,7 +10,7 @@ import { useSearchList } from "../contextProivder/SearchListProvider";
 
 
 function HomePage() {
-  const { searchListsArray } = useSearchList(); // search context
+  const { searchListsArray } = useSearchList(); 
   const [listItem, setListItem] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(null);
@@ -18,7 +18,7 @@ function HomePage() {
   const [hasMore, setHasMore] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [error, setError] = useState(null);
-  const itemsPerPage = 3; //8
+  const itemsPerPage = 3; 
   const maxRetries = 1;
 
 
@@ -89,11 +89,8 @@ function HomePage() {
         overflow: "hidden",
       }}
     >
-      <div
-        className="w-75 m-auto p-2 my-2"
-        style={{ position: "sticky", top: "0", zIndex: 1 }}
-      >
-        <SearchButton fromFeature={"hobby"} />
+      <div className="card p-3 border-0 mx-3 w-100 " style={{borderRadius:"0",borderBottomRightRadius: "15px" ,borderBottomLeftRadius:"15px", boxShadow: "0px 0px px rgba(0, 0, 0, 0.25)", }}>
+      <SearchButton fromFeature={"hobby"} />
       </div>
       <div
         className="position-relative"

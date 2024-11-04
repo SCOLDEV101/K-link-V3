@@ -5,22 +5,16 @@ import { Link } from "react-router-dom";
 
 function SearchButton({ fromFeature }) {
   return (
-    <div className="d-flex justify-content-center">
+    <div >
       <Link to={"/search"} state={{ feature: fromFeature }}
-        className="w-100 btn border-0 m-auto"
-        style={{
-          borderRadius: "20px",
-          backgroundColor: "#fff",
-          fontSize: "1rem",
-          boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-          maxWidth: "520px",
-          textDecoration: "none",
-        }}
       >
-        <div className="d-flex justify-content-between">
-          <div className="px-1">Search</div>
-          <div className="px-1"><FaSearch /></div>
-        </div>
+        <div  className="btn w-100 px-3 py-1 text-start"
+        style={{
+          borderRadius: "26px",
+          backgroundColor: "#E7E7E7",
+        }}>Search...</div>
+          <div className="px-3 py-1" style={{border:"10px solid #ffffff" , borderRadius:'26px',position:"absolute", top:"10%",right:"0",background: "linear-gradient(to right, #F96E20 2%, #FBBF66 49%, #F89603 100%)"
+}}><FaSearch className="text-white" style={{marginBottom:"0.1rem"}}/></div>
       </Link>
     </div>
   );
