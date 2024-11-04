@@ -82,7 +82,7 @@ class MyPostResource extends JsonResource
             };
     
             return [
-                'hID' => $this->hobby->id,
+                'groupID' => $this->hobby->id,
                 'type' => $this->type,
                 'image' => $this->hobby->imageOrFile->name ?? 'group-default.jpg',
                 'tag' => $tags,
@@ -121,7 +121,7 @@ class MyPostResource extends JsonResource
             };
 
             return [
-                'tID' => $this->tutoring->id,
+                'groupID' => $this->tutoring->id,
                 'type' => $this->type,
                 'tag' => $tags,
                 'image' => $this->tutoring->imageOrFile->name ?? 'group-default.jpg',
@@ -159,7 +159,7 @@ class MyPostResource extends JsonResource
             };
 
             return [
-                'lID' => $this->library->id,
+                'groupID' => $this->library->id,
                 'type' => $this->type,
                 'img' => $this->library->imageOrFile->name ?? 'group-default.jpg',
                 'tag' => $tags,
