@@ -10,7 +10,8 @@ import Header from "../components/Header";
 function MemberPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const hID = location.state.id || {};
+  const groupID = location.state.id || {};
+  const groupType = location.state.type || {};
   const [members, setMembers] = useState([]);
   const [groupName, setGroupName] = useState("");
   const [role, setRole] = useState("user");
@@ -32,19 +33,18 @@ function MemberPage() {
 
   useEffect(() => {
     // console.log("location", location)
-    console.log(hID);
-    fetchMembers(hID);
+    fetchMembers(groupID);
   }, []);
 
-  const fetchMembers = async (hID) => {
+  const fetchMembers = async (groupID) => {
     try {
       const response = await axios.get(
-        config.SERVER_PATH + `/api/hobby/member/${hID}`,
+        config.SERVER_PATH + `/api/${groupType}/memberGroup/${groupID}`,
         { headers: headersAuth, withCredentials: true }
       );
       if (response.data.status === "ok") {
         setGroupName(response.data.data.groupName);
-        console.log(response.data);
+        console.log("response.data",response.data);
         // console.log("1", response.data.data.groupName);
         setMembers(response.data.data.members);
         // console.log("2", response.data.data.members);
@@ -59,22 +59,22 @@ function MemberPage() {
     }
   };
 
-  const handleInfoClick = (uID ,hID, role) => {
-    navigate("/aboutaccount", { state: { uID: uID , hID: hID ,role: role } });
+  const handleInfoClick = (uID ,groupID, role) => {
+    navigate("/aboutaccount", { state: { uID: uID , groupID: groupID ,role: role } });
   };
 
-  const handleRequest = (hID, groupName) => {
-    navigate("/acceptRequest", { state: { id: hID, name: groupName } });
+  const handleRequest = (groupID, groupName) => {
+    navigate("/acceptRequest", { state: { id: groupID, name: groupName } });
   };
 
-  const leaveGroup = async (hId) => {
+  const leaveGroup = async (groupID) => {
     const userConfirmed = window.confirm("Do you want to leave this group?");
     if (!userConfirmed) {
       return;
     }
     try {
       const response = await axios.delete(
-        config.SERVER_PATH + `/api/user/leaveGroup/${hId}`,
+        config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
         {
           headers: headersAuth,
           withCredentials: true,
@@ -82,7 +82,7 @@ function MemberPage() {
       );
       if (response.data.status === "ok") {
         console.log("leave group success");
-        fetchMembers(hId);
+        fetchMembers(groupID);
       }
     } catch (error) {
       console.error("There was an error leaving the group!", error);
@@ -158,7 +158,7 @@ function MemberPage() {
                           className="fs-5"
                           color="#D9D9D9"
                           style={{ cursor: "pointer" }}
-                          onClick={() => handleInfoClick(member.uID ,hID ,  role)}
+                          onClick={() => handleInfoClick(member.uID ,groupID ,  role)}
                         />
                       ) : (
                         <span
@@ -185,7 +185,7 @@ function MemberPage() {
      {role === "leader" ? (
      <div className="d-flex justify-content-center">
           <button
-            onClick={() => handleRequest(hID, groupName)}
+            onClick={() => handleRequest(groupID, groupName)}
             className="btn fw-bold mt-5"
             style={{
               width:"90%",

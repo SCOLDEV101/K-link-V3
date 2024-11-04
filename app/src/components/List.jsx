@@ -678,7 +678,7 @@ function List({ listItem, fetchData }) {
                     className="btn bg-white py-1 px-2 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={() =>
-                      navigate("/members", { state: { id: item.groupID } })
+                      navigate("/members", { state: { id: item.groupID, type: item.type }})
                     }
                   >
                     สมาชิกกลุ่ม
