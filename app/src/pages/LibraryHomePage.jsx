@@ -62,15 +62,15 @@ function LibraryHomePage() {
       await axios
         .get(
           config.SERVER_PATH +
-            `/api/library/showAllLibrary?page=${page}&perPage=${itemsPerPage}`,
+            `/api/library/showAllGroup?page=${page}&perPage=${itemsPerPage}`,
           { headers: headersAuth, withCredentials: true }
         )
         .then((res) => {
           if (res.data.status === "ok") {
-            console.log("res.data.status", res.data.data);
+            console.log("res.data.status", res.data.listItem);
             
-            setListItem((prevList) => [...prevList, ...res.data.data]);
-            if (res.data.data.length < itemsPerPage) {
+            setListItem((prevList) => [...prevList, ...res.data.listItem]);
+            if (res.data.listItem.length < itemsPerPage) {
               setHasMore(false);
             }
             setRetryCount(0);

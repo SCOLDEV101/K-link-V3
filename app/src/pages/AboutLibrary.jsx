@@ -67,7 +67,7 @@ function AboutLibrary() {
     console.log(hID);
     try {
       const response = await axios.get(
-        `${config.SERVER_PATH}/api/library/aboutLibrary/${hID}`,
+        `${config.SERVER_PATH}/api/library/aboutGroup/${hID}`,
         {
           headers: headersCookie,
         }

@@ -27,20 +27,20 @@ function List({ listItem, fetchData }) {
   useEffect(() => {
     const initialBookmarks = {};
     items.forEach((item) => {
-      initialBookmarks[item.hID] = item.bookmark;
+      initialBookmarks[item.groupID] = item.bookmark;
     });
     setBookmarks(initialBookmarks);
   }, [items]);
 
-  const sendBookmark = async (hID) => {
+  const sendBookmark = async (groupID) => {
     setBookmarks((prevBookmarks) => ({
       ...prevBookmarks,
-      [hID]: !prevBookmarks[hID],
+      [groupID]: !prevBookmarks[groupID],
     }));
-    if (hID !== "" && hID !== null) {
+    if (groupID !== "" && groupID !== null) {
       try {
         const response = await axios.post(
-          config.SERVER_PATH + `/api/user/addOrDeleteBookmark/${hID}`,
+          config.SERVER_PATH + `/api/user/addOrDeleteBookmark/${groupID}`,
           {},
           { headers: headersAuth, withCredentials: true }
         );
@@ -51,7 +51,7 @@ function List({ listItem, fetchData }) {
       } catch (error) {
         setBookmarks((prevBookmarks) => ({
           ...prevBookmarks,
-          [hID]: prevBookmarks[hID],
+          [groupID]: prevBookmarks[groupID],
         }));
         console.error("There was an error fetching the members!", error);
       }
@@ -60,7 +60,7 @@ function List({ listItem, fetchData }) {
 
   const handleFeatureClick = (item) => {
     console.log("handleFeatureClick :", item);
-    setSelectedItemId(selectedItemId === null ? item.hID : null);
+    setSelectedItemId(selectedItemId === null ? item.groupID : null);
   };
 
   const handleClose = (event) => {
@@ -70,7 +70,7 @@ function List({ listItem, fetchData }) {
 
   const handleReportList = (item) => {
     navigate("/report", {
-      state: { caseID: "reportList", hID: item.hID, type: item.type },
+      state: { caseID: "reportList", groupID: item.groupID, type: item.type },
     });
   };
 
@@ -180,7 +180,7 @@ function List({ listItem, fetchData }) {
     }
   };
 
-  const handleStatusUpdate = async (hID, newStatus) => {
+  const handleStatusUpdate = async (groupID, newStatus) => {
     let swalOptions = {
       showCancelButton: true,
       reverseButtons: true,
@@ -209,12 +209,12 @@ function List({ listItem, fetchData }) {
     if (result.isConfirmed) {
       setItems((prevItems) => {
         const updatedItems = prevItems.map((item) =>
-          item.hID === hID ? { ...item, userstatus: newStatus } : item
+          item.groupID === groupID ? { ...item, userstatus: newStatus } : item
         );
         console.log("Updated items:", updatedItems); 
         return updatedItems;
       });
-      handleButtonClick(hID, newStatus);
+      handleButtonClick(groupID, newStatus);
     }
   };
 
@@ -252,7 +252,7 @@ function List({ listItem, fetchData }) {
           <div
             key={index}
             className={`list-item ${
-              selectedItemId === item.hID ? "highlighted zIndex-9999" : ""
+              selectedItemId === item.groupID ? "highlighted zIndex-9999" : ""
             }`}
           >
             <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item?.leader}</p>
@@ -425,15 +425,15 @@ function List({ listItem, fetchData }) {
                     style={{ fontSize: "20px" }}
                     onClick={() => handleReportList(item)}
                   />
-                  {bookmarks[item.hID] ? (
+                  {bookmarks[item.groupID] ? (
                     <FaBookmark
                       style={{ fontSize: "20px", color: "#FFB600" }}
-                      onClick={() => sendBookmark(item.hID)}
+                      onClick={() => sendBookmark(item.groupID)}
                     />
                   ) : (
                     <FaRegBookmark
                       style={{ fontSize: "20px" }}
-                      onClick={() => sendBookmark(item.hID)}
+                      onClick={() => sendBookmark(item.groupID)}
                     />
                   )}
                 </div>
@@ -453,15 +453,16 @@ function List({ listItem, fetchData }) {
                 <p
                   className="m-0"
                   style={{
-                    color: "#625B71",
+                    color: "#49454F",
                     fontSize: "14px",
                     fontWeight: "bold",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
+                    maxWidth:"70vw",
                   }}
                 >
-                  {item.type === "library" ? item.Major : item.location}
+                  {item.type === "library" ? item.major : item.location}
                 </p>
                 <p
                   className="m-0"
@@ -489,18 +490,38 @@ function List({ listItem, fetchData }) {
                 </p>
                 {item.detail && (
                   <p
-                    className="m-0"
+                    className="m-0 "
                     style={{
                       color: "#7B7B7B",
                       fontSize: "14px",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
+                      maxWidth:"70vw",
                     }}
                   >
                     {item.detail}
                   </p>
-                )} 
+                )}
+
+                {item.downloaded && (
+                  <p
+                    className="m-0 my-2"
+                    style={{
+                      color: "#949494",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth:"70vw",
+                    }}
+                  >
+                  ดาวน์โหลดแล้ว {item.downloaded.toLocaleString()} ครั้ง
+                  </p>
+                )}
+                
+                  
                 { item.weekDate &&
                 <div className="d-flex gap-2 my-2">
                   {item.weekDate.map((day, index) => (
@@ -571,7 +592,7 @@ function List({ listItem, fetchData }) {
             <div className="mt-3 mb-4 mx-3" style={{ maxWidth: "600px" }}>
               {/* {renderButtons(item)} */}
 
-              {item.hID === selectedItemId && (
+              {item.groupID === selectedItemId && (
                 <div style={{ maxWidth: "600px" }}>
                   {/* ==========[ CHANGE BTN ]=========== */}
                   {item.type === "library" ? (<>
@@ -605,8 +626,8 @@ function List({ listItem, fetchData }) {
                       className="btn py-1 px-2 my-auto mx-1"
                       style={{ fontSize: "14px", borderRadius: "10px" , backgroundColor:"#B3261E" , color:"#E7E7E7" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
-                        // handleButtonClick(item.hID);
-                        handleStatusUpdate(item.hID, "join");
+                        // handleButtonClick(item.groupID);
+                        handleStatusUpdate(item.groupID, "join");
                       }}
                     >
                       ยกเลิกคำขอ
@@ -620,11 +641,11 @@ function List({ listItem, fetchData }) {
                       onClick={() => {
                         if (item.type === "hobby") {
                           navigate("/abouthobbygroup", {
-                            state: { id: item.hID },
+                            state: { id: item.groupID },
                           });
                         } else if (item.type === "tutoring") {
                           navigate("/abouttutoringgroup", {
-                            state: { id: item.hID },
+                            state: { id: item.groupID },
                           });
                         }
                       }}
@@ -645,7 +666,7 @@ function List({ listItem, fetchData }) {
                       className="btn bg-white py-1 px-2 my-auto mx-1"
                       style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
-                        handleStatusUpdate(item.hID, "request");
+                        handleStatusUpdate(item.groupID, "request");
                       }}
                     >
                       เข้าร่วมกลุ่ม
@@ -657,7 +678,7 @@ function List({ listItem, fetchData }) {
                     className="btn bg-white py-1 px-2 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={() =>
-                      navigate("/members", { state: { id: item.hID } })
+                      navigate("/members", { state: { id: item.groupID } })
                     }
                   >
                     สมาชิกกลุ่ม
