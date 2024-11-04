@@ -18,6 +18,8 @@ use App\Http\Resources\MyPostResource;
 use App\Http\Resources\NotificationResource;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\BookmarkResource;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class UserController extends Controller
 {
@@ -557,16 +559,31 @@ class UserController extends Controller
     { // done *check
         $allGroup = GroupModel::with(['member', 'hobby', 'library', 'tutoring'])
             ->orderBy('updated_at', 'DESC')
-            ->paginate(8);
+            ->get();
 
-        $data = MyPostResource::collection($allGroup);
+        $data = MyPostResource::collection($allGroup)->resolve();
+
+        $data = array_filter($data, function($item) {
+            return $item !== null;  
+        });
+
+        $data = array_values($data);
+
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 8;
+        $currentPageItems = array_slice($data, ($currentPage - 1) * $perPage, $perPage);
+
+        // Create a paginator instance
+        $paginatedData = new LengthAwarePaginator($currentPageItems, count($data), $perPage, $currentPage, [
+            'path' => LengthAwarePaginator::resolveCurrentPath(),
+        ]);
 
         return response()->json([
-            'prevPageUrl' => $allGroup->previousPageUrl(),
+            'prevPageUrl' => $paginatedData->previousPageUrl(),
             'status' => 'ok',
             'message' => 'fetch my posts success',
-            'data' => $data,
-            'nextPageUrl' => $allGroup->nextPageUrl()
+            'data' => $paginatedData->items(),
+            'nextPageUrl' => $paginatedData->nextPageUrl()
         ], 200);
     }
 

@@ -17,8 +17,12 @@ class MyPostResource extends JsonResource
     public function toArray($request)
     {
         $uID = auth()->user()->id;
-
         $days = [];
+
+        $isMember = false;
+        $isRequest = false;
+        $isLeader = false;
+
         if ($this->groupDay) {
             foreach ($this->groupDay as $day) {
                 $days[] = $day->name ?? null;
@@ -149,6 +153,7 @@ class MyPostResource extends JsonResource
                 ),
             ];
         }
+
         if ($this->type == 'library') {
 
             if ($this->library->leaderGroup->id == $uID) {
