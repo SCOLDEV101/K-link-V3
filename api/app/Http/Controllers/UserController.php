@@ -17,9 +17,6 @@ use App\Http\Resources\UserResource;
 use App\Http\Resources\MyPostResource;
 use App\Http\Resources\NotificationResource;
 use Illuminate\Support\Facades\Validator;
-use App\Models\TutoringModel;
-use App\Models\LibraryModel;
-use App\Http\Resources\GroupResource;
 use App\Http\Resources\BookmarkResource;
 
 class UserController extends Controller
@@ -61,32 +58,32 @@ class UserController extends Controller
         }
     }
 
-    function addOrDeleteBookmark($id)
+    function addOrDeleteBookmark($groupID)
     { // done *check
         $uID = auth()->user()->id;
-        $userDb = UserModel::where('id', $uID)->first();
-        if (empty($userDb)) {
+        if (empty(UserModel::where('id', (int)$uID)->first())) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'unauthorize.'
-            ], 401);
+                'message' => 'user can not be found.'
+            ], 404);
         }
 
-        $selectedGroup = GroupModel::where('groupID', $id)->first();
-        if (empty($selectedGroup)) {
+        $groupDb = GroupModel::where([['groupID', $groupID],['status',1]])->first();
+        if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'group not found.'
             ], 404);
         }
 
-        $checkBookmark = BookmarkModel::where('userID', $uID)->where('groupID', $selectedGroup->id)->first();
-        if (empty($checkBookmark)) {
+        $bookmarkDb = BookmarkModel::where([['userID', $uID], ['groupID', $groupDb->id]])->first();
+        if (empty($bookmarkDb)) {
             $created = BookmarkModel::create([
                 'userID' => $uID,
-                'groupID' => $selectedGroup->id
+                'groupID' => $groupDb->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-
             if ($created) {
                 return response()->json([
                     'status' => 'ok',
@@ -99,8 +96,7 @@ class UserController extends Controller
                 ], 500);
             }
         } else {
-            $deleted = $checkBookmark->delete();
-
+            $deleted = BookmarkModel::where([['userID', $uID], ['groupID', $groupDb->id]])->delete();
             if ($deleted) {
                 return response()->json([
                     'status' => 'ok',
@@ -232,7 +228,6 @@ class UserController extends Controller
 
     function updateAboutUser(Request $request)
     { // done (north) *check
-
         $validationRules = UserModel::$validator[0];
         $validationMessages = UserModel::$validator[1];
 
@@ -246,43 +241,44 @@ class UserController extends Controller
         }
 
         $uID = auth()->user()->id;
-        $userDb = UserModel::where('id', $uID)->first();
-        $path = public_path('uploaded/profileImage/');
-
-        if (!empty($userDb->imageOrFileID)) {
-            // echo ('have imageOrFileID/');
-            $imageOrFileDb = imageOrFileModel::where('id', $userDb->imageOrFileID)->first();
-        } else {
-            // echo ('not have imageOrFileID/');
-            $imageOrFileDb = new imageOrFileModel;
-            $imageOrFileDb->id = null;
-            $imageOrFileDb->name = null;
-        };
-
-        if ($userDb->imageOrFileID != null && $imageOrFileDb->name != $request->input('profileImage')) {
-            // echo ("delete image/");
-            imageOrFileModel::where('id', $userDb->imageOrFileID)->delete();
-            File::delete($path . $imageOrFileDb->name);
-            $imageOrFileDb->id = null;
-        };
-
-        if ($request->file('profileImage')) {
-            // echo ("new image/");
-            $file = $request->file('profileImage');
+        $userDb = UserModel::where('id', $uID)->with('imageOrFile')->first();
+        $path = public_path('uploaded\\profileImage\\');
+        $defaultFiles = [];
+        foreach (imageOrFileModel::$profileImageStatic as $file) {
+            array_push($defaultFiles, $file['name']);
+        }
+        if (!empty($request->file('image'))) {
+            if (imageOrFileModel::where('id', $userDb->imageOrFileID)->first() && !in_array(strval($userDb->imageOrFile->name), $defaultFiles)) {
+                imageOrFileModel::where('id', $userDb->imageOrFileID)->delete();
+                if (File::exists(($path . $userDb->imageOrFile->name))) {
+                    File::delete($path . $userDb->imageOrFile->name);
+                }
+            }
+            $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
             $filename = 'profile-' . date('YmdHi') . rand(0, 99) . '.' . $extension;
             $file->move($path, $filename);
-            $imageOrFileDb->name = $filename;
-            $imageOrFileDb->save();
+            $imageOrFileDb = imageOrFileModel::create([
+                "name" => $filename
+            ]);
+        } else if (empty($request->file('image')) && !empty($request->input('image')) && $request->input('image') == $userDb->imageOrFile->name) {
+            $imageOrFileDb = imageOrFileModel::where('id', $userDb->imageOrFileID)->first();
         } else {
-            $filename = null;
+            if (imageOrFileModel::where('id', $userDb->imageOrFileID)->first() && !in_array(strval($userDb->imageOrFile->name), $defaultFiles)) {
+                imageOrFileModel::where('id', $userDb->imageOrFileID)->delete();
+                if (File::exists(($path . $userDb->imageOrFile->name))) {
+                    File::delete($path . $userDb->imageOrFile->name);
+                }
+            }
+            $imageOrFileDb = imageOrFileModel::where('name', 'profile-default.jpg')->first();
         }
+
         $data = [
             'username' => $request->input('username') ?? $userDb->username,
             'fullname' => $request->input('fullname') ?? $userDb->fullname,
             'aboutMe' => $request->input('aboutMe') ?? $userDb->aboutMe,
             'telephone' => $request->input('telephone') ?? $userDb->telephone,
-            'imageOrFileID' => $imageOrFileDb->id,
+            'imageOrFileID' => $imageOrFileDb->id ?? $userDb->imageOrFile->id,
         ];
 
         if (UserModel::where('id', $uID)->update($data)) {
@@ -298,13 +294,13 @@ class UserController extends Controller
         };
     }
 
-    function invitePage($id)
+    function invitePage($groupID)
     { // done *check
         $uID = auth()->user()->id;
-        $groupDb = GroupModel::where('groupID', $id)
-            ->with('member')
-            ->with('request')
+        $groupDb = GroupModel::where('groupID', $groupID)
+            ->with(['member', 'request'])
             ->first();
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -349,7 +345,7 @@ class UserController extends Controller
                 $data[] = [
                     'username' => $user->username,
                     'uID' => $user->id,
-                    'status' => null
+                    'status' => 'none'
                 ];
             }
         }
@@ -360,12 +356,35 @@ class UserController extends Controller
         ], 200);
     }
 
-    function inviteFriend(Request $request, $hID)
+    function inviteFriend(Request $request, $groupID)
     { // done *check
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->with('member')
-            ->with('request')
+        //---- validate input
+        $validator = Validator::make($request->all(), [
+            'receiver' => ['required', 'regex:/^[0-9]+$/u'],
+        ],[
+            'receiver.required' => 'userID is required',
+            'receiver.regex' => 'userID is invalid'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => $validator->errors()
+            ], 400);
+        }
+        //-----------
+
+        $userID = (int)$request->input('receiver');
+        if($userID == (int)auth()->user()->id){
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'cannot invite yourself.',
+            ], 400);
+        }
+
+        $groupDb = GroupModel::where([['groupID', $groupID], ['status', 1]])
+            ->with(['member', 'request'])
             ->first();
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -373,6 +392,13 @@ class UserController extends Controller
             ], 404);
         };
 
+        if (!UserModel::where('id', $userID)->first()) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'user not found.',
+            ], 404);
+        }
+        
         $memberArray = [];
         foreach ($groupDb->member as $eachMember) {
             $memberArray[] = $eachMember->id;
@@ -382,34 +408,33 @@ class UserController extends Controller
             $requestArray[] = $eachRequest->id;
         }
 
-        if (in_array($request->input('receiver'), $memberArray)) {
+        if (in_array($userID, $memberArray)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'already be a member.',
             ], 400);
         }
 
-        if (in_array($request->input('receiver'), $requestArray)) {
+        if (in_array($userID, $requestArray)) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'already be a request.',
+                'message' => 'already have a request.',
             ], 400);
         }
 
-        $data = [
+        $notifyDb = NotifyModel::create([
             'type' => 'invite',
             'postID' => $groupDb->groupID,
             'senderID' => auth()->user()->id,
-            'receiverID' => $request->input('receiver'),
+            'receiverID' => $userID,
             'created_at' => now(),
             'updated_at' => now(),
-        ];
+        ]);
 
-        if (NotifyModel::insert($data)) {
+        if ($notifyDb) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'invite friend success.',
-                'data' => $data
             ], 200);
         } else {
             return response()->json([
@@ -419,13 +444,13 @@ class UserController extends Controller
         }
     }
 
-    function requestToGroup(Request $request, $id)
+    function requestToGroup($groupID)
     { // done *check
-        $groupDb = GroupModel::where('groupID', $id)
-            ->with('member')
-            ->with('request')
-            ->with(['hobby.leaderGroup'])
+        $groupDb = GroupModel::where([['groupID', $groupID], ['status', 1]])
+            ->orwhere([['type', 'hobby'], ['type', 'tutoring']])
+            ->with(['member', 'request', 'hobby.leaderGroup', 'tutoring.leaderGroup'])
             ->first();
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
@@ -434,13 +459,23 @@ class UserController extends Controller
         }
 
         $uID = auth()->user()->id;
-        $memberArray = [];
-        foreach ($groupDb->member as $eachMember) {
-            $memberArray[] = $eachMember->id;
+
+        if (empty($groupDb->member)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'members not found.',
+            ], 404);
+        } else {
+            $memberArray = $groupDb->member->pluck('id')->toArray();
         }
-        $requestArray = [];
-        foreach ($groupDb->request as $eachRequest) {
-            $requestArray[] = $eachRequest->id;
+
+        if (empty($groupDb->request)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'request not found.',
+            ], 404);
+        } else {
+            $requestArray = $groupDb->request->pluck('id')->toArray();
         }
 
         if (in_array($uID, $memberArray)) {
@@ -466,8 +501,8 @@ class UserController extends Controller
                     'message' => 'failed to cancel request.',
                 ], 500);
             }
-        } else {
-            $addRequest = RequestModel::insert([
+        } else if (!in_array($uID, $requestArray)) {
+            $addRequest = RequestModel::create([
                 'userID' => $uID,
                 'groupID' => $groupDb->id,
                 'created_at' => now(),
@@ -475,26 +510,25 @@ class UserController extends Controller
             ]);
 
             if ($addRequest) {
-                $notifyData = [
+                if ($groupDb->type == 'hobby') {
+                    $groupLeader = $groupDb->hobby->leaderGroup->id;
+                } else if ($groupDb->type == 'tutoring') {
+                    $groupLeader = $groupDb->tutoring->leaderGroup->id;
+                }
+                $notifyDb = NotifyModel::create([
                     'type' => 'request',
                     'postID' => $groupDb->groupID,
                     'senderID' => auth()->user()->id,
-                    'receiverID' => $groupDb->hobby->leaderGroup->id,
+                    'receiverID' => $groupLeader,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ];
-                $sendRequestNotify = NotifyModel::insert($notifyData);
-                if ($sendRequestNotify) {
+                ]);
+
+                if ($addRequest && $notifyDb) {
                     return response()->json([
                         'status' => 'ok',
                         'message' => 'send request success.',
-                        'data' => $notifyData
                     ], 200);
-                } else {
-                    return response()->json([
-                        'status' => 'failed',
-                        'message' => 'failed to send request notify.',
-                    ], 500);
                 }
             } else {
                 return response()->json([
@@ -508,11 +542,7 @@ class UserController extends Controller
     function notification()
     { // done *check
         $notifyDb = NotifyModel::where('receiverID', auth()->user()->id)
-            ->with('receiver')
-            ->with('sender')
-            ->with(['group.hobby.leaderGroup'])
-            ->with(['group.tutoring.leaderGroup'])
-            ->with(['group.library.leaderGroup'])
+            ->with(['receiver', 'sender', 'group.hobby.leaderGroup', 'group.tutoring.leaderGroup', 'group.library.leaderGroup'])
             ->latest()
             ->get();
 
@@ -525,14 +555,9 @@ class UserController extends Controller
 
     function myPost()
     { // done *check
-        $uID =  auth()->user()->id;
-        $allGroup = GroupModel::with('member')
-            ->with('hobby')
-            ->with('library')
-            ->with('tutoring')
+        $allGroup = GroupModel::with(['member', 'hobby', 'library', 'tutoring'])
             ->orderBy('updated_at', 'DESC')
             ->paginate(8);
-
 
         $data = MyPostResource::collection($allGroup);
 
@@ -545,11 +570,11 @@ class UserController extends Controller
         ], 200);
     }
 
-    function leaveGroup($hID)
+    function leaveGroup($groupID)
     { //done *check
         $uID = auth()->user()->id;
-        $groupDb = GroupModel::where('groupID', $hID)
-            ->with(['hobby.leaderGroup'])
+        $groupDb = GroupModel::where(['groupID', $groupID])
+            ->with(['hobby.leaderGroup', 'tutoring.leaderGroup'])
             ->first();
 
         if (empty($groupDb)) {
@@ -559,25 +584,34 @@ class UserController extends Controller
             ], 404);
         }
 
-        $deleteMember = MemberModel::where('userID', $uID)
-            ->where('groupID', $groupDb->id)
+        $memberDb = MemberModel::where([['userID', $uID], ['groupID', $groupDb->id]])
             ->first();
 
-        if (empty($deleteMember)) {
+        if (empty($memberDb)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'you are not a member in this group.',
             ], 404);
         }
 
-        if ($uID == $groupDb->hobby->leaderGroup->id) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'leader can not leave the group.',
-            ], 400);
+        if ($groupDb->type == "hobby") {
+            if ($uID == $groupDb->hobby->leaderGroup->id) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'leader can not leave the group.',
+                ], 400);
+            }
+        } else if ($groupDb->type == "tutoring") {
+            if ($uID == $groupDb->tutoring->leaderGroup->id) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'leader can not leave the group.',
+                ], 400);
+            }
         }
 
-        if ($deleteMember->delete()) {
+        $deleteMember = MemberModel::where([['userID', $uID], ['groupID', $groupDb->id]])->delete();
+        if ($deleteMember) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'leave group success.',

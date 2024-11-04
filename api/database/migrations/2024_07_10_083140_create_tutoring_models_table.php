@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('facultyID');
             $table->integer('majorID')->nullable();
             $table->integer('departmentID')->nullable();
-            $table->integer('imageOrFileID');
+            $table->integer('imageOrFileID')->nullable();
             $table->string('name');
             $table->integer('memberMax')->nullable();
             $table->text('location');

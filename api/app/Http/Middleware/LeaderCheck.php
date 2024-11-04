@@ -19,7 +19,7 @@ class LeaderCheck
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $groupId = $request->route('hID'); //parameter ที่รับ
+        $groupId = $request->route('groupID'); //parameter ที่รับ
         $groupDb = GroupModel::where('groupID', $groupId)->first(); //เอาไปหาอะไร
         if ($groupDb) {
             if ($groupDb->type == 'hobby') {
@@ -47,7 +47,7 @@ class LeaderCheck
         } else if (!$groupDb) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'group not found.',
+                'message' => 'authenticate: group not found.',
             ], 404);
         }
     }

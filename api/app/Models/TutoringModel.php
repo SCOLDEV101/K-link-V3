@@ -51,10 +51,12 @@ class TutoringModel extends Model
         [
             'facultyID' => ['required'],
             'date' => ['required'],
-            'startTime' => ['required'],
-            'endTime' => ['required'],
-            'activityName' => ['required', 'string'],
-            'memberMax' => ['nullable', 'numeric', 'integer', 'max:99'],
+            'startTime' => ['required','regex:/^[0-9:]+$/u'],
+            'endTime' => ['required','regex:/^[0-9:]+$/u'],
+            'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+            'deleteimage'=> ['sometimes','nullable'],
+            'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
             'location' => ['required', 'string'],
             'detail' => ['nullable', 'string'],
         ],
@@ -62,12 +64,14 @@ class TutoringModel extends Model
             'facultyID.required' => 'faculty is required',
             'date.required' => 'date required',
             'startTime.required' => 'startTime required',
+            'startTime.regex' => 'start time type invalid',
             'endTime.required' => 'endTime required',
+            'endTime.regex' => 'end time type invalid',
             'activityName.required' => 'tutoring name required',
             'activityName.string' => 'tutoring name string invalid',
+            'image.mimes'=>"group image only allow png,jpg,jpeg,gif",
             'memberMax.numeric' => 'max member numeric invalid',
-            'memberMax.integer' => 'max member integer invalid',
-            'memberMax.max' => 'max member exceed 99',
+            'memberMax.regex' => 'max member type invalid',
             'location.required' => 'location required',
             'location.string' => 'location string invalid',
             'detail.string' => 'detail string invalid',
@@ -96,7 +100,7 @@ class TutoringModel extends Model
 
     public function idGeneration(){
         $prefix = 't-' . now()->format('Ymd') . '-';
-        $lastGroup = GroupModel::where([['type', "tutoring"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('id', 'desc')->first();
+        $lastGroup = GroupModel::where([['type', "tutoring"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
 
         if (!$lastGroup) {
             $number = '001';

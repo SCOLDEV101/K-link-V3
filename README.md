@@ -113,4 +113,98 @@ ModelAndFactory { v1.0.0: { - Seeder ใช้ได้ทั้งหมดแ�
                                 - แก้ไขชื่อ route และชื่อฟังก์ชั่นของ Hobby
                                 - เปลี่ยน createGroup , updateGroup , deleteGroup
                 },
+                v1.3.5: {
+                            - HobbyModel
+                                - แก้ validate
+                                    'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+                                    'deleteimage'=> ['sometimes','nullable'],
+                                    'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
+                                - แก้ id generate
+                                    $lastGroup = GroupModel::where([['type', "hobby"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
+                            - LibraryModel
+                                - แก้ id generate
+                                    $lastGroup = GroupModel::where([['type', "library"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
+                            - TutoringModel
+                                -แก้ validate
+                                    'startTime' => ['required','regex:/^[0-9:]+$/u'],
+                                    'endTime' => ['required','regex:/^[0-9:]+$/u'],
+                                    'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+                                    'deleteimage'=> ['sometimes','nullable'],
+                                    'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+                                    'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
+                                - แก้ id generate
+                                    $lastGroup = GroupModel::where([['type', "tutoring"], ['groupID', 'LIKE', $prefix . '%']])->orderBy('groupID', 'desc')->first();
+                            - UserModel
+                                -เพิ่ม hasOne imageOrFile
+                                -แก้ validate
+                                    'image'=> ['sometimes','mimes:png,jpg,jpeg,gif']
+                            - HobbyController
+                                - แก้ createGroup
+                                - แก้ updateGroup
+                            - TutoringController
+                                - แก้ createGroup
+                                - แก้ updateGroup
+                            - LibraryController
+                                - แก้ createGroup,updateGroup
+                            - migrate
+                                - ลบ section ออก
+                                - แก้ tutoring
+                                    imageOrFileID -> nullable
+                            - api
+                                - แก้ชื่อ route hobby/member/ -> hobby/memberGroup/
+                                - แก้ชื่อ route user/updateMyAccount -> user/updateAccount
+                                - แก้ชื่อ route library/sharedlibrary -> library/shared
+                                - แก้ชื่อ route library/downloadedlibrary -> library/downloaded
+                                - แก้ชื่อ route tutoring/member/ -> tutoring/memberGroup/
+            },
+            v1.3.6: {
+                        - 1.HobbyController
+                            1.1.แก้ rejectOrAcceptRequest รับ / ไม่รับ คำขอเข้ากลุ่ม
+                            1.2.แก้ kickMember เตะสมาชิกออก
+                            1.3.แก้ changeLeader เปลี่ยนหัวหน้ากลุ่ม
+                            1.4.แก้ requestMember ดูคำขอทั้งหมด
+                            1.5.แก้ updateGroup ให้ update เวลา group ด้วย
+                            1.6.เปลี่ยนตัวแปร $hID เป็น groupID ทั้งหมด
+                        - 2.TutoringController
+                            2.1.แก้ rejectOrAcceptRequest รับ / ไม่รับ คำขอเข้ากลุ่ม
+                            2.2.แก้ kickMember เตะสมาชิกออก
+                            2.3.แก้ changeLeader เปลี่ยนหัวหน้ากลุ่ม
+                            2.4.แก้ requestMember ดูคำขอทั้งหมด
+                            2.5.แก้ updateGroup ให้ update เวลา group ด้วย
+                            2.6.เปลี่ยนตัวแปร $tID เป็น groupID ทั้งหมด
+                        - 3.LibraryController
+                            3.1.แก้ updateGroup ให้ update เวลา group ด้วย
+                            3.2.เปลี่ยนตัวแปร $lID เป็น groupID ทั้งหมด
+                        - 4.UserController
+                            4.1.แก้ addOrDeleteBookmark เพิ่ม / ลบ บุ๊คมาร์ค
+                            4.2.แก้ invitePage เชิญเพื่อน
+                            4.3.แก้ requestToGroup สร้างคำขอเข้ากลุ่ม
+                            4.4.แก้ notification เรียกดู notify
+                            4.5.แก้ leaveGroup
+                        - 5.SearchController
+                            5.1.แก้ searchGroup ให้ใช้ได้ทั้งในกรณี ที่มี $type และ $keyword
+                            5.2.แก้ searchInvite ให้ใช้สามารถงานได้
+                        - 6.LeaderCheck 
+                            6.1.แก้ การรับชื่อตัวแปรจาก params
+                            6.2.แก้การส่ง message error
+                        - 7.GroupResource 
+                            7.1.แก้โค้ดที่เช็ค memberMax และ userstatus
+                        - 8.GroupModel
+                            8.1.เพิ่ม searchValidators กรองคำที่ใช้ได้ใน keyword
+                        - 9.HobbyModel
+                            9.1.ลบ searchHobby() ออก ไปใส่ใน SearchController -> searchGroup
+                        - 10.RequestModel
+                            10.1.เพิ่ม validator กรอง method และ userID ที่จะใช้ใน rejectOrAcceptRequest หรือ ตอบคำขอเข้าร่วมกลุ่ม
+                        - 11.UserModel
+                            11.1.ลบ searchInvite() ออก ไปใส่ใน SearchController -> searchInvite
+                            11.2.แก้ faculty , major relation
+                        - 12.api
+                            - แก้พวก $hID , $tID , $lID เป็น $groupID 
+                            12.1.แก้ชื่อ route /searching/search/{type?} -> /search/{type?}
+                            12.2.แก้ชื่อ route /searching/searchInvite/{hID} -> /searchInvite/{groupID}
+                            12.3.แก้ชื่อ route addOrDeleteBookmark/{id} -> addOrDeleteBookmark/{groupID}
+                            12.4.แก้ชื่อ route invitePage/{id} -> invitePage/{groupID}
+                            12.5.แก้ชื่อ route inviteFriend/{hID} -> inviteFriend/{groupID}
+                            12.6.แก้ชื่อ route leaveGroup/{hID} -> leaveGroup/{groupID} และเปลี่ยน method จาก delete เป็น post
+            },
 }
