@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FiLogOut } from "react-icons/fi";
-import { IoMdSettings, IoMdPersonAdd } from "react-icons/io";
+import { FiLogOut , FiEdit3 } from "react-icons/fi";
+import { IoMdPersonAdd } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import config from "../constants/function";
 
@@ -171,8 +171,10 @@ const leaveGroup = async (groupID) => {
 
               </div>
             </div>
-            <div className="col-2 p-auto"> 
-              <p className="text-center my-auto">-</p>
+            <div className="col-2 p-auto px-0"> 
+              <p className="text-center my-auto fw-bold"
+              style={{fontSize:"20px"}}
+              >-</p>
             </div>
             <div className="col-5">
             <div>
@@ -213,40 +215,44 @@ const leaveGroup = async (groupID) => {
               </div>
               <div className="col-4">
               <Link
-                to={"/members"}
-                state={{
-                  groupID: aboutGroupData.groupID,
-                  name: aboutGroupData.activityName,
-                  type: aboutGroupData.type,
-                }}
-                className="text-decoration-none"
-              >
-                {aboutGroupData.role === "leader" &&
-                  aboutGroupData.request !== undefined &&
-                  aboutGroupData.request > 0 && (
-                    <span
-                      className="position-absolute text-center text-white"
-                      style={{
-                        background: "#FF0101",
-                        width: "25px",
-                        height: "25px",
-                        right: "-10px",
-                        top: "-15px",
-                        borderRadius: "50%",
-                      }}
-                    >
-                      {aboutGroupData.request && aboutGroupData.request <= 9
-                        ? aboutGroupData.request
-                        : "9+"}
-                    </span>
-                  )}
+                  to={"/members"}
+                  state={{
+                    groupID: aboutGroupData.groupID,
+                    name: aboutGroupData.activityName,
+                    type: aboutGroupData.type,
+                  }}
+                  className="text-decoration-none position-relative"
+                >
+                  {aboutGroupData.role === "leader" &&
+                    aboutGroupData.request !== undefined &&
+                    aboutGroupData.request > 0 && (
+                      <span
+                        className="position-absolute text-center text-white"
+                        style={{
+                          background: "#FF0101",
+                          width: "25px",
+                          height: "25px",
+                          borderRadius: "50%",
+                          top: "-5px", 
+                          right: "-5px",
+                        }}
+                      >
+                        {aboutGroupData.request && aboutGroupData.request <= 9
+                          ? aboutGroupData.request
+                          : "9+"}
+                      </span>
+                    )}
                   <p
-            className="text-center border px-2 py-1"
-            style={{color: "#000000",borderRadius:"5px" ,backgroundColor: "#E7E7E7"}}
-          >
-            ดูสมาชิก
-          </p>
-              </Link>
+                    className="text-center border px-2 py-1"
+                    style={{
+                      color: "#000000",
+                      borderRadius: "5px",
+                      backgroundColor: "#E7E7E7",
+                    }}
+                  >
+                    ดูสมาชิก
+                  </p>
+                </Link>
               </div>
           </div>
           <div>
@@ -310,17 +316,47 @@ const leaveGroup = async (groupID) => {
           </div>
 
           {aboutGroupData.role === "leader" && (
-            <IoMdSettings
-              onClick={() => {
-                navigate("/hobbyeditgroup", {
-                  state: {
-                    groupData: aboutGroupData,
-                    status: "update",
-                    groupID: groupID,
-                  },
-                });
+            <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
+              <div className="col-10">
+              <Link
+              to={"/hobbyeditgroup"}
+              state={{
+                groupData: aboutGroupData,
+                status: "update",
+                groupID: groupID,
               }}
-            />
+              className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
+              style={{
+                background: "#FFB600",
+                borderRadius:"10px"
+              }}
+            >
+              <span className="text-dark text-decoration-none mt-1" style={{fontSize:"20px"}}>
+                แก้ไขกลุ่ม
+              </span>
+              < FiEdit3 
+                className="mx-2"
+                style={{
+                  fontSize: "20px",
+                  color: "#000000",
+                }}
+              />
+            </Link>
+              </div>
+              <div className="col-2">
+                <p onClick={() => navigate("/invitefriend", { 
+                    state: { 
+                      groupID: aboutGroupData.groupID, 
+                      name: aboutGroupData.activityName 
+                    } 
+                  })}
+                className="text-white text-center border-none my-0 px-1 py-2 "
+                style={{backgroundColor:"#7CB518" , borderRadius:"10px" , fontSize: "22.67px", }}
+                  >
+                    <IoMdPersonAdd style={{transform: "scaleX(-1)"}}/>
+                </p>
+              </div>
+            </div>
           )}
           {aboutGroupData.role === "normal" && (
             <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">

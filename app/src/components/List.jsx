@@ -429,7 +429,7 @@ function List({ listItem, fetchData }) {
                      right: 0,
                      bottom: 0,
                      background:
-                       item.userstatus === "member"
+                       item.userstatus === "member" || item.role === "leader"
                          ? "linear-gradient(90deg, rgba(129,255,108,0.8) 0%, rgba(185,255,63,0.8) 100%)"
                          : "rgba(255, 255, 255, 0.8)",
                      borderRadius: "5px",
@@ -696,7 +696,7 @@ function List({ listItem, fetchData }) {
                     </button>
 
                     </>
-                  ) : item.userstatus === "member" ? (
+                  ) : item.userstatus === "member" || item.role === "leader" ? (
                     <button
                       className="btn bg-white py-1 px-2 my-auto mx-1"
                       style={{ fontSize: "14px", borderRadius: "10px" ,boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
