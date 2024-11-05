@@ -7,7 +7,7 @@ function AcceptFriendRequest() {
   // const data = Array.from({ length: 10 }, (_, i) => i + 1); // ทำ Array ตัวเลขไว้เทสเฉยๆ
   const headersAuth = config.Headers().headers;
   const location = useLocation();
-  const hID = location.state.id || {};
+  const groupID = location.state.groupID || {};
   const groupName = location.state.name || {};
   const [reQuests, setReQuests] = useState([]);
   const [acceptedItems, setAcceptedItems] = useState([]);
@@ -29,25 +29,25 @@ function AcceptFriendRequest() {
       }
     };
     // console.log("hID :",hID)
-    fetchRequest(hID);
+    fetchRequest(groupID);
     // console.log(acceptedItems, rejectedItems); // check useEffect
   }, []);
 
   const accepted = async (uId) => {
     setAcceptedItems((prev) => [...prev, uId]);
-    AcceptedOrRejected(hID, uId, "accept");
+    AcceptedOrRejected(groupID, uId, "accept");
     // console.log("Accepted :", uId);
   };
 
   const rejected = async (uId) => {
     setRejectedItems((prev) => [...prev, uId]);
-    AcceptedOrRejected(hID, uId, "reject");
+    AcceptedOrRejected(groupID, uId, "reject");
     // console.log("Rejected :", uId);
   };
   
-  const AcceptedOrRejected = async (hId, uId, method) => {
+  const AcceptedOrRejected = async (groupID, uId, method) => {
     try {
-      const statusPost = await axios.post(config.SERVER_PATH + `/api/hobby/rejectOrAcceptMember/${hId}`, { method: method, uID: uId } , { headers: headersAuth, withCredentials: true } );
+      const statusPost = await axios.post(config.SERVER_PATH + `/api/hobby/rejectOrAcceptMember/${groupID}`, { method: method, uID: uId } , { headers: headersAuth, withCredentials: true } );
       if (statusPost.data.status === 'ok') {
         setUpateStatus(!updateStatus);
       }

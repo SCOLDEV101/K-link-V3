@@ -10,7 +10,7 @@ import Header from "../components/Header";
 function MemberPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const groupID = location.state.id || {};
+  const groupID = location.state.groupID || {};
   const groupType = location.state.type || {};
   const [members, setMembers] = useState([]);
   const [groupName, setGroupName] = useState("");
@@ -59,12 +59,14 @@ function MemberPage() {
     }
   };
 
-  const handleInfoClick = (uID ,groupID, role) => {
-    navigate("/aboutaccount", { state: { uID: uID , groupID: groupID ,role: role } });
+  const handleInfoClick = (uID ,groupID, role , type) => {
+    navigate("/aboutaccount", { state: { uID, groupID, role, type } });
+    console.log(type);
+
   };
 
   const handleRequest = (groupID, groupName) => {
-    navigate("/acceptRequest", { state: { id: groupID, name: groupName } });
+    navigate("/acceptRequest", { state: { groupID: groupID, name: groupName } });
   };
 
   const leaveGroup = async (groupID) => {
@@ -158,7 +160,7 @@ function MemberPage() {
                           className="fs-5"
                           color="#D9D9D9"
                           style={{ cursor: "pointer" }}
-                          onClick={() => handleInfoClick(member.uID ,groupID ,  role)}
+                          onClick={() => handleInfoClick(member.uID ,groupID , role , groupType)}
                         />
                       ) : (
                         <span

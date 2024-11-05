@@ -5,28 +5,6 @@ import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import config from "../constants/function";
 
-// const data = {
-//   faculty1: {
-//     department1_1: ["major1_1_1", "major1_1_2", "major1_1_3"],
-//     department1_2: [
-//       "major1_2_1",
-//       "major1_2_2dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-//       "major1_2_3",
-//     ],
-//     department1_3: ["major1_3_1", "major1_3_2", "major1_3_3"],
-//   },
-//   faculty2: {
-//     department2_1: ["major2_1_1", "major2_1_2", "major2_1_3"],
-//     department2_2: ["major2_2_1", "major2_2_2", "major2_2_3"],
-//     department2_3: ["major2_3_1", "major2_3_2", "major2_3_3"],
-//   },
-//   faculty3: {
-//     department3_1: ["major3_1_1", "major3_1_2", "major3_1_3"],
-//     department3_2: ["major3_2_1", "major3_2_2", "major3_2_3"],
-//     department3_3: ["major3_3_1", "major3_3_2", "major3_3_3"],
-//   },
-// };
-
 const ListItem = ({ item, func }) => {
   const [buttonState, setButtonState] = useState(1);
   const [timeoutId, setTimeoutId] = useState(null);
@@ -36,7 +14,7 @@ const ListItem = ({ item, func }) => {
       const id = setTimeout(() => {
         setButtonState(3);
         console.log({ item });
-        func(item.uID); //<--- send data to API here
+        func(item.uID);
       }, 3000);
       setTimeoutId(id);
     }
@@ -121,7 +99,7 @@ const InviteFriend = () => {
     search_Field_Box: "",
   });
   const location = useLocation();
-  const hID = location.state?.id || {};
+  const groupID = location.state?.groupID || {};
   const headersAuth = config.Headers().headers;
 
   const handleChange = (e) => {
@@ -142,7 +120,7 @@ const InviteFriend = () => {
   };
 
   useEffect(() => {
-    getUsers(hID);
+    getUsers(groupID);
   }, []);
 
   useEffect(() => {
@@ -156,7 +134,7 @@ const InviteFriend = () => {
       }, 0);
       return () => clearTimeout(timer);
     } else {
-      getUsers(hID);
+      getUsers(groupID);
     }
   }, [filter.search_Field_Box]);
 
@@ -178,7 +156,7 @@ const InviteFriend = () => {
     try {
       console.log("Filter:", JSON.stringify(filter));
       const response = await axios.post(
-        config.SERVER_PATH + `/api/searching/searchInvite/${hID}`,
+        config.SERVER_PATH + `/api/searching/searchInvite/${groupID}`,
         { keyword: filter.search_Field_Box },
         { headers: headersAuth, withCredentials: true }
       );
@@ -192,10 +170,10 @@ const InviteFriend = () => {
     }
   };
 
-  const getUsers = async (hID) => {
+  const getUsers = async (groupID) => {
     try {
       const Users = await axios.get(
-        config.SERVER_PATH + `/api/user/invitePage/${hID}`,
+        config.SERVER_PATH + `/api/user/invitePage/${groupID}`,
         { headers: headersAuth, withCredentials: true }
       );
       if (Users.data.status === "ok") {
@@ -211,7 +189,7 @@ const InviteFriend = () => {
     try {
       await axios
         .post(
-          config.SERVER_PATH + `/api/user/inviteFriend/${hID}`,
+          config.SERVER_PATH + `/api/user/inviteFriend/${groupID}`,
           { receiver: uId },
           { headers: headersAuth, withCredentials: true }
         )

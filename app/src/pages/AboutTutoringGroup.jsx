@@ -9,23 +9,23 @@ import { MdGroupAdd } from "react-icons/md";
 function AboutTutoringGroup() {
   const navigate = useNavigate();
   const location = useLocation();
-  const hID = location.state?.id || {};
+  const groupID = location.state?.groupID || {};
   const [aboutGroupData_tutoring, setAboutGroupData_tutoring] = useState({});
   const [_Error_, set_Error_] = useState(false);
   useEffect(() => {
-    Get_About_Tutoring_Group_Data(hID);
+    Get_About_Tutoring_Group_Data(groupID);
   }, []);
 
-  async function Get_About_Tutoring_Group_Data(hID) {
-    if (hID !== null || hID !== undefined) {
+  async function Get_About_Tutoring_Group_Data(groupID) {
+    if (groupID !== null || groupID !== undefined) {
       try {
         const request = await axios.get(
-          config.SERVER_PATH + `/api/tutoring/aboutGroup/${hID}`,
+          config.SERVER_PATH + `/api/tutoring/aboutGroup/${groupID}`,
           { headers: config.Headers().headers, withCredentials: true }
         );
         if (request.data.status === "ok") {
           set_Error_(false);
-          console.log("tutoring/aboutGroup/" + hID, request.data.data);
+          console.log("tutoring/aboutGroup/" + groupID, request.data.data);
           setAboutGroupData_tutoring(request.data.data);
         } else {
           console.error("Something went wrong !, please try again.");
@@ -110,7 +110,7 @@ function AboutTutoringGroup() {
                       state: {
                         groupData: aboutGroupData_tutoring,
                         status: "update",
-                        hID: hID,
+                        groupID: groupID,
                       },
                     });
                   }}
@@ -177,8 +177,9 @@ function AboutTutoringGroup() {
               <Link
                 to={"/members"}
                 state={{
-                  id: aboutGroupData_tutoring.hID,
+                  groupID: aboutGroupData_tutoring.groupID,
                   name: aboutGroupData_tutoring.activityName,
+                  type: aboutGroupData_tutoring.type,
                 }}
                 className="card text-decoration-none mt-3 px-2"
                 style={{
@@ -245,7 +246,7 @@ function AboutTutoringGroup() {
               >
                 <div className="p-2 d-flex flex-row flex-wrap align-items-start gap-2">
                   {aboutGroupData_tutoring.tag !== undefined &&
-                    aboutGroupData_tutoring.tag.split(",").map((tag) => (
+                    aboutGroupData_tutoring.tag.map((tag) => (
                       <div
                         key={tag}
                         className="badge rounded-pill text-dark px-3 py-2"
@@ -265,7 +266,7 @@ function AboutTutoringGroup() {
                 <Link
                   to={"/invitefriend"}
                   state={{
-                    id: aboutGroupData_tutoring.hID,
+                    groupID: aboutGroupData_tutoring.groupID,
                     name: aboutGroupData_tutoring.activityName,
                   }}
                   className="text-decoration-none px-3 py-2 rounded-pill d-flex flex-row align-items-center"

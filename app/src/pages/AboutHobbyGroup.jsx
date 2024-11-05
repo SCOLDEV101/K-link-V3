@@ -30,22 +30,22 @@ function AboutHobbyGroup() {
   const navigate = useNavigate();
   const headersAuth = config.Headers().headers;
   const location = useLocation();
-  const hID = location.state?.id || {};
+  const groupID = location.state?.groupID || {};
   const [activeDays, setActiveDays] = useState([]);
   const [aboutGroupData, setAboutGroupData] = useState({});
 
   useEffect(() => {
-    Get_AboutGroupData(hID);
+    Get_AboutGroupData(groupID);
   }, []);
 
-  async function Get_AboutGroupData(hID) {
+  async function Get_AboutGroupData(groupID) {
     try {
       const request = await axios.get(
-        config.SERVER_PATH + `/api/hobby/aboutGroup/${hID}`,
+        config.SERVER_PATH + `/api/hobby/aboutGroup/${groupID}`,
         { headers: headersAuth, withCredentials: true }
       );
       if (request.data.status === "ok") {
-        console.log("hobby/aboutGroup/" + hID, request.data.data);
+        console.log("hobby/aboutGroup/" + groupID, request.data.data);
         setAboutGroupData(request.data.data);
       } else {
         console.error("Something went wrong !, please try again.");
@@ -82,7 +82,7 @@ function AboutHobbyGroup() {
                   state: {
                     groupData: aboutGroupData,
                     status: "update",
-                    hID: hID,
+                    groupID: groupID,
                   },
                 });
               }}
@@ -166,8 +166,9 @@ function AboutHobbyGroup() {
               <Link
                 to={"/members"}
                 state={{
-                  id: aboutGroupData.hID,
+                  groupID: aboutGroupData.groupID,
                   name: aboutGroupData.activityName,
+                  type: aboutGroupData.type,
                 }}
                 className="card text-decoration-none"
                 style={{
@@ -235,7 +236,7 @@ function AboutHobbyGroup() {
               className="p-2 d-flex flex-row flex-wrap align-items-start gap-2" //card-body
             >
               {aboutGroupData.tag !== undefined &&
-                aboutGroupData.tag.split(",").map((tag) => (
+                aboutGroupData.tag.map((tag) => (
                   <div
                     key={tag}
                     className="badge rounded-pill text-dark px-3 py-2"
@@ -255,7 +256,7 @@ function AboutHobbyGroup() {
             <Link
               to={"/invitefriend"}
               state={{
-                id: aboutGroupData.hID,
+                groupID: aboutGroupData.groupID,
                 name: aboutGroupData.activityName,
               }}
               className="text-decoration-none px-3 py-2 rounded-pill d-flex flex-row align-items-center"

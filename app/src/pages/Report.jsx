@@ -33,8 +33,8 @@ function Report() {
   const headersAuth = config.Headers().headers;
   const location = useLocation();
   const navigate = useNavigate();
-  const { caseID, hID, uID, type } = location.state || {};
-  const [id, setId] = useState(hID || uID || '');
+  const { caseID, groupID, uID, type } = location.state || {};
+  const [id, setId] = useState(groupID || uID || '');
   const [changeCaseId, setChangeCaseId] = useState(caseID);
   const [selectedReport, setSelectedReport] = useState(null);
   const [reportDetail, setReportDetail] = useState('');
@@ -49,8 +49,8 @@ function Report() {
   }, []);
 
   useEffect(() => {
-    setId(hID || uID || '');
-  }, [hID, uID]);
+    setId(groupID || uID || '');
+  }, [groupID, uID]);
 
   const sendReport = async (id) => {
     if (reportDetail === '') {

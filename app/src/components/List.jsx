@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import { IoGameController } from "react-icons/io5";
 import { FiBookOpen, FiFileText, FiFlag , FiInfo } from "react-icons/fi";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa";
-import { TbEye } from "react-icons/tb";
+import { TbEye , TbTrashFilled} from "react-icons/tb";
 import { LuShare2 } from "react-icons/lu";
 import { MdOutlineDownload } from "react-icons/md";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
@@ -22,7 +22,7 @@ function List({ listItem, fetchData }) {
 
   useEffect(() => {
     setItems(listItem);
-  }, [listItem]); //[items, listItem]
+  }, [listItem]); 
 
   useEffect(() => {
     const initialBookmarks = {};
@@ -45,7 +45,6 @@ function List({ listItem, fetchData }) {
           { headers: headersAuth, withCredentials: true }
         );
         if (response.data.status === "ok") {
-          // fetchData();
           console.log("bookmark success");
         }
       } catch (error) {
@@ -98,10 +97,6 @@ function List({ listItem, fetchData }) {
     return `${day} ${month} ${year}`;
   }
 
-  // function formatTime(timeStr) {
-  //   const [hour, minute] = timeStr.split(":");
-  //   return `${hour}.${minute} น.`;
-  // }
 
   const dayColors = {
     "จ.": "#FFB600",
@@ -162,7 +157,6 @@ function List({ listItem, fetchData }) {
         });
 
         console.log(status + " group success");
-        // fetchData();
       }
     } catch (err) {
       console.log(err);
@@ -223,6 +217,74 @@ function List({ listItem, fetchData }) {
   const getDayOfWeek = (dateString) => {
     const date = new Date(dateString);
     return date.getDay(); 
+  };
+
+  const deleteGroup = async (groupID , feature) => {
+    const result = await Swal.fire({
+      title: "ยืนยันการลบกลุ่มหรือไม่?",
+      showCancelButton: true,
+      confirmButtonText: "ตกลง",
+      cancelButtonText: "ยกเลิก",
+      customClass: {
+        container: 'swal-container',
+        title: 'swal-title',
+        popup: 'swal-popup',
+        confirmButton: 'swal-confirm-button', 
+        cancelButton: 'swal-cancel-button'    
+      }
+    });
+  
+    if (result.isConfirmed) {
+    try {
+      await axios
+        .delete(config.SERVER_PATH + `/api/${feature}/deleteGroup/` + groupID, {
+          headers: config.Headers().headers,
+          withCredentials: true,
+        })
+        .then((res) => {
+          if (res.data.status === "ok") {
+            console.log("Delete success");
+            Swal.fire({
+              position: "center",
+              title: "ลบกลุ่มแล้ว",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: 'swal-title-success',
+                container: 'swal-container',
+                popup: 'swal-popup-error',
+              }
+            });
+            fetchData();
+          } else {
+            Swal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: 'swal-title-success',
+                container: 'swal-container',
+                popup: 'swal-popup-error',
+              }
+            });
+          }
+        });
+    } catch (error) {
+      console.error("ERROR: ", error);
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
+    }
+  }
   };
 
 
@@ -641,11 +703,11 @@ function List({ listItem, fetchData }) {
                       onClick={() => {
                         if (item.type === "hobby") {
                           navigate("/abouthobbygroup", {
-                            state: { id: item.groupID },
+                            state: { groupID: item.groupID },
                           });
                         } else if (item.type === "tutoring") {
                           navigate("/abouttutoringgroup", {
-                            state: { id: item.groupID },
+                            state: { groupID: item.groupID },
                           });
                         }
                       }}
@@ -678,7 +740,7 @@ function List({ listItem, fetchData }) {
                     className="btn bg-white py-1 px-2 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                     onClick={() =>
-                      navigate("/members", { state: { id: item.groupID, type: item.type }})
+                      navigate("/members", { state: { groupID: item.groupID, type: item.type }})
                     }
                   >
                     สมาชิกกลุ่ม
@@ -690,6 +752,17 @@ function List({ listItem, fetchData }) {
                   >
                     ปิด
                   </button>
+                  {item.role === "leader" && 
+                                    <button
+                                    className="btn py-1 px-3 my-auto mx-1"
+                                    style={{ fontSize: "15px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", backgroundColor:"#B3261E" }}
+                                    onClick={() => {
+                                      deleteGroup(item.groupID , item.type);
+                                    }}
+                                  >
+                                    <TbTrashFilled className="text-white"/>
+                                  </button>
+                    }
                   </>
                       :<></>  }
                 </div>

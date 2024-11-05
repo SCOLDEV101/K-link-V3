@@ -46,9 +46,9 @@ function TutoringHomepage() {
         )
         .then((res) => {
           if (res.data.status === "ok") {
-            console.log("res.data.data", res.data.data);
-            setListItem((prevList) => [...prevList, ...res.data.data]);
-            if (res.data.data.length < itemsPerPage) {
+            console.log("res.data.data", res.data.listItem);
+            setListItem((prevList) => [...prevList, ...res.data.listItem]);
+            if (res.data.listItem.length < itemsPerPage) {
               setHasMore(false);
             }
             setRetryCount(0);
