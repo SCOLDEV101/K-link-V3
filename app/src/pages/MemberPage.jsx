@@ -69,27 +69,6 @@ function MemberPage() {
     navigate("/acceptRequest", { state: { groupID: groupID, name: groupName } });
   };
 
-  const leaveGroup = async (groupID) => {
-    const userConfirmed = window.confirm("Do you want to leave this group?");
-    if (!userConfirmed) {
-      return;
-    }
-    try {
-      const response = await axios.delete(
-        config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
-        {
-          headers: headersAuth,
-          withCredentials: true,
-        }
-      );
-      if (response.data.status === "ok") {
-        console.log("leave group success");
-        fetchMembers(groupID);
-      }
-    } catch (error) {
-      console.error("There was an error leaving the group!", error);
-    }
-  };
 
   return (
   <>

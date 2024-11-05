@@ -1,30 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaEllipsis } from "react-icons/fa6";
-import { HiSearch } from "react-icons/hi";
-import { MdGroupAdd } from "react-icons/md";
-import { IoMdSettings } from "react-icons/io";
+import { FiLogOut } from "react-icons/fi";
+import { IoMdSettings, IoMdPersonAdd } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import config from "../constants/function";
 
-const daysOfWeek = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
-// const testData = [
-//   {
-//     hID: 1,
-//     image: null,
-//     tag: "tag1,tag2,tag3",
-//     member: 1,
-//     memberMax: 25,
-//     request: 9,
-//     activityName: "Prof. Jacklyn Rippin",
-//     weekDate: "จ.,อ.,พ.,พฤ.,อา.",
-//     actTime: "17:45:41",
-//     location: "location ",
-//     detail:
-//       "Sint voluptatum inventore ullam accusamus ad illum amet deserunt ex maxime commodi qui quia tempore necessitatibus et ea et et quo explicabo veritatis est sit esse incidunt magnam itaque ipsam numquam eos corporis qui culpa non sit dicta et qui ut nostrum non autem enim accusantium dolor ut.",
-//     role: "member",
-//   },
-// ];
 
 function AboutHobbyGroup() {
   const navigate = useNavigate();
@@ -60,6 +40,40 @@ function AboutHobbyGroup() {
     }
   }
 
+const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+
+const dayColors = {
+  "จ.": "#FFB600",
+  "อ.": "#EFB8C8",
+  "พ.": "#7CB518",
+  "พฤ.": "#F96E20",
+  "ศ.": "#729BC0",
+  "ส.": "#A970C4",
+  "อา.": "#B3261E",
+};
+
+const leaveGroup = async (groupID) => {
+  const userConfirmed = window.confirm("Do you want to leave this group?");
+  if (!userConfirmed) {
+    return;
+  }
+  try {
+    const response = await axios.post(
+      config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
+      {
+        headers: headersAuth,
+        withCredentials: true,
+      }
+    );
+    if (response.data.status === "ok") {
+      console.log("leave group success");
+      navigate("/hobby")
+    }
+  } catch (error) {
+    console.error("There was an error leaving the group!", error);
+  }
+};
+
   return (
     <div className="container-fluid d-flex justify-content-center my-5">
       <div
@@ -67,36 +81,35 @@ function AboutHobbyGroup() {
         style={{
           minWidth: "15rem",
           width: "100%",
-          borderRadius: "20px",
-          boxShadow: "5px 5px 0px rgba(0, 0, 0, .25)",
+          borderRadius: "10px",
+          boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
         }}
       >
         <div
           className="position-absolute me-2 cursor-pointer"
           style={{ fontSize: "40px", right: "0px", color: "#949494" }}
         >
-          {aboutGroupData.role === "leader" && (
-            <IoMdSettings
-              onClick={() => {
-                navigate("/hobbyeditgroup", {
-                  state: {
-                    groupData: aboutGroupData,
-                    status: "update",
-                    groupID: groupID,
-                  },
-                });
-              }}
-            />
-          )}
         </div>
         <div className="card-body">
-          <h1
-            className="card-title fw-bolder text-center mt-3"
-            style={{ fontSize: "50px" }}
+        <p
+            className="text-start my-0 mt-3"
+          >
+            ชื่อกลุ่ม
+          </p>
+          <p
+            className="text-start p-2 text-wrap"
+            style={{color: "#979797" ,borderRadius:"5px",border: "1px solid #E7E7E7"}}
           >
             {aboutGroupData.activityName}
-          </h1>
-          <div className=" d-flex justify-content-center">
+          </p>
+          <div className="position-relative mx-auto my-1"
+                style={{
+                  width: "100%",
+                  height: "25vw",
+                  maxHeight: "200px",
+                  maxWidth: "450px",
+                }}
+              >
             <img
               src={
                 aboutGroupData.image !== undefined &&
@@ -106,63 +119,99 @@ function AboutHobbyGroup() {
               }
               alt="image"
               style={{
-                background: "#D9D9D9",
-                borderRadius: "10px",
-                maxWidth: "12rem",
-                maxHeight: "12rem",
-                minWidth: "5rem",
-                minHeight: "5rem",
                 width: "100%",
                 height: "100%",
+                objectFit: "cover",
+                borderRadius: "5px",
+                border: "1px solid #E7E7E7",
+                boxShadow: "inset 0px 0px 5.6px 0px rgba(0, 0, 0, 0.25)",
               }}
             />
           </div>
-          <h4 className="card-subtitle my-2">วันจัดกิจกรรม</h4>
-          <div className="d-flex flex-row flex-wrap gap-1 align-items-center justify-content-center">
-            {daysOfWeek.map((day) => (
-              <div
-                key={day}
-                className="border border-2 text-center d-flex align-items-center justify-content-center fw-bold"
-                style={{
-                  width: "35px",
-                  height: "35px",
-                  borderRadius: "50%",
-                  background: activeDays.includes(day) ? "#FFB600" : "#D9D9D9",
-                }}
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-          <h4 className="card-subtitle my-2">สถานที่</h4>
-          <div className="d-flex flex-column gap-3 justify-content-center">
-            <div
-              className="card"
-              style={{ minHeight: "30px", background: "#f6f6f6" }}
-            >
-              <div className="card-body p-2">
-                <p className="m-0">
-                  {aboutGroupData.location ? aboutGroupData.location : "-"}
+          <div className="d-flex justify-content-around my-3">
+            {daysThai.map((day, index) => {
+              const isInWeekDate = 
+              aboutGroupData?.weekDate && Array.isArray(aboutGroupData.weekDate) 
+              ? aboutGroupData.weekDate.includes(day) 
+              : false;   
+              return (
+                <p
+                  key={index}
+                  className="m-0"
+                  style={{
+                    paddingLeft: ".35rem",
+                    paddingRight: ".35rem",
+                    color: isInWeekDate ? "#000000" : "#E7E7E7",
+                    fontSize:"18.95px",
+                    border: `1.35px solid ${isInWeekDate ? dayColors[day] : "#E7E7E7"}`,
+                    borderRadius: day === "อา." || day === "พฤ." ? "15px" : "50%",
+                  }}
+                >
+                  {day}
                 </p>
+              );
+            })}
+          </div>
+          <div className="row row-cols-lg-auto g-3 align-items-center">
+            <div className="col-5">
+              <div>
+              <p
+            className="text-start my-0"
+          >
+            ตั้งแต่
+          </p>
+          <p
+            className="text-start border px-2 py-1"
+            style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+          >
+            {aboutGroupData.startTime
+                    ? aboutGroupData.startTime.slice(0, 5)
+                    : "-:-"}
+          </p>
+
               </div>
             </div>
-            <div className="d-flex flex-row gap-1">
-              <div
-                className="card text-center"
-                style={{
-                  background: "#D9D9D9",
-                  flex: "1 1 33.33%",
-                  minHeight: "30px",
-                  backgroundColor: "#f6f6f6"
-                }}
-              >
-                <p className="m-0 p-0" >
-                  เวลา :{" "}
-                  {aboutGroupData.actTime
-                    ? aboutGroupData.actTime.slice(0, 5)
+            <div className="col-2 p-auto"> 
+              <p className="text-center my-auto">-</p>
+            </div>
+            <div className="col-5">
+            <div>
+              <p
+            className="text-start my-0 "
+          >
+            จนถึง
+          </p>
+          <p
+            className="text-start border px-2 py-1"
+            style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+          >
+            {aboutGroupData.endTime
+                    ? aboutGroupData.endTime.slice(0, 5)
                     : "-:-"}
-                </p>
+          </p>
               </div>
+            </div>
+          </div>
+          <p
+            className="text-start my-0 "
+          >
+            จำนวนสมาชิก
+          </p>
+          <div className="row row-cols-lg-auto g-3 align-items-center">
+              <div className="col-8">
+          <p
+            className="text-start border px-2 py-1"
+            style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+          >
+            &nbsp;{aboutGroupData.member ? aboutGroupData.member : 0}
+                      &nbsp;
+                    /&nbsp;
+                    {aboutGroupData.memberMax
+                      ? aboutGroupData.memberMax || aboutGroupData.memberMax === 0
+                      : "ไม่จำกัด"}
+          </p>
+              </div>
+              <div className="col-4">
               <Link
                 to={"/members"}
                 state={{
@@ -170,15 +219,9 @@ function AboutHobbyGroup() {
                   name: aboutGroupData.activityName,
                   type: aboutGroupData.type,
                 }}
-                className="card text-decoration-none"
-                style={{
-                  background: "#D9D9D9",
-                  flex: "2 1 66.67%",
-                  minHeight: "30px",
-                  backgroundColor: "#f6f6f6"
-                }}
+                className="text-decoration-none"
               >
-                {aboutGroupData.role !== null &&
+                {aboutGroupData.role === "leader" &&
                   aboutGroupData.request !== undefined &&
                   aboutGroupData.request > 0 && (
                     <span
@@ -197,40 +240,51 @@ function AboutHobbyGroup() {
                         : "9+"}
                     </span>
                   )}
-                <div className="d-flex flex-row justify-content-between align-items-center gap-2 mx-auto">
-                  <p className="m-0 text-dark">
-                    สมาชิก:
-                    <span className="m-0" style={{ color: "#7CB518" }}>
-                      &nbsp;{aboutGroupData.member ? aboutGroupData.member : 0}
-                      &nbsp;
-                    </span>
-                    /&nbsp;
-                    {aboutGroupData.memberMax
-                      ? aboutGroupData.memberMax
-                      : "ไม่จำกัด"}
-                  </p>
-                  <span>
-                    <HiSearch style={{ color: "#FF8500" }} />
-                  </span>
-                </div>
-              </Link>
-            </div>
-          </div>
-          <h4 className="card-subtitle my-2">รายละเอียด</h4>
-          <div
-            className="card"
-            style={{ minHeight: "130px", background: "#f6f6f6" }}
+                  <p
+            className="text-center border px-2 py-1"
+            style={{color: "#000000",borderRadius:"5px" ,backgroundColor: "#E7E7E7"}}
           >
-            <div className="card-body p-2">
-              <p className="m-0">
-                {aboutGroupData.detail ? aboutGroupData.detail : null}
-              </p>
-            </div>
+            ดูสมาชิก
+          </p>
+              </Link>
+              </div>
           </div>
-          <h4 className="card-subtitle my-2">Tag</h4>
+          <div>
+          <p
+            className="text-start my-0"
+          >
+            สถานที่
+          </p>
+          <p
+            className="text-start p-2"
+            style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+          >
+          {aboutGroupData.location ? aboutGroupData.location : "-"}
+            </p>
+          </div>
+          <div>
+          <p
+            className="text-start my-0"
+          >
+            รายละเอียด
+          </p>
+          <p
+            className="text-start p-2"
+            style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+          >
+          {aboutGroupData.detail ? aboutGroupData.detail : "-"}
+            </p>
+          </div>
+          <div>
+          <p
+            className="text-start my-0"
+          >
+            Tag
+          </p>
+
           <div
             className="card mb-3"
-            style={{ minHeight: "130px", background: "#f6f6f6" }}
+            style={{ minHeight: "130px", background: "#ffffff",borderRadius:"5px" ,border: "1px solid #E7E7E7" }}
           >
             <div
               className="p-2 d-flex flex-row flex-wrap align-items-start gap-2" //card-body
@@ -239,12 +293,13 @@ function AboutHobbyGroup() {
                 aboutGroupData.tag.map((tag) => (
                   <div
                     key={tag}
-                    className="badge rounded-pill text-dark px-3 py-2"
+                    className="badge text-dark px-3 py-2"
                     style={{
                       background: "#FFB600",
-                      boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
+                      boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
                       flex: "0 1 calc(25% - 0.5rem)", // Adjust this to fit 4 items per row
                       marginBottom: "0.5rem",
+                      borderRadius:"2.5px",
                     }}
                   >
                     {tag}
@@ -252,32 +307,59 @@ function AboutHobbyGroup() {
                 ))}
             </div>
           </div>
-          <div className="d-flex justify-content-center align-items-center">
-            <Link
+          </div>
+
+          {aboutGroupData.role === "leader" && (
+            <IoMdSettings
+              onClick={() => {
+                navigate("/hobbyeditgroup", {
+                  state: {
+                    groupData: aboutGroupData,
+                    status: "update",
+                    groupID: groupID,
+                  },
+                });
+              }}
+            />
+          )}
+          {aboutGroupData.role === "normal" && (
+            <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
+              <div className="col-10">
+              <Link
               to={"/invitefriend"}
               state={{
                 groupID: aboutGroupData.groupID,
                 name: aboutGroupData.activityName,
               }}
-              className="text-decoration-none px-3 py-2 rounded-pill d-flex flex-row align-items-center"
+              className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
               style={{
-                background: "#7CB518",
-                boxShadow: "4px 4px 0px rgba(0, 0, 0, .25)",
+                background: "#FFB600",
+                borderRadius:"10px"
               }}
             >
-              <MdGroupAdd
-                className=""
+              <span className="text-dark text-decoration-none mt-1" style={{fontSize:"20px"}}>
+                เพิ่มเพื่อน
+              </span>
+              <IoMdPersonAdd
+                className="mx-2"
                 style={{
-                  fontSize: "30px",
-                  color: "white",
+                  fontSize: "20px",
+                  color: "#000000",
                   transform: "scaleX(-1)",
                 }}
               />
-              <span className="text-dark ms-2 fw-bold text-decoration-none">
-                เชิญเพื่อนเข้ากลุ่ม
-              </span>
             </Link>
-          </div>
+              </div>
+              <div className="col-2">
+                <p onClick={() => leaveGroup(aboutGroupData.groupID)}
+                className="text-white text-center border-none my-0 px-1 py-2 "
+                style={{backgroundColor:"#B3261E" , borderRadius:"10px" , fontSize: "22.67px", }}
+                  >
+                    <FiLogOut />
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
