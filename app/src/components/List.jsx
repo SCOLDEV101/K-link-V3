@@ -255,7 +255,7 @@ function List({ listItem, fetchData }) {
                 popup: 'swal-popup-error',
               }
             });
-            fetchData();
+            setItems(prevItems => prevItems.filter(item => item.groupID !== groupID));
           } else {
             Swal.fire({
               position: "center",
@@ -334,10 +334,8 @@ function List({ listItem, fetchData }) {
               >
                 <img
                   src={
-                    item.type==="library" && item.thumbnail != null  ? `${config.SERVER_PATH}${item.thumbnail}`
-                     :item.image != null && item.image === "group-default.jpg"
-                      ? "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
-                    : item.image != null
+                    item.type==="library" && item.thumbnail != null  && item.thumbnail != undefined  ? `${config.SERVER_PATH}${item.thumbnail}`
+                    : item.image != null  && item.image != undefined
                       ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
                       : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
                   }
