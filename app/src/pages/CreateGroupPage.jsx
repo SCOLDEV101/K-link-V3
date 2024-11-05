@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { BiSolidImageAdd } from "react-icons/bi";
 import { IoIosCloseCircle } from "react-icons/io";
 import { FaPlus } from "react-icons/fa6";
 import axios from "axios";
@@ -9,7 +8,6 @@ import AddTag from "../components/AddTag";
 import Swal from 'sweetalert2'
 import "../index.css";
 
-const DaysOfWeek = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
 
 function CreateGroupPage() {
   const navigate = useNavigate();
@@ -23,8 +21,10 @@ function CreateGroupPage() {
   const [activityName, setActivityName] = useState(
     groupData.activityName || ""
   );
+  const [disabledMemberMax, setDisabledMemberMax] = useState(false)
   const [weekDate, setWeekDate] = useState(initialWeekDate || []);
-  const [actTime, setActTime] = useState(groupData.actTime || "");
+  const [startTime, setStartTime] = useState(groupData.startTime || "");
+  const [endTime, setEndTime] = useState(groupData.endTime || "");
   const [memberMax, setMemberMax] = useState(groupData.memberMax || "");
   const [location, setLocation] = useState(groupData.location || "");
   const [detail, setDetail] = useState(groupData.detail || "");
@@ -35,15 +35,15 @@ function CreateGroupPage() {
     }
     return [];
   });
-  // const [tag, setTag] = useState(groupData.tag || "");
+  const [tag, setTag] = useState(groupData.tag || "");
 
   const headersAuth = config.Headers().headers;
 
-  const toggleDay = (day) => {
-    if (weekDate.includes(day)) {
-      setWeekDate(weekDate.filter((d) => d !== day));
+  const toggleDay = (indexOfDay) => {
+    if (weekDate.includes(indexOfDay)) {
+      setWeekDate(weekDate.filter((d) => d !== indexOfDay));
     } else {
-      setWeekDate([...weekDate, day]);
+      setWeekDate([...weekDate, indexOfDay]);
     }
   };
 
@@ -52,14 +52,16 @@ function CreateGroupPage() {
     const selectedFile = event.target.files[0];
 
     if (selectedFile && allowedTypes.includes(selectedFile.type)) {
-      setImage(selectedFile); // เก็บไฟล์จริงแทน URL
+      setImage(selectedFile);
+      event.target.value = "";
     } else {
       alert("ไฟล์ที่คุณเลือกไม่รองรับ กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)");
+      event.target.value = "";
     }
   };
 
-  const handleImageRemove = async () => {
-    setImage(null);
+  const handleImageRemove = () => {
+    setImage("");
   };
 
   const handleFormSubmit = async () => {
@@ -91,7 +93,7 @@ function CreateGroupPage() {
       });
       return;
     }
-    if (!actTime) {
+    if (!startTime || !endTime) {
       Swal.fire({
         position: "center",
         title: "กรุณากรอกเวลา",
@@ -130,35 +132,36 @@ function CreateGroupPage() {
         container: 'swal-container',
         title: 'swal-title',
         popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
+        confirmButton: 'swal-confirm-button',
+        cancelButton: 'swal-cancel-button'
       }
     });
-  
-  if (result.isConfirmed) {
-    const formData = new FormData();
-    formData.append("activityName", activityName);
-    formData.append("weekDate", weekDate); //JSON.stringify(weekDate)
-    formData.append("actTime", actTime);
-    formData.append("memberMax", memberMax || 0);
-    formData.append("location", location);
-    formData.append("detail", detail);
-    if (image) formData.append("image", image);
-    const tagsString = tags.join(", ");
-    console.log("Save tags:", tagsString);
-    if (tagsString) formData.append("tag", tagsString);
 
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}:`, value.name); // แสดงชื่อไฟล์
-      } else {
-        console.log(`${key}:`, value);
+    if (result.isConfirmed) {
+      const formData = new FormData();
+      formData.append("activityName", activityName);
+      formData.append("weekDate", weekDate); //JSON.stringify(weekDate)
+      formData.append("startTime", startTime);
+      formData.append("endTime", endTime);
+      formData.append("memberMax", memberMax);
+      formData.append("location", location);
+      formData.append("detail", detail);
+      if (image) formData.append("image", image);
+      const tagsString = tags.join(", ");
+      console.log("Save tags:", tagsString);
+      if (tagsString) formData.append("tag", tagsString);
+
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}:`, value.name); // แสดงชื่อไฟล์
+        } else {
+          console.log(`${key}:`, value);
+        }
       }
-    }
 
       try {
         const response = await axios.post(
-          config.SERVER_PATH + `/api/hobby/create/`,
+          config.SERVER_PATH + `/api/hobby/createGroup`,
           formData,
           {
             headers: headersAuth,
@@ -240,7 +243,7 @@ function CreateGroupPage() {
       });
       return;
     }
-    if (!actTime) {
+    if (!startTime || !endTime) {
       alert("กรุณากรอกเวลา");
       Swal.fire({
         position: "center",
@@ -270,7 +273,7 @@ function CreateGroupPage() {
       return;
     }
 
-    
+
     const result = await Swal.fire({
       title: "ยืนยันการบันทึกหรือไม่?",
       showCancelButton: true,
@@ -281,130 +284,63 @@ function CreateGroupPage() {
         container: 'swal-container',
         title: 'swal-title',
         popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
+        confirmButton: 'swal-confirm-button',
+        cancelButton: 'swal-cancel-button'
       }
     });
-  
-    if (result.isConfirmed) {
-    const formData = new FormData();
-    formData.append("activityName", activityName);
-    formData.append("weekDate", weekDate); //JSON.stringify(weekDate)
-    formData.append("actTime", actTime);
-    formData.append("memberMax", memberMax);
-    formData.append("location", location);
-    formData.append("detail", detail);
-    if (image instanceof File) {
-      formData.append("image", image);
-    } else if (image === null) {
-      formData.append("image", null); 
-   } else {
-    formData.append("image", groupData.image); 
-    }
-    formData.append("tag", tags);
 
-    if (hID) {
-      console.log("HID : " + hID);
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`${key}:`, value.name);
-        } else {
-          console.log(`${key}:`, value);
-        }
-      }
-      try {
-        const response = await axios.post(
-          config.SERVER_PATH + `/api/hobby/update/${hID}`,
-          formData,
-          {
-            headers: headersAuth,
-            withCredentials: true,
-          }
-        );
-        if (response.data.status === "ok") {
-          console.log("edit group success");
-          Swal.fire({
-            position: "center",
-            title: "บันทึกการแก้ไขแล้ว",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-success',
-            }
-          });
-          navigate(-1);
-        } else {
-          console.log("failed to edit group");
-          Swal.fire({
-            position: "center",
-            title: "เกิดข้อผิดพลาด",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-error',
-            }
-          });
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        Swal.fire({
-          position: "center",
-          title: "เกิดข้อผิดพลาด",
-          showConfirmButton: false,
-          timer: 2000,
-          customClass: {
-            title: 'swal-title-success',
-            container: 'swal-container',
-            popup: 'swal-popup-error',
-          }
-        });
-      }
-    }
-  }
-  };
-
-  const deleteGroup = async (hID) => {
-    const result = await Swal.fire({
-      title: "ยืนยันการลบกลุ่มหรือไม่?",
-      showCancelButton: true,
-      confirmButtonText: "ตกลง",
-      cancelButtonText: "ยกเลิก",
-      customClass: {
-        container: 'swal-container',
-        title: 'swal-title',
-        popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
-      }
-    });
-  
     if (result.isConfirmed) {
-    try {
-      await axios
-        .delete(config.SERVER_PATH + "/api/hobby/delete/" + hID, {
-          headers: config.Headers().headers,
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (res.data.status === "ok") {
-            console.log("Delete hobby group success");
+      const formData = new FormData();
+      formData.append("activityName", activityName);
+      formData.append("weekDate", weekDate); //JSON.stringify(weekDate)
+      formData.append("startTime", startTime);
+      formData.append("endTime", endTime);
+      formData.append("memberMax", memberMax);
+      formData.append("location", location);
+      formData.append("detail", detail);
+      if (image instanceof File) {
+        formData.append("image", image);
+      } else if (image === null) {
+        formData.append("image", null);
+      } else {
+        formData.append("image", groupData.image);
+      }
+      formData.append("tag", tags);
+
+      if (hID) {
+        console.log("HID : " + hID);
+        for (const [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(`${key}:`, value.name);
+          } else {
+            console.log(`${key}:`, value);
+          }
+        }
+        try {
+          const response = await axios.post(
+            config.SERVER_PATH + `/api/hobby/updateGroup/${hID}`,
+            formData,
+            {
+              headers: headersAuth,
+              withCredentials: true,
+            }
+          );
+          if (response.data.status === "ok") {
+            console.log("edit group success");
             Swal.fire({
               position: "center",
-              title: "ลบกลุ่มแล้ว",
+              title: "บันทึกการแก้ไขแล้ว",
               showConfirmButton: false,
               timer: 2000,
               customClass: {
                 title: 'swal-title-success',
                 container: 'swal-container',
-                popup: 'swal-popup-error',
+                popup: 'swal-popup-success',
               }
             });
-            navigate("/hobby");
+            navigate(-1);
           } else {
+            console.log("failed to edit group");
             Swal.fire({
               position: "center",
               title: "เกิดข้อผิดพลาด",
@@ -417,23 +353,34 @@ function CreateGroupPage() {
               }
             });
           }
-        });
-    } catch (error) {
-      console.error("ERROR: ", error);
-      Swal.fire({
-        position: "center",
-        title: "เกิดข้อผิดพลาด",
-        showConfirmButton: false,
-        timer: 2000,
-        customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
+        } catch (error) {
+          console.error("Error:", error);
+          Swal.fire({
+            position: "center",
+            title: "เกิดข้อผิดพลาด",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+              title: 'swal-title-success',
+              container: 'swal-container',
+              popup: 'swal-popup-error',
+            }
+          });
         }
-      });
+      }
     }
-  }
   };
+
+  const dayColors = {
+    "จ.": "#FFB600",
+    "อ.": "#EFB8C8",
+    "พ.": "#7CB518",
+    "พฤ.": "#F96E20",
+    "ศ.": "#729BC0",
+    "ส.": "#A970C4",
+    "อา.": "#B3261E",
+  };
+  const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
 
   return (
     <div
@@ -443,6 +390,7 @@ function CreateGroupPage() {
         marginTop: "90px",
         overflow: "hidden",
         fontSize: "3.5vw",
+        background: "#fff"
       }}
     >
       <div
@@ -452,12 +400,12 @@ function CreateGroupPage() {
           overflowY: "auto",
         }}
       >
-        <div className="card m-4" style={{ border: "3px solid #FFB600" , borderRadius: "20px"}}>
+        <div className="card m-3 mt-5" style={{ borderRadius: "10px", boxShadow: "0 4px 13px rgba(0, 0, 0, .2)" }}>
           <div className="row p-3 my-2">
             <form action="">
               <label htmlFor="">
                 <p className="m-0">
-                  ชื่อกิจกรรม <span className="text-danger">*</span>
+                  ชื่อกลุ่ม<span className="text-danger">*</span>
                 </p>
               </label>
               <input
@@ -465,39 +413,108 @@ function CreateGroupPage() {
                 value={activityName}
                 onChange={(e) => setActivityName(e.target.value)}
                 placeholder="ชื่อกลุ่มหรือกิจกรรม..."
-                className="p-2 fs-6 w-100 form-control"
-                style={{ border: "1px solid #000000", borderRadius: "5px" }}
+                className="p-1 px-2 fs-6 w-100 form-control"
+                style={{ border: "1.5px solid #E7E7E7", borderRadius: "5px" }}
               />
             </form>
+            <div className="my-2">
+              <label htmlFor="">
+                <p className="m-0">
+                  เลือกรูปภาพ<span className="text-danger">*</span>
+                </p>
+              </label>
+              <div
+                className="p-2 w-100 d-flex flex-row justify-content-center align-items-center"
+                style={{
 
+                }}
+              >
+                <div
+                  className="d-flex flex-row justify-content-center align-items-center"
+                  style={{
+                    border: "1.5px solid #E7E7E7",
+                    borderRadius: "5px",
+                    width: "50px",
+                    height: "50px"
+                  }}
+                >
+                  <input
+                    type="file"
+                    style={{ display: "none" }}
+                    id="profileImageInput"
+                    onChange={handleImageChange}
+                    accept="image/jpeg, image/png, image/gif"
+                  />
+                  <label
+                    htmlFor="profileImageInput"
+                    style={{
+                      cursor: "pointer",
+                      color: "#979797",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <FaPlus
+                      className=""
+                      style={{ width: "1rem", height: "1rem" }}
+                    />
+                  </label>
+                </div>
+                {image && (
+                  <div className="position-relative">
+                    <img
+                      src={
+                        image instanceof File
+                          ? URL.createObjectURL(image)
+                          : `${config.SERVER_PATH}/uploaded/hobbyImage/${image}`
+                      }
+                      alt="Profile"
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "5px",
+                      }}
+                    />
+                    <IoIosCloseCircle
+                      type="button"
+                      className="position-absolute m-2 fs-3"
+                      style={{
+                        top: "-15px",
+                        right: "-15px",
+                        cursor: "pointer",
+                        color: "#FFB600",
+                      }}
+                      onClick={() => {
+                        handleImageRemove(); console.log(image);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
             <div>
               <div className="my-2">
                 <label htmlFor="">
                   <p className="m-0">
-                    วันที่ <span className="text-danger">*</span>
+                    เลือกวัน<span className="text-danger">*</span>
                   </p>
                 </label>
-                <div>
-                  {DaysOfWeek.map((day) => (
+                <div className="d-flex gap-2 my-2">
+                  {daysThai.map((day, index) => (
                     <button
-                      key={day}
+                      key={index}
                       type="button"
-                      className="my-1 mx-1 p-0"
+                      className="m-0"
                       style={{
-                        width: "7.5vw",
-                        height: "7.5vw",
-                        border: "1px solid currentColor",
-                        borderRadius: "50%",
-                        textDecoration: "none",
-                        cursor: "pointer",
-                        transition:
-                          "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease",
-                        backgroundColor: weekDate.includes(day)
-                          ? "#FFB600"
-                          : "#D9D9D9",
+                        paddingLeft: ".40rem",
+                        paddingRight: ".40rem",
                         color: "#000000",
+                        fontSize: "14px",
+                        border: `1.5px solid ${dayColors[day]}`,
+                        background: weekDate.includes(index) && `${dayColors[day]}`,
+                        borderRadius:
+                          day === "อา." || day === "พฤ." ? "15px" : "50%",
                       }}
-                      onClick={() => toggleDay(day)}
+                      onClick={() => toggleDay(index)}
                     >
                       {day}
                     </button>
@@ -505,60 +522,83 @@ function CreateGroupPage() {
                 </div>
               </div>
               <div className="row my-2">
-                <div className="col-7">
-                  <label>
-                    <p className="m-0">
-                      เวลา<span className="text-danger">*</span>
-                    </p>
-                  </label>
-                  <div>
-                    <input
-                      type="time"
-                      value={actTime}
-                      onChange={(e) => setActTime(e.target.value)}
-                      className="p-2 w-100 form-control"
-                      style={{
-                        border: "1px solid #000000",
-                        borderRadius: "5px",
-                        fontSize: "3vw",
-                      }}
-                    />
+                <div className="d-flex flex-row justify-content-center align-items-center">
+                  <div className="w-100">
+                    <label>
+                      <p className="m-0">
+                        ตั้งแต่<span className="text-danger">*</span>
+                      </p>
+                    </label>
+                    <div>
+                      <input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="p-1 px-2 fs-6 w-100 form-control"
+                        style={{
+                          color: "#000",
+                          border: "1.5px solid #E7E7E7",
+                          borderRadius: "5px",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="w-25 text-center mt-4">
+                    <span className="fs-2 fw-medium">-</span>
+                  </div>
+                  <div className="w-100">
+                    <label>
+                      <p className="m-0">
+                        จนถึง<span className="text-danger">*</span>
+                      </p>
+                    </label>
+                    <div>
+                      <input
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="p-1 px-2 fs-6 w-100 form-control"
+                        style={{
+                          color: "#000",
+                          border: "1.5px solid #E7E7E7",
+                          borderRadius: "5px",
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="col-5">
-                  <label>
-                    <p className="m-0">สมาชิก</p>
-                  </label>
-                  <div>
-                    <input
-                      type="number"
-                      value={memberMax === null ? "" : memberMax}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? null
-                            : Math.max(0, Math.min(99, Number(e.target.value)));
-                        setMemberMax(value);
-                      }}
-                      className="p-2 w-100 form-control"
-                      style={{
-                        border: "1px solid #000000",
-                        borderRadius: "5px",
-                        fontSize: "3vw",
-                      }}
-                      placeholder="จำนวนที่รับได้"
-                      min="0"
-                      max="99"
-                      step="1"
-                    />
-                  </div>
-                  <div>
-                    <p className="m-0" style={{ fontSize: "2vw" }}>
-                      <span className="text-danger">*</span>
-                      หากต้องการเปิดรับสมาชิกแบบไม่จำกัดจำนวนนให้เว้นว่างไว้
-                    </p>
-                  </div>
+              <div className="w-100">
+                <label>
+                  <p className="m-0">
+                    จำนวนสมาชิก<span className="text-danger">*</span>
+                  </p>
+                </label>
+                <div className="w-100 d-flex gap-2 flex-row justify-content-center align-items-center">
+                  <input
+                    type="number"
+                    value={memberMax === null ? "" : memberMax}
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === ""
+                          ? null //null
+                          : Math.max(0, Math.min(99, Number(e.target.value)));
+                      setMemberMax(value);
+                    }}
+                    className="p-1 px-2 form-control"
+                    style={{
+                      color: "#000",
+                      width: "60%",
+                      border: "1.5px solid #E7E7E7",
+                      borderRadius: "5px",
+                    }}
+                    placeholder={disabledMemberMax ? "ไม่จำกัด" : "ชั้นต่ำ 2 คน"}
+                    min="2"
+                    step="1"
+                    disabled={disabledMemberMax}
+                  />
+                  <button type="button" onClick={() => { setMemberMax(""); setDisabledMemberMax(!disabledMemberMax); }} className="p-1 fs-6 text-dark" style={{ width: "40%", background: disabledMemberMax ? "#F89603" : "#E7E7E7", border: "1.5px solid #E7E7E7", borderRadius: "5px" }}>ไม่จำกัด</button>
                 </div>
               </div>
 
@@ -574,9 +614,11 @@ function CreateGroupPage() {
                     placeholder="สถานที่"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="p-2 fs-6 w-100 form-control"
+                    className="p-1 ps-2 fs-6 w-100 form-control"
                     style={{
-                      border: "1px solid #000000",
+                      color: "#000",
+                      width: "60%",
+                      border: "1.5px solid #E7E7E7",
                       borderRadius: "5px",
                     }}
                   />
@@ -589,91 +631,19 @@ function CreateGroupPage() {
                   </label>
                   <textarea
                     placeholder="รายละเอียด"
-                    className="p-2 fs-6 w-100 form-control"
+                    className="p-1 ps-2 fs-6 w-100 form-control"
                     value={detail}
                     onChange={(e) => setDetail(e.target.value)}
                     style={{
-                      border: "1px solid #000000",
+                      color: "#000",
+                      width: "60%",
+                      border: "1.5px solid #E7E7E7",
                       borderRadius: "5px",
                     }}
                     rows="3"
                   ></textarea>
                 </form>
               </div>
-
-              <div className="row my-2">
-                <form action="">
-                  <label htmlFor="">
-                    <p className="m-0">รูปโปรไฟล์กลุ่ม</p>
-                  </label>
-                  <div
-                    className="p-2 fs-6 w-100 form-control d-flex justify-content-center"
-                    style={{
-                      border: "1px solid #000000",
-                      borderRadius: "5px",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <input
-                      type="file"
-                      style={{ display: "none" }}
-                      id="profileImageInput"
-                      onChange={handleImageChange}
-                      accept="image/jpeg, image/png, image/gif"
-                    />
-
-                    <label
-                      htmlFor="profileImageInput"
-                      style={{
-                        cursor: "pointer",
-                        color: "#000000",
-                        textDecoration: "none",
-                      }}
-                    >
-                      {image ? null : (
-                        <BiSolidImageAdd
-                          className="m-5"
-                          style={{ width: "10vw", height: "10vw" }}
-                        />
-                      )}
-                    </label>
-                    {image && (
-                      <div className="position-relative mt-2">
-                        <img
-                          // src={
-                          //   groupData.image === image
-                          // ? `http://127.0.0.1:8000/uploaded/hobbyImage/${image}`
-                          //     : URL.createObjectURL(image)
-                          // }
-                          src={
-                            image instanceof File
-                              ? URL.createObjectURL(image)
-                              : `${config.SERVER_PATH}/uploaded/hobbyImage/${image}`
-                          }
-                          alt="Profile"
-                          style={{
-                            width: "30vw",
-                            height: "30vw",
-                            borderRadius: "5px",
-                          }}
-                        />
-                        <IoIosCloseCircle
-                          type="button"
-                          className="position-absolute top-0 end-0 m-2 fs-3"
-                          style={{
-                            cursor: "pointer",
-                            color: "#FFB600",
-                          }}
-                          onClick={() => setImage(null)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </form>
-              </div>
-              {/* //////////////////////////////////////////////////////////////// */}
-
               <div className="row my-2">
                 <form action="">
                   <label htmlFor="">
@@ -682,27 +652,19 @@ function CreateGroupPage() {
                   <div
                     className="p-2 fs-6 w-100 form-control d-flex flex-column justify-content-center"
                     style={{
-                      border: "1px solid #000000",
+                      color: "#000",
+                      width: "60%",
+                      border: "1.5px solid #E7E7E7",
                       borderRadius: "5px",
-                      display: "flex",
-                      alignItems: "center",
                     }}
                   >
-                    {/* <input
-                      type=""
-                      style={{ display: "none" }}
-                      onChange={"ฟังชั่นเกืด addtag"}
-                    /> */}
                     <label
                       style={{
                         cursor: "pointer",
-                        color: "#000000",
+                        color: "#000",
                         textDecoration: "none",
                       }}
                     >
-                      <p style={{ fontSize: "3vw", color: "#D9D9D9D9" }}>
-                        ใส่แฮชแท็กเพื่อให้ทุกคนสามารถเข้าถึงกลุ่มของคุณได้ง่ายขึ้น
-                      </p>
                       {true && ( //tag ? null :
                         <>
                           {tags.length > 0 && (
@@ -729,26 +691,18 @@ function CreateGroupPage() {
                             FunctionToSave={setTags}
                             btnHTML={
                               <div
-                                className="d-flex justify-content-center align-items-center m-5 shadow-lg p-0"
+                                className="d-flex justify-content-center align-items-center mx-5 my-3 shadow-lg p-0"
                                 data-bs-toggle="offcanvas"
                                 data-bs-target="#addTagOffcanvas"
                                 aria-controls="addTagOffcanvas"
                                 style={{
-                                  borderRadius: "10px",
-                                  backgroundColor: "#D9D9D9D9",
+                                  borderRadius: "5px",
+                                  backgroundColor: "#F89603",
                                 }}
                               >
-                                <FaPlus
-                                  style={{
-                                    width: "1.2rem",
-                                    height: "1.2rem",
-                                    cursor: "pointer",
-                                    color: "#FFB600",
-                                  }}
-                                />
                                 <p
                                   className="my-0 mx-1 py-2"
-                                  style={{ fontSize: ".8rem" }}
+                                  style={{ fontSize: "1.025rem", color: "#FFFF" }}
                                 >
                                   เพิ่มแท็ก
                                 </p>
@@ -763,10 +717,17 @@ function CreateGroupPage() {
                 </form>
               </div>
             </div>
-            <div className="d-flex justify-content-center align-items-center mt-3">
+            <div className="d-flex justify-content-center align-items-center mt-2 gap-2">
               <button
-                className="btn btn-warning m-2 py-2 px-4 w-100"
-                style={{ fontSize: "1rem" }}
+                className="btn py-2 px-4 text-dark"
+                style={{ fontSize: "1rem", borderRadius: "10px", background: "#E7E7E7", width: "40%" }}
+                onClick={() => window.history.back()}
+              >
+                ยกเลิก
+              </button>
+              <button
+                className="btn py-2 px-4"
+                style={{ color: "#FFFF", fontSize: "1rem", borderRadius: "10px", width: "60%", background: "#F89603" }}
                 onClick={() => {
                   if (status === "update") handleSaved();
                   else handleFormSubmit();
@@ -774,32 +735,7 @@ function CreateGroupPage() {
               >
                 {status ? status === "update" && "บันทึก" : "สร้าง"}
               </button>
-              <button
-                className="btn btn-secondary m-2 py-2 px-4 w-100 text-dark"
-                style={{ fontSize: "1rem" }}
-                onClick={() => window.history.back()}
-              >
-                ยกเลิก
-              </button>
             </div>
-            {status === "update" && (
-              <div className="mt-2 d-flex flex-row gap-3 justify-content-center align-items-center">
-                <button
-                  className="btn py-2 px-4 w-100"
-                  style={{
-                    fontSize: "1rem",
-                    background: "#FF0101",
-                    width: "100%",
-                    color: "white",
-                  }}
-                  onClick={() => {
-                    deleteGroup(hID);
-                  }}
-                >
-                  ลบกลุ่ม
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
