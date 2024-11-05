@@ -74,6 +74,10 @@ class MyPostResource extends JsonResource
 
         if ($this->type == 'hobby') {
 
+            if($isMember == false && $isRequest == false){
+                return null;
+            }
+
             if (count($members) >= $this->hobby->memberMax && $this->hobby->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
@@ -84,7 +88,7 @@ class MyPostResource extends JsonResource
             } else {
                 $role = 'normal';
             };
-    
+            
             return [
                 'groupID' => $this->hobby->id,
                 'type' => $this->type,
@@ -113,6 +117,11 @@ class MyPostResource extends JsonResource
         }
         
         if ($this->type == 'tutoring') {
+
+            if($isMember == false && $isRequest == false){
+                return null;
+            }
+
             if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
@@ -162,6 +171,10 @@ class MyPostResource extends JsonResource
             } else {
                 $role = 'normal';
             };
+
+            if($isLeader == false){
+                return null;
+            }
 
             return [
                 'groupID' => $this->library->id,

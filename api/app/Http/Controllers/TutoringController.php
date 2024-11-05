@@ -24,10 +24,20 @@ class TutoringController extends Controller
 {
     function showAllGroup(Request $request)
     { {
-            $tutoringDb = GroupModel::where([['type', 'tutoring'],['status', 1]])
+            $tutoringDb = GroupModel::where([['type', 'tutoring'], ['status', 1]])
                 ->orderBy('updated_at', 'DESC')
-                ->with(['tutoring','bookmark','tutoring.imageOrFile','tutoring.leaderGroup','tutoring.faculty','tutoring.major',
-                    'tutoring.department','member','request','groupDay','groupTag'
+                ->with([
+                    'tutoring',
+                    'bookmark',
+                    'tutoring.imageOrFile',
+                    'tutoring.leaderGroup',
+                    'tutoring.faculty',
+                    'tutoring.major',
+                    'tutoring.department',
+                    'member',
+                    'request',
+                    'groupDay',
+                    'groupTag'
                 ])
                 ->paginate(8);
 
@@ -338,22 +348,23 @@ class TutoringController extends Controller
             //-------------------- Prepare members data
             $member = [];
             $leader = [];
+            $leaderDb = UserModel::where([['id', $groupDb->tutoring->leader], ['status', 1]])->first();
 
             foreach ($groupDb->member as $eachMember) {
-                if ($eachMember->id != $groupDb->tutoring->leader) {
-                    $member[] = [
-                        'username' => $eachMember->username,
-                        'uID' => $eachMember->id,
-                        'isMe' => ($eachMember->id == auth()->user()->id)
-                    ];
-                } else {
-                    $leader[] = [
-                        'username' => $eachMember->username,
-                        'uID' => $eachMember->id,
-                        'isMe' => ($eachMember->id == auth()->user()->id)
-                    ];
-                }
+                $member[] = [
+                    'username' => $eachMember->username,
+                    'uID' => $eachMember->id,
+                    'isMe' => boolval($eachMember->id == auth()->user()->id)
+                ];
             }
+
+            $leader[] = [
+                'username' => $leaderDb->username,
+                'uID' => $leaderDb->id,
+                'isMe' => boolval($leaderDb->id == auth()->user()->id)
+            ];
+
+            $members = $leader + $member;
             //--------------------
 
             //-------------------- If user is leader
@@ -368,8 +379,7 @@ class TutoringController extends Controller
                 }
                 $data = [
                     'groupName' => $groupDb->tutoring->name,
-                    'leader' => $leader,
-                    'members' => $member,
+                    'members' => $members,
                     'requestCount' => $requestCount
                 ];
             }
@@ -378,8 +388,7 @@ class TutoringController extends Controller
                 $role = 'normal';
                 $data = [
                     'groupName' => $groupDb->tutoring->name,
-                    'leader' => $leader,
-                    'members' => $member
+                    'members' => $members
                 ];
             }
             //--------------------
@@ -671,7 +680,7 @@ class TutoringController extends Controller
         $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'member'])
             ->first();
-        
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',
