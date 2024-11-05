@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosCloseCircle } from "react-icons/io";
 import { FaPlus } from "react-icons/fa6";
 import axios from "axios";
@@ -37,6 +37,9 @@ function CreateGroupPage() {
   });
   const [tag, setTag] = useState(groupData.tag || "");
 
+  const [imageSelected, setImageSelected] = useState(null);
+  const [defaultImage, setDefaultImage] = useState(null);
+
   const headersAuth = config.Headers().headers;
 
   const toggleDay = (indexOfDay) => {
@@ -50,8 +53,10 @@ function CreateGroupPage() {
   const handleImageChange = (event) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
     const selectedFile = event.target.files[0];
+    setImageSelected(selectedFile)
 
     if (selectedFile && allowedTypes.includes(selectedFile.type)) {
+      setDefaultImage(null);
       setImage(selectedFile);
       event.target.value = "";
     } else {
@@ -60,8 +65,16 @@ function CreateGroupPage() {
     }
   };
 
-  const handleImageRemove = () => {
-    setImage("");
+  const handleSelectedDefaultImageFile = async (src) => {
+    try {
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const file = new File([blob], src.split('/').pop(), { type: blob.type });
+      setDefaultImage(file);
+      console.log("Selected Image File:", file);
+    } catch (error) {
+      console.error("Error fetching image:", error);
+    }
   };
 
   const handleFormSubmit = async () => {
@@ -146,7 +159,13 @@ function CreateGroupPage() {
       formData.append("memberMax", memberMax);
       formData.append("location", location);
       formData.append("detail", detail);
-      if (image) formData.append("image", image);
+      if (image && (image !== defaultImage && defaultImage)) {
+        console.log(defaultImage);
+        formData.append("image", defaultImage)
+      } else if (image && (defaultImage === null)) {
+        formData.append("image", image)
+        console.log(image);
+      }
       const tagsString = tags.join(", ");
       console.log("Save tags:", tagsString);
       if (tagsString) formData.append("tag", tagsString);
@@ -382,6 +401,21 @@ function CreateGroupPage() {
   };
   const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
 
+  const DefaultImageUrl = [
+    {
+      src: "../slide/s1.jpeg",
+      alt: "d-1"
+    },
+    {
+      src: "../slide/s2.jpg",
+      alt: "d-2"
+    },
+    {
+      src: "../slide/s3.jpg",
+      alt: "d-3"
+    }
+  ];
+
   return (
     <div
       className="d-flex flex-column align-items-center"
@@ -424,9 +458,8 @@ function CreateGroupPage() {
                 </p>
               </label>
               <div
-                className="p-2 w-100 d-flex flex-row justify-content-center align-items-center"
+                className="p-0 w-100 d-flex flex-row justify-content-start align-items-center gap-2 flex-wrap"
                 style={{
-
                 }}
               >
                 <div
@@ -434,8 +467,8 @@ function CreateGroupPage() {
                   style={{
                     border: "1.5px solid #E7E7E7",
                     borderRadius: "5px",
-                    width: "50px",
-                    height: "50px"
+                    width: "45px",
+                    height: "45px"
                   }}
                 >
                   <input
@@ -459,36 +492,52 @@ function CreateGroupPage() {
                     />
                   </label>
                 </div>
-                {image && (
-                  <div className="position-relative">
+                <div className="position-relative">
+                  {image ?
                     <img
                       src={
                         image instanceof File
                           ? URL.createObjectURL(image)
                           : `${config.SERVER_PATH}/uploaded/hobbyImage/${image}`
                       }
-                      alt="Profile"
+                      alt=""
+                      onClick={() => { setImageSelected(image); setImage(image); setDefaultImage(null); }}
                       style={{
-                        width: "50px",
-                        height: "50px",
+                        width: "45px",
+                        height: "45px",
                         borderRadius: "5px",
+                        border: "1.5px solid #E7E7E7",
+                        boxShadow: imageSelected === image ? "0 0 5px #FFB600" : "",
                       }}
                     />
-                    <IoIosCloseCircle
-                      type="button"
-                      className="position-absolute m-2 fs-3"
+                    :
+                    <div
                       style={{
-                        top: "-15px",
-                        right: "-15px",
-                        cursor: "pointer",
-                        color: "#FFB600",
+                        width: "45px",
+                        height: "45px",
+                        borderRadius: "5px",
+                        background: "#D9D9D9D9",
+                        border: "1.5px solid #E7E7E7",
                       }}
-                      onClick={() => {
-                        handleImageRemove(); console.log(image);
-                      }}
-                    />
-                  </div>
-                )}
+                    >
+                    </div>
+                  }
+                </div>
+                {DefaultImageUrl.length > 0 && DefaultImageUrl.map((item, idx) => (
+                  <img
+                    key={item.alt}
+                    onClick={() => { handleSelectedDefaultImageFile(item.src); setImageSelected(idx); }}
+                    src={item.src}
+                    alt={item.alt}
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      borderRadius: "5px",
+                      border: "1.5px solid #E7E7E7",
+                      boxShadow: imageSelected === idx ? "0 0 5px #FFB600" : "",
+                    }}
+                  />
+                ))}
               </div>
             </div>
             <div>
