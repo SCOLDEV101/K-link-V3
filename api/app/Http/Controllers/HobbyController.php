@@ -391,9 +391,9 @@ class HobbyController extends Controller
             ->first();
 
         if ($groupDb) {
+            //-------------------- Prepare members data
             $member = [];
             $leader = [];
-            //-------------------- Prepare members data
             $leaderDb = UserModel::where([['id', $groupDb->hobby->leader], ['status', 1]])->first();
 
             foreach ($groupDb->member as $eachMember) {

@@ -46,8 +46,6 @@ class GroupResource extends JsonResource
             }
         }
 
-
-
         $bookmarkArray = [];
         if ($this->bookmark) {
             foreach ($this->bookmark as $eachBookmark) {
