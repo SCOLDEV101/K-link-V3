@@ -167,7 +167,7 @@ class TutoringController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create tutoring group success.',
-                    'hID' => $groupID
+                    'groupID' => $groupID
                 ], 200);
             }
         } catch (Exception $e) {
@@ -397,7 +397,7 @@ class TutoringController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'fetch member tutoring group success.',
-                    'hID' => $groupID,
+                    'groupID' => $groupID,
                     'data' => $data,
                     'role' => $role,
                     'this' => auth()->user()->id

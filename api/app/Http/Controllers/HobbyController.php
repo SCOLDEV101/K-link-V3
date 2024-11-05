@@ -193,7 +193,7 @@ class HobbyController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create hobby group success.',
-                    'hID' => $groupID
+                    'groupID' => $groupID
                 ], 200);
             }
         } catch (Exception $e) {
@@ -443,7 +443,7 @@ class HobbyController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'fetch member hobby group success.',
-                    'hID' => $groupID,
+                    'groupID' => $groupID,
                     'data' => $data,
                     'role' => $role,
                     'this' => auth()->user()->id

@@ -42,7 +42,7 @@ function SearchPage() {
       setFetching(true); // for waiting fetching 
       await axios
         .post(
-          config.SERVER_PATH + `/api/searching/search/${feature}`,
+          config.SERVER_PATH + `/api/search/${feature}`,
           { keyword: inputValue },
           { headers: config.Headers().headers, withCredentials: true }
         )

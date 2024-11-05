@@ -63,7 +63,7 @@ class GroupModel extends Model
     use HasFactory;
 
     public static $searchValidator = [
-        ['keyword' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u']],
+        ['keyword' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\-_.\s]+$/u']],
         ['keyword.regex' => 'keyword can only contain letters, numbers and whitespaces.']
     ];
 }

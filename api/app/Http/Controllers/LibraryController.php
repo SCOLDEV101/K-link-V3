@@ -141,7 +141,7 @@ class LibraryController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create library success.',
-                    'hID' => $groupID,
+                    'groupID' => $groupID,
                 ], 200);
             }
             //-----------------------
