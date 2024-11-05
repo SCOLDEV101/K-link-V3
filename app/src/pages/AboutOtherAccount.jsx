@@ -176,7 +176,7 @@ const AboutOtherAccount = () => {
               </button>
               </div>
             </div>
-          ) : role === "user" ? (
+          ) : role === "normal" ? (
             <div
               className="card mx-3 mb-5"
               style={{
