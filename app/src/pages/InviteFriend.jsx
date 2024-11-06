@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { MdGroupAdd } from "react-icons/md";
-import { FaSearch } from "react-icons/fa";
+import { IoSearch } from "react-icons/io5";
 import { useLocation } from "react-router-dom";
 import config from "../constants/function";
 
@@ -183,33 +182,42 @@ const InviteFriend = () => {
         background: "#F6F6F6",
       }}
     >
-      <form className="px-1" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group mt-3">
           <div
-            className="d-flex flex-row align-items-center gap-2 rounded-pill px-3 py-1 w-100"
+            className="bg-white py-4 px-3 my-3 mx-3 border-none"
             style={{
-              background: "#D9D9D9",
-              boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
-            }}
+              borderRadius:"10px",
+              boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+              }} 
           >
+          <p className="my-0">ค้นหา</p>
+          <div className="row row-cols-lg-auto g-3 align-items-center px-2">
+            <div className="col-10" style={{paddingLeft:"0"}}>
             <input
               type="text"
-              className="form-control"
-              placeholder="Search..."
+              className="form-control py-2 px-3 "
+              placeholder="ค้นหาชื่อเพื่อนหรือรหัสนักศึกษา"
               name="search_Field_Box"
               value={filter.search_Field_Box}
               onChange={handleChange}
               style={{
-                outline: "none",
                 background: "transparent",
-                border: "none",
                 boxShadow: "none",
+                borderRadius:"5px",
               }}
             />
-            <FaSearch style={{ fontWeight: "bold", fontSize: "24px" }} />
+            </div>
+            <div className="col-2 py-2 text-center" style={{
+              backgroundColor:"#F89603",
+              borderRadius:"5px",
+            }}
+            onClick={(e) => e.preventDefault()}
+            >
+            <IoSearch className="text-white" style={{ fontWeight: "bold", fontSize: "24px" }} />
+            </div>
           </div>
         </div>
-      </form>
+        </div>
       <div
         className="mt-3" // bg-secondary
         style={{
@@ -222,15 +230,18 @@ const InviteFriend = () => {
     <div
       className="bg-white py-2 px-2 mx-3 my-3 border-none"
       style={{
-        borderRadius:"15px",
+        borderRadius:"10px",
         boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
         }} 
     >
         <ul className="list-unstyled m-0 p-0">
-          {Users.length > 0 &&
+          {Users.length ? (
             Users.map((item, i) => (
               <ListItem key={i} item={item} func={InviteFriend} />
-            ))}
+            ))
+          ) : (
+            <p className="py-4 my-0 text-center" style={{ color: "#979797" }}>-- ไม่พบผู้ใช้ --</p>
+          )}
         </ul>
       </div>
     </div>

@@ -748,15 +748,15 @@ function List({ listItem, fetchData }) {
                     ปิด
                   </button>
                   {item.role === "leader" && 
-                                    <button
-                                    className="btn py-1 px-3 my-auto mx-1"
-                                    style={{ fontSize: "15px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", backgroundColor:"#B3261E" }}
-                                    onClick={() => {
-                                      deleteGroup(item.groupID , item.type);
-                                    }}
-                                  >
-                                    <TbTrashFilled className="text-white"/>
-                                  </button>
+                    <button
+                    className="btn py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "15px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", backgroundColor:"#B3261E" }}
+                    onClick={() => {
+                      deleteGroup(item.groupID , item.type);
+                    }}
+                  >
+                    <TbTrashFilled className="text-white"/>
+                  </button>
                     }
                   </>
                       :<></>  }
