@@ -53,9 +53,9 @@ function MyPost() {
   };
 
   const categories = [
-    { name: "Hobby", checkVariable: "isHobby" },
-    { name: "Library", checkVariable: "isLibrary" },
-    { name: "Tutoring", checkVariable: "isTutoring" },
+    // { name: "Hobby", checkVariable: "isHobby" },
+    // { name: "Library", checkVariable: "isLibrary" },
+    // { name: "Tutoring", checkVariable: "isTutoring" },
     { name: "กลุ่มที่เข้าร่วมแล้ว", checkVariable: "isMember" },
     { name: "กลุ่มที่รอการตอบรับ", checkVariable: "isRequest" },
     { name: "โพสต์ของฉัน", checkVariable: "isLeader" },
