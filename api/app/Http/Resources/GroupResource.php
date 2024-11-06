@@ -58,7 +58,7 @@ class GroupResource extends JsonResource
         }
 
         if ($this->type == 'hobby') {
-            if ($this->tutoring->memberMax == null || count($members) < $this->tutoring->memberMax) {
+            if ($this->hobby->memberMax == null || count($members) < $this->hobby->memberMax) {
                 $status = 'join';
                 if (in_array($uID, $requests)) {
                     $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
@@ -72,29 +72,48 @@ class GroupResource extends JsonResource
             if ($this->hobby->leaderGroup->id == $uID) {
                 $role = 'leader';
                 $status = 'member';
+                return [
+                    'groupID' => $this->hobby->id,
+                    'type' => $this->type,
+                    'image' => $this->hobby->imageOrFile->name ?? 'group-default.jpg',
+                    'tag' => $tags,
+                    'member' => count($members),
+                    'request' => count($requests),
+                    'memberMax' => $this->hobby->memberMax,
+                    'activityName' => $this->hobby->name,
+                    'leader' => $this->hobby->leaderGroup->username,
+                    'weekDate' => $days,
+                    'startTime' => $this->hobby->startTime,
+                    'endTime' => $this->hobby->endTime,
+                    'location' => $this->hobby->location,
+                    'detail' => $this->hobby->detail,
+                    'userstatus' => $status,
+                    'role' => $role,
+                    'bookmark' => $bookmark ?? false,
+                ];
             } else {
                 $role = 'normal';
+                return [
+                    'groupID' => $this->hobby->id,
+                    'type' => $this->type,
+                    'image' => $this->hobby->imageOrFile->name ?? 'group-default.jpg',
+                    'tag' => $tags,
+                    'member' => count($members),
+                    'memberMax' => $this->hobby->memberMax,
+                    'activityName' => $this->hobby->name,
+                    'leader' => $this->hobby->leaderGroup->username,
+                    'weekDate' => $days,
+                    'startTime' => $this->hobby->startTime,
+                    'endTime' => $this->hobby->endTime,
+                    'location' => $this->hobby->location,
+                    'detail' => $this->hobby->detail,
+                    'userstatus' => $status,
+                    'role' => $role,
+                    'bookmark' => $bookmark ?? false,
+                ];
             };
 
-            return [
-                'groupID' => $this->hobby->id,
-                'type' => $this->type,
-                'image' => $this->hobby->imageOrFile->name ?? 'group-default.jpg',
-                'tag' => $tags,
-                'member' => count($members),
-                'request' => count($requests),
-                'memberMax' => $this->hobby->memberMax,
-                'activityName' => $this->hobby->name,
-                'leader' => $this->hobby->leaderGroup->username,
-                'weekDate' => $days,
-                'startTime' => $this->hobby->startTime,
-                'endTime' => $this->hobby->endTime,
-                'location' => $this->hobby->location,
-                'detail' => $this->hobby->detail,
-                'userstatus' => $status,
-                'role' => $role,
-                'bookmark' => $bookmark ?? false,
-            ];
+            
         }
 
         if ($this->type == 'tutoring') {
@@ -112,32 +131,54 @@ class GroupResource extends JsonResource
             if ($this->tutoring->leaderGroup->id == $uID) {
                 $role = 'leader';
                 $status = 'member';
+                return [
+                    'groupID' => $this->tutoring->id,
+                    'type' => $this->type,
+                    'tag' => $tags,
+                    'image' => $this->tutoring->imageOrFile->name ?? 'group-default.jpg',
+                    'member' => count($members),
+                    'request' => count($requests),
+                    'memberMax' => $this->tutoring->memberMax,
+                    'activityName' => $this->tutoring->name,
+                    'teachBy' => $this->tutoring->leaderGroup->username,
+                    'location' => $this->tutoring->location,
+                    'detail' => $this->tutoring->detail,
+                    'Starttime' => $this->tutoring->startTime,
+                    'Endtime' => $this->tutoring->endTime,
+                    'date' => $this->tutoring->date,
+                    'faculty' => $this->tutoring->faculty->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
+                    'major' => $this->tutoring->major->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
+                    'section' => $this->tutoring->department->name ?? 'Unknown',
+                    'role' => $role,
+                    'userstatus' => $status,
+                    'bookmark' => $bookmark ?? false
+                ];
             } else {
                 $role = 'normal';
+                return [
+                    'groupID' => $this->tutoring->id,
+                    'type' => $this->type,
+                    'tag' => $tags,
+                    'image' => $this->tutoring->imageOrFile->name ?? 'group-default.jpg',
+                    'member' => count($members),
+                    'memberMax' => $this->tutoring->memberMax,
+                    'activityName' => $this->tutoring->name,
+                    'teachBy' => $this->tutoring->leaderGroup->username,
+                    'location' => $this->tutoring->location,
+                    'detail' => $this->tutoring->detail,
+                    'Starttime' => $this->tutoring->startTime,
+                    'Endtime' => $this->tutoring->endTime,
+                    'date' => $this->tutoring->date,
+                    'faculty' => $this->tutoring->faculty->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
+                    'major' => $this->tutoring->major->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
+                    'section' => $this->tutoring->department->name ?? 'Unknown',
+                    'role' => $role,
+                    'userstatus' => $status,
+                    'bookmark' => $bookmark ?? false
+                ];
             };
 
-            return [
-                'groupID' => $this->tutoring->id,
-                'type' => $this->type,
-                'tag' => $tags,
-                'image' => $this->tutoring->imageOrFile->name ?? 'group-default.jpg',
-                'member' => count($members),
-                'request' => count($requests),
-                'memberMax' => $this->tutoring->memberMax,
-                'activityName' => $this->tutoring->name,
-                'teachBy' => $this->tutoring->leaderGroup->username,
-                'location' => $this->tutoring->location,
-                'detail' => $this->tutoring->detail,
-                'Starttime' => $this->tutoring->startTime,
-                'Endtime' => $this->tutoring->endTime,
-                'date' => $this->tutoring->date,
-                'faculty' => $this->tutoring->faculty->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
-                'major' => $this->tutoring->major->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
-                'section' => $this->tutoring->department->name ?? 'Unknown',
-                'role' => $role,
-                'userstatus' => $status,
-                'bookmark' => $bookmark ?? false
-            ];
+            
         }
         if ($this->type == 'library') {
             $filename = basename($this->library->imageOrFile->name, '.pdf');
