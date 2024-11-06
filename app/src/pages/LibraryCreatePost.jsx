@@ -466,7 +466,7 @@ function LibraryCreatePost() {
                     color: formData.facultyID === "" ? "#979797" : "#979797", // "#979797" : "#000000"
                   }}
                 >
-                  <option value="" className="text-center">
+                  <option value="" className="text-center text-dark">
                     -- สาขาวิชา --
                   </option>
                   {formData.majorID &&
@@ -481,7 +481,7 @@ function LibraryCreatePost() {
                         <option
                           key={section.sectionID}
                           value={section.sectionID}
-                          className="text-center"
+                          className="text-center text-dark"
                         >
                           {section.sectionName}
                         </option>

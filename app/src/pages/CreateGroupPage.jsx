@@ -782,7 +782,7 @@ function CreateGroupPage() {
                   else handleFormSubmit();
                 }}
               >
-                {status ? status === "update" && "บันทึก" : "สร้าง"}
+                {status ? status === "update" && "บันทึก" : "สร้างกลุ่ม"}
               </button>
             </div>
           </div>

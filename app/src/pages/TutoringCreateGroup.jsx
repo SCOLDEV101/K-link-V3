@@ -9,7 +9,7 @@ import {
 } from "../constants/constants";
 import AddTag from "../components/AddTag";
 import { FaPlus } from "react-icons/fa6";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 import "../index.css";
 
 function TutoringCreateGroup() {
@@ -20,6 +20,78 @@ function TutoringCreateGroup() {
   // const data = nestDataFacultys(DATA); // with API
   const data = nestDataFacultys(fetchData); // withOut API
   console.log(data);
+
+  const DefaultImageUrl = [
+    {
+      src: "../slide/s1.jpeg",
+      alt: "d-1",
+    },
+    {
+      src: "../slide/s2.jpg",
+      alt: "d-2",
+    },
+    {
+      src: "../slide/s3.jpg",
+      alt: "d-3",
+    },
+  ];
+  const [image, setImage] = useState(null);
+  const [imageSelected, setImageSelected] = useState(null);
+  const [defaultImage, setDefaultImage] = useState(null);
+  const [memberMax, setMemberMax] = useState(groupData.memberMax || "");
+  const [disabledMemberMax, setDisabledMemberMax] = useState(false);
+  const [detail, setDetail] = useState(groupData.detail || "");
+
+  const handleImageChange = (event) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    const selectedFile = event.target.files[0];
+    setImageSelected(selectedFile);
+
+    if (selectedFile && allowedTypes.includes(selectedFile.type)) {
+      setDefaultImage(null);
+      setImage(selectedFile);
+      event.target.value = "";
+    } else {
+      alert("ไฟล์ที่คุณเลือกไม่รองรับ กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)");
+      event.target.value = "";
+    }
+  };
+
+  const handleSelectedDefaultImageFile = async (src) => {
+    try {
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const file = new File([blob], src.split("/").pop(), { type: blob.type });
+      setDefaultImage(file);
+      console.log("Selected Image File:", file);
+    } catch (error) {
+      console.error("Error fetching image:", error);
+    }
+  };
+
+  const dayColors = {
+    "จ.": "#FFB600",
+    "อ.": "#EFB8C8",
+    "พ.": "#7CB518",
+    "พฤ.": "#F96E20",
+    "ศ.": "#729BC0",
+    "ส.": "#A970C4",
+    "อา.": "#B3261E",
+  };
+  const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+  const initialWeekDate = groupData.weekDate
+    ? groupData.weekDate.split(",").map((day) => day.trim())
+    : [];
+  const [weekDate, setWeekDate] = useState(initialWeekDate || []);
+  const [endTime, setEndTime] = useState(groupData.endTime || "");
+  const [startTime, setStartTime] = useState(groupData.startTime || "");
+  const toggleDay = (indexOfDay) => {
+    if (weekDate.includes(indexOfDay)) {
+      setWeekDate(weekDate.filter((d) => d !== indexOfDay));
+    } else {
+      setWeekDate([...weekDate, indexOfDay]);
+    }
+  };
 
   const initialFacultyID =
     data.find(
@@ -155,49 +227,49 @@ function TutoringCreateGroup() {
           confirmButtonText: "ตกลง",
           cancelButtonText: "ยกเลิก",
           customClass: {
-            container: 'swal-container',
-            title: 'swal-title',
-            popup: 'swal-popup',
-            confirmButton: 'swal-confirm-button', 
-            cancelButton: 'swal-cancel-button'    
-          }
+            container: "swal-container",
+            title: "swal-title",
+            popup: "swal-popup",
+            confirmButton: "swal-confirm-button",
+            cancelButton: "swal-cancel-button",
+          },
         });
-      
+
         if (result.isConfirmed) {
-        const response = await axios.post(
-          config.SERVER_PATH + "/api/tutoring/update/" + hID,
-          _newFormData_,
-          { headers: headersAuth, withCredentials: true }
-        );
-        if (response.data.status === "ok") {
-          console.log("Update tutoring group success");
-          Swal.fire({
-            position: "center",
-            title: "บันทึกการแก้ไขแล้ว",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-success',
-            }
-          });
-          navigate(-1);
-        }else{
-          Swal.fire({
-            position: "center",
-            title: "เกิดข้อผิดพลาด",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-error',
-            }
-          });
+          const response = await axios.post(
+            config.SERVER_PATH + "/api/tutoring/update/" + hID,
+            _newFormData_,
+            { headers: headersAuth, withCredentials: true }
+          );
+          if (response.data.status === "ok") {
+            console.log("Update tutoring group success");
+            Swal.fire({
+              position: "center",
+              title: "บันทึกการแก้ไขแล้ว",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: "swal-title-success",
+                container: "swal-container",
+                popup: "swal-popup-success",
+              },
+            });
+            navigate(-1);
+          } else {
+            Swal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: "swal-title-success",
+                container: "swal-container",
+                popup: "swal-popup-error",
+              },
+            });
+          }
+          console.log("Response:", response);
         }
-        console.log("Response:", response);
-      }
       } else {
         const result = await Swal.fire({
           title: "ยืนยันการสร้างกลุ่มหรือไม่?",
@@ -205,49 +277,49 @@ function TutoringCreateGroup() {
           confirmButtonText: "ตกลง",
           cancelButtonText: "ยกเลิก",
           customClass: {
-            container: 'swal-container',
-            title: 'swal-title',
-            popup: 'swal-popup',
-            confirmButton: 'swal-confirm-button', 
-            cancelButton: 'swal-cancel-button'    
-          }
+            container: "swal-container",
+            title: "swal-title",
+            popup: "swal-popup",
+            confirmButton: "swal-confirm-button",
+            cancelButton: "swal-cancel-button",
+          },
         });
-      
-      if (result.isConfirmed) {
-        const response = await axios.post(
-          config.SERVER_PATH + "/api/tutoring/create",
-          _newFormData_,
-          { headers: headersAuth, withCredentials: true }
-        );
-        if (response.data.status === "ok") {
-          console.log("Create tutoring group success");
-          Swal.fire({
-            position: "center",
-            title: "สร้างกลุ่มสำเร็จ",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-success',
-            }
-          });
-          navigate(-1);
-        }else{
-          Swal.fire({
-            position: "center",
-            title: "เกิดข้อผิดพลาด",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-error',
-            }
-          });
+
+        if (result.isConfirmed) {
+          const response = await axios.post(
+            config.SERVER_PATH + "/api/tutoring/create",
+            _newFormData_,
+            { headers: headersAuth, withCredentials: true }
+          );
+          if (response.data.status === "ok") {
+            console.log("Create tutoring group success");
+            Swal.fire({
+              position: "center",
+              title: "สร้างกลุ่มสำเร็จ",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: "swal-title-success",
+                container: "swal-container",
+                popup: "swal-popup-success",
+              },
+            });
+            navigate(-1);
+          } else {
+            Swal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: "swal-title-success",
+                container: "swal-container",
+                popup: "swal-popup-error",
+              },
+            });
+          }
+          console.log("Response:", response);
         }
-        console.log("Response:", response);
-      }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -257,10 +329,10 @@ function TutoringCreateGroup() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
     }
   };
@@ -272,62 +344,66 @@ function TutoringCreateGroup() {
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
-        container: 'swal-container',
-        title: 'swal-title',
-        popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button', 
-        cancelButton: 'swal-cancel-button'    
-      }
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        confirmButton: "swal-confirm-button",
+        cancelButton: "swal-cancel-button",
+      },
     });
-  
+
     if (result.isConfirmed) {
-    try {
-      await axios.delete(config.SERVER_PATH + "/api/tutoring/delete/" + hID, { headers: config.Headers().headers, withCredentials: true}).then((res) => {
-        if (res.data.status === "ok") {
-          console.log("Delete tutoring group success");
-          Swal.fire({
-            position: "center",
-            title: "ลบกลุ่มแล้ว",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-error',
+      try {
+        await axios
+          .delete(config.SERVER_PATH + "/api/tutoring/delete/" + hID, {
+            headers: config.Headers().headers,
+            withCredentials: true,
+          })
+          .then((res) => {
+            if (res.data.status === "ok") {
+              console.log("Delete tutoring group success");
+              Swal.fire({
+                position: "center",
+                title: "ลบกลุ่มแล้ว",
+                showConfirmButton: false,
+                timer: 2000,
+                customClass: {
+                  title: "swal-title-success",
+                  container: "swal-container",
+                  popup: "swal-popup-error",
+                },
+              });
+              navigate("/tutoring");
+            } else {
+              Swal.fire({
+                position: "center",
+                title: "เกิดข้อผิดพลาด",
+                showConfirmButton: false,
+                timer: 2000,
+                customClass: {
+                  title: "swal-title-success",
+                  container: "swal-container",
+                  popup: "swal-popup-error",
+                },
+              });
             }
           });
-          navigate("/tutoring");
-        }
-        else {
-          Swal.fire({
-            position: "center",
-            title: "เกิดข้อผิดพลาด",
-            showConfirmButton: false,
-            timer: 2000,
-            customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-error',
-            }
-          });
-        }
-      })
-    } catch (error) {
-      console.error("ERROR: ", error);
-      Swal.fire({
-        position: "center",
-        title: "เกิดข้อผิดพลาด",
-        showConfirmButton: false,
-        timer: 2000,
-        customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
-      });
+      } catch (error) {
+        console.error("ERROR: ", error);
+        Swal.fire({
+          position: "center",
+          title: "เกิดข้อผิดพลาด",
+          showConfirmButton: false,
+          timer: 2000,
+          customClass: {
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-error",
+          },
+        });
+      }
     }
-  }
-  }
+  };
 
   const getTodayDate = () => {
     const today = new Date();
@@ -340,70 +416,159 @@ function TutoringCreateGroup() {
   return (
     <div>
       <div
-        className="card m-4"
+        className="card m-3 mt-4"
         style={{
           position: "relative",
-          top: "92px",
-          border: "2px solid #001B79",
-          borderRadius: "20px",
+          top: "100px",
+          border: "none",
+          borderRadius: "10px",
+          boxShadow: "0 4px 13px rgba(0, 0, 0, .2)",
+          minWidth: "285px",
         }}
       >
         <div className="card-body">
+          {/* ชื่อกิจกรรม form */}
           <form className="needs-validation" onSubmit={handleSubmit} noValidate>
             <div className="form-group">
               <label htmlFor="activityName" style={{ fontSize: ".8rem" }}>
-                ชื่อกลุ่ม <span style={{ color: "red" }}>*</span>
+                ชื่อกิจกรรม<span style={{ color: "red" }}>*</span>
               </label>
               <input
                 type="text"
-                className="form-control"
+                className="form-control py-1 px-2"
                 id="activityName"
                 name="activityName"
                 value={formData.activityName}
                 onChange={handleChange}
-                placeholder="Enter Group Name"
+                placeholder="ชื่อกิจกรรม"
+                style={{
+                  borderRadius: "6px",
+                  border: "1.5px solid #E7E7E7",
+                }}
                 required
               />
             </div>
-            {/* <div className="form-group">
-              <label htmlFor="subjectName" style={{ fontSize: ".8rem" }}>
-                วิชา <span style={{ color: "red" }}>*</span>
+
+            {/* select image form */}
+            <div className="my-2">
+              <label htmlFor="ImageInput" style={{ fontSize: ".8rem" }}>
+                เลือกรูปภาพ<span style={{ color: "red" }}>*</span>
               </label>
-              <input
-                type="text"
-                className="form-control"
-                id="subjectName"
-                name="subjectName"
-                value={formData.subjectName}
-                onChange={handleChange}
-                placeholder="Enter Subject Name"
-                required
-              />
-            </div> */}
-            <div className="form-group mt-3 mx-2">
+              <div className="p-0 w-100 d-flex flex-row justify-content-start align-items-center gap-2">
+                <div
+                  className="d-flex flex-row justify-content-center align-items-center"
+                  style={{
+                    border: "1.5px solid #E7E7E7",
+                    borderRadius: "5px",
+                    width: "45px",
+                    height: "45px",
+                  }}
+                >
+                  <input
+                    type="file"
+                    style={{ display: "none" }}
+                    id="ImageInput"
+                    onChange={handleImageChange}
+                    accept="image/jpeg, image/png, image/gif"
+                  />
+                  <label
+                    htmlFor="ImageInput"
+                    style={{
+                      cursor: "pointer",
+                      color: "#979797",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <FaPlus
+                      className=""
+                      style={{ width: "1rem", height: "1rem" }}
+                    />
+                  </label>
+                </div>
+                <div className="position-relative">
+                  {image ? (
+                    <img
+                      src={
+                        image instanceof File
+                          ? URL.createObjectURL(image)
+                          : `${config.SERVER_PATH}/uploaded/hobbyImage/${image}`
+                      }
+                      alt=""
+                      onClick={() => {
+                        setImageSelected(image);
+                        setImage(image);
+                        setDefaultImage(null);
+                      }}
+                      style={{
+                        width: "45px",
+                        height: "45px",
+                        borderRadius: "5px",
+                        border: "1.5px solid #E7E7E7",
+                        boxShadow:
+                          imageSelected === image ? "0 0 5px #FFB600" : "",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "45px",
+                        height: "45px",
+                        borderRadius: "5px",
+                        background: "#D9D9D9D9",
+                        border: "1.5px solid #E7E7E7",
+                      }}
+                    ></div>
+                  )}
+                </div>
+                {DefaultImageUrl.length > 0 &&
+                  DefaultImageUrl.map((item, idx) => (
+                    <img
+                      key={item.alt}
+                      onClick={() => {
+                        handleSelectedDefaultImageFile(item.src);
+                        setImageSelected(idx);
+                      }}
+                      src={item.src}
+                      alt={item.alt}
+                      style={{
+                        width: "45px",
+                        height: "45px",
+                        borderRadius: "5px",
+                        border: "1.5px solid #E7E7E7",
+                        boxShadow:
+                          imageSelected === idx ? "0 0 5px #FFB600" : "",
+                      }}
+                    />
+                  ))}
+              </div>
+            </div>
+
+            {/* faculty, major, section form */}
+            <div className="form-group mt-2">
               <label htmlFor="facultyID" style={{ fontSize: ".8rem" }}>
-                คณะ <span style={{ color: "red" }}>*</span>
+                คณะ<span style={{ color: "red" }}>*</span>
               </label>
               <select
-                className="form-control"
+                className="form-control py-1 px-2"
                 id="facultyID"
                 name="facultyID"
                 value={formData.facultyID}
                 onChange={handleFacultyChange}
                 style={{
-                  borderRadius: "10px",
-                  border: "2px solid rgba(0,0,0,.3)",
+                  borderRadius: "6px",
+                  border: "2px solid #625B71",
+                  color: formData.facultyID === "" ? "#979797" : "#979797", // "#979797" : "#000000"
                 }}
                 required
               >
-                <option value="" className="text-center">
+                <option value="" className="text-center text-dark">
                   -- คณะ --
                 </option>
                 {data.map((faculty) => (
                   <option
                     key={faculty.facultyID}
                     value={faculty.facultyID}
-                    className="text-center"
+                    className="text-center text-dark"
                   >
                     {faculty.facultyNameTH || faculty.facultyNameEN}
                   </option>
@@ -411,22 +576,23 @@ function TutoringCreateGroup() {
               </select>
             </div>
 
-            <div className="form-group mt-0 mx-2">
+            <div className="form-group">
               <label htmlFor="department" style={{ fontSize: ".8rem" }}>
                 ภาควิชา
               </label>
               <select
-                className="form-control"
+                className="form-control py-1 px-2"
                 id="department"
                 name="department"
                 value={formData.majorID}
                 onChange={handleDepartmentChange}
                 style={{
-                  borderRadius: "10px",
-                  border: "2px solid rgba(0,0,0,.3)",
+                  borderRadius: "6px",
+                  border: "2px solid #625B71",
+                  color: formData.facultyID === "" ? "#979797" : "#979797", // "#979797" : "#000000"
                 }}
               >
-                <option value="" className="text-center">
+                <option value="" className="text-center text-dark">
                   -- ภาควิชา --
                 </option>
                 {formData.facultyID &&
@@ -436,29 +602,30 @@ function TutoringCreateGroup() {
                       <option
                         key={department.majorID}
                         value={department.majorID}
-                        className="text-center"
+                        className="text-center text-dark"
                       >
                         {department.majorNameTH || department.majorNameEN}
                       </option>
                     ))}
               </select>
             </div>
-            <div className="form-group mt-0 mx-2">
+            <div className="form-group">
               <label htmlFor="sectionID" style={{ fontSize: ".8rem" }}>
                 สาขาวิชา
               </label>
               <select
-                className="form-control"
+                className="form-control py-1 px-2"
                 id="sectionID"
                 name="sectionID"
                 value={formData.sectionID}
                 onChange={handleChange}
                 style={{
-                  borderRadius: "10px",
-                  border: "2px solid rgba(0,0,0,.3)",
+                  borderRadius: "6px",
+                  border: "2px solid #625B71",
+                  color: formData.facultyID === "" ? "#979797" : "#979797", // "#979797" : "#000000"
                 }}
               >
-                <option value="" className="text-center">
+                <option value="" className="text-center text-dark">
                   -- สาขาวิชา --
                 </option>
                 {formData.majorID &&
@@ -471,48 +638,65 @@ function TutoringCreateGroup() {
                       <option
                         key={section.sectionID}
                         value={section.sectionID}
-                        className="text-center"
+                        className="text-center text-dark"
                       >
                         {section.sectionName}
                       </option>
                     ))}
               </select>
             </div>
+
+            {/* day select form */}
             <div className=" gap-3 mt-3">
               <div className="form-group">
+                <label htmlFor="">
+                  <p className="m-0">
+                    เลือกวัน<span className="text-danger">*</span>
+                  </p>
+                </label>
+                <div className="d-flex gap-2 my-2">
+                  {daysThai.map((day, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="m-0"
+                      style={{
+                        paddingLeft: ".40rem",
+                        paddingRight: ".40rem",
+                        color: "#000000",
+                        fontSize: "14px",
+                        border: `1.5px solid ${dayColors[day]}`,
+                        background:
+                          weekDate.includes(index) && `${dayColors[day]}`,
+                        borderRadius:
+                          day === "อา." || day === "พฤ." ? "15px" : "50%",
+                      }}
+                      onClick={() => toggleDay(index)}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
                 <label htmlFor="date" style={{ fontSize: ".8rem" }}>
-                  วัน <span style={{ color: "red" }}>*</span>
+                  วันที่<span style={{ color: "red" }}>*</span>
                 </label>
                 <input
                   type="date"
                   id="date"
                   name="date"
-                  className="form-control"
+                  className="form-control px-2 py-1"
                   value={formData.date}
                   onChange={handleChange}
                   min={getTodayDate()}
+                  style={{
+                    borderRadius: "6px",
+                    border: "1.5px solid #E7E7E7",
+                  }}
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="memberMax" style={{ fontSize: ".8rem" }}>
-                  จำนวนสมาชิก (หากไม่จำกัดจำนวนให้เว้นไว้)
-                </label>
-                <input
-                  type="number"
-                  id="memberMax"
-                  name="memberMax"
-                  className="form-control"
-                  value={formData.memberMax}
-                  onChange={handleChange}
-                  placeholder="ไม่จำกัด"
-                  min="0"
-                  max="99"
-                  step="1"
-                />
-              </div>
             </div>
-            <div className="form-group">
+            {/* <div className="form-group">
               <label htmlFor="startTime" style={{ fontSize: ".8rem" }}>
                 เวลาเริ่มต้น <span style={{ color: "red" }}>*</span>
               </label>
@@ -539,9 +723,139 @@ function TutoringCreateGroup() {
                 onChange={handleChange}
                 required
               />
+            </div> */}
+
+            {/* Time Form */}
+            <div className="d-flex flex-row justify-content-center align-items-center mt-2">
+              <div className="w-100">
+                <label>
+                  <p className="m-0" style={{ fontSize: ".8rem" }}>
+                    ตั้งแต่<span className="text-danger">*</span>
+                  </p>
+                </label>
+                <div>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="p-1 px-2 fs-6 w-100 form-control"
+                    style={{
+                      color: "#000",
+                      border: "1.5px solid #E7E7E7",
+                      borderRadius: "5px",
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="w-25 text-center mt-4">
+                <span className="fs-2 fw-medium">-</span>
+              </div>
+              <div className="w-100">
+                <label>
+                  <p className="m-0" style={{ fontSize: ".8rem" }}>
+                    จนถึง<span className="text-danger">*</span>
+                  </p>
+                </label>
+                <div>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="p-1 px-2 fs-6 w-100 form-control"
+                    style={{
+                      color: "#000",
+                      border: "1.5px solid #E7E7E7",
+                      borderRadius: "5px",
+                    }}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="form-group">
+            {/* detail form */}
+            <div className="form-group mt-2">
+              <label htmlFor="detail" style={{ fontSize: ".8rem" }}>
+                รายละเอียด
+              </label>
+              <textarea
+                placeholder="รายละเอียดเพิ่มเติม"
+                id="detail"
+                name="detail"
+                className="p-1 ps-2 fs-6 w-100 form-control"
+                value={formData.detail}
+                onChange={(e) => setDetail(e.target.value)}
+                style={{
+                  color: "#000",
+                  width: "60%",
+                  border: "1.5px solid #E7E7E7",
+                  borderRadius: "5px",
+                }}
+                rows="3"
+                // onChange={handleChange}
+              />
+            </div>
+
+            {/* Member count form */}
+            <div className="form-group mt-2">
+              <label>
+                <p className="m-0" style={{ fontSize: ".8rem" }}>
+                  จำนวนสมาชิก<span className="text-danger">*</span>
+                </p>
+              </label>
+              {/* <input
+                type="number"
+                id="memberMax"
+                name="memberMax"
+                className="form-control"
+                value={formData.memberMax}
+                onChange={handleChange}
+                placeholder="ไม่จำกัด"
+                min="0"
+                max="99"
+                step="1"
+              /> */}
+              <div className="w-100 d-flex gap-2 flex-row justify-content-center align-items-center">
+                <input
+                  type="number"
+                  value={memberMax === null ? "" : memberMax}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === ""
+                        ? null //null
+                        : Math.max(0, Math.min(99, Number(e.target.value)));
+                    setMemberMax(value);
+                  }}
+                  className="p-1 px-2 form-control"
+                  style={{
+                    color: "#000",
+                    width: "60%",
+                    border: "1.5px solid #E7E7E7",
+                    borderRadius: "5px",
+                  }}
+                  placeholder={disabledMemberMax ? "ไม่จำกัด" : "ชั้นต่ำ 2 คน"}
+                  min="2"
+                  step="1"
+                  disabled={disabledMemberMax}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMemberMax("");
+                    setDisabledMemberMax(!disabledMemberMax);
+                  }}
+                  className="p-1 fs-6 text-dark"
+                  style={{
+                    width: "40%",
+                    background: disabledMemberMax ? "#F89603" : "#E7E7E7",
+                    border: "1.5px solid #E7E7E7",
+                    borderRadius: "5px",
+                  }}
+                >
+                  ไม่จำกัด
+                </button>
+              </div>
+            </div>
+            <div className="form-group mt-2">
               <label htmlFor="location" style={{ fontSize: ".8rem" }}>
                 สถานที่ <span style={{ color: "red" }}>*</span>
               </label>
@@ -556,42 +870,30 @@ function TutoringCreateGroup() {
                 required
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="detail" style={{ fontSize: ".8rem" }}>
-                รายละเอียด
-              </label>
-              <textarea
-                className="form-control"
-                id="detail"
-                name="detail"
-                value={formData.detail}
-                onChange={handleChange}
-                placeholder="รายละเอียดเพิ่มเติม"
-              />
-            </div>
+
+            {/* Tag form */}
             <div className="my-2">
               <label htmlFor="">
-                <p className="m-0">แท็ก</p>
+                <p className="m-0" style={{ fontSize: ".8rem" }}>
+                  แท็ก
+                </p>
               </label>
               <div
                 className="p-2 fs-6 w-100 form-control d-flex flex-column justify-content-center"
                 style={{
-                  border: "1px solid rgba(0, 0, 0, .2)",
+                  color: "#000",
+                  width: "60%",
+                  border: "1.5px solid #E7E7E7",
                   borderRadius: "5px",
-                  display: "flex",
-                  alignItems: "center",
                 }}
               >
                 <label
                   style={{
                     cursor: "pointer",
-                    color: "#000000",
+                    color: "#000",
                     textDecoration: "none",
                   }}
                 >
-                  <p style={{ fontSize: "3vw", color: "#D9D9D9D9" }}>
-                    ใส่แฮชแท็กเพื่อให้ทุกคนสามารถเข้าถึงกลุ่มของคุณได้ง่ายขึ้น
-                  </p>
                   {true && ( //tag ? null :
                     <>
                       {tags.length > 0 && (
@@ -618,26 +920,18 @@ function TutoringCreateGroup() {
                         FunctionToSave={setTags}
                         btnHTML={
                           <div
-                            className="d-flex justify-content-center align-items-center m-5 shadow-lg p-0"
+                            className="d-flex justify-content-center align-items-center mx-5 my-3 shadow-lg p-0"
                             data-bs-toggle="offcanvas"
                             data-bs-target="#addTagOffcanvas"
                             aria-controls="addTagOffcanvas"
                             style={{
-                              borderRadius: "10px",
-                              backgroundColor: "#D9D9D9D9",
+                              borderRadius: "5px",
+                              backgroundColor: "#F89603",
                             }}
                           >
-                            <FaPlus
-                              style={{
-                                width: "1.2rem",
-                                height: "1.2rem",
-                                cursor: "pointer",
-                                color: "#FFB600",
-                              }}
-                            />
                             <p
                               className="my-0 mx-1 py-2"
-                              style={{ fontSize: ".8rem" }}
+                              style={{ fontSize: "1.025rem", color: "#FFFF" }}
                             >
                               เพิ่มแท็ก
                             </p>
@@ -650,42 +944,50 @@ function TutoringCreateGroup() {
                 </label>
               </div>
             </div>
-            <div
-              className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center"
-            >
-              <button
-                type="submit"
-                className="btn"
-                style={{ background: "#FFB600", width: "100%" }}
-              >
-                {status === "update" ? "บันทึก" : "สร้าง"}
-              </button>
+            <div className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center">
               <button
                 type="button"
-                className="btn"
+                className="btn py-2 px-4 text-dark"
+                style={{ fontSize: "1rem", borderRadius: "10px", background: "#E7E7E7", width: "40%" }}
                 onClick={() => {
                   setFormData(defaultValue);
                   navigate(-1);
                 }}
-                style={{ background: "#D9D9D9", width: "100%" }}
               >
                 ยกเลิก
               </button>
-            </div>
-            {status === "update" && (
-              <div
-                className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center"
+              <button
+                type="submit"
+                className="btn py-2 px-4"
+                style={{
+                  color: "#FFFF",
+                  fontSize: "1rem",
+                  borderRadius: "10px",
+                  width: "60%",
+                  background: "#F89603",
+                }}
               >
+                {status === "update" ? "บันทึก" : "สร้างกลุ่มติว"}
+              </button>
+            </div>
+            {/* {status === "update" && (
+              <div className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center">
                 <button
                   type="button"
                   className="btn"
-                  style={{ background: "#FF0101", width: "100%", color: "white" }}
-                  onClick={() => {deleteGroup(hID);}}
+                  style={{
+                    background: "#FF0101",
+                    width: "100%",
+                    color: "white",
+                  }}
+                  onClick={() => {
+                    deleteGroup(hID);
+                  }}
                 >
                   ลบกลุ่ม
                 </button>
               </div>
-            )}
+            )} */}
           </form>
         </div>
       </div>
