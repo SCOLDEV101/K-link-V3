@@ -207,4 +207,24 @@ ModelAndFactory { v1.0.0: { - Seeder ใช้ได้ทั้งหมดแ�
                             12.5.แก้ชื่อ route inviteFriend/{hID} -> inviteFriend/{groupID}
                             12.6.แก้ชื่อ route leaveGroup/{hID} -> leaveGroup/{groupID} และเปลี่ยน method จาก delete เป็น post
             },
+            v1.4.0: {
+                    - api : {
+                        เพิ่ม route
+                            - localhost:8000/api/searchTag สำหรับการ suggestion Tag ที่มีค้นใช้มากที่สุด 
+                                ต้องส่ง input('type') มาด้วย เป็นพวก hobby, library, tutoring
+                                แล้วจะส่ง array message[] ออกมาให้
+                            - localhost:8000/api/tag สำหรับแนะนำ tag ตอนสร้างกลุ่ม
+                                ต้องส่ง input('type') มาด้วย สามารถส่งพวก
+                                input('activityName') input('startTime') input('location') มาได้
+                    },
+                    - model : {
+                        - GroupTagModel : สร้าง relation ไปหา tag
+                    },
+                    - factory : {
+                        - HobbyModelFactory : แก้ไข static พวก activityNames, locations, tags ใหม่
+                    },
+                    - controller : {
+                        - SearchController : เพิ่ม function สำหรับการ searchTag และ tag แนะนำตอนสร้างกลุ่ม
+                    },
+            },
 }
