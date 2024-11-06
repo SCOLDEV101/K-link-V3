@@ -434,7 +434,7 @@ function CreateGroupPage() {
           overflowY: "auto",
         }}
       >
-        <div className="card m-3 mt-5" style={{ borderRadius: "10px", boxShadow: "0 4px 13px rgba(0, 0, 0, .2)" }}>
+        <div className="card m-3 mt-5" style={{ borderRadius: "10px", boxShadow: "0 4px 13px rgba(0, 0, 0, .2)", minWidth: "285px" }}>
           <div className="row p-3 my-2">
             <form action="">
               <label htmlFor="">
@@ -458,7 +458,7 @@ function CreateGroupPage() {
                 </p>
               </label>
               <div
-                className="p-0 w-100 d-flex flex-row justify-content-start align-items-center gap-2 flex-wrap"
+                className="p-0 w-100 d-flex flex-row justify-content-start align-items-center gap-2"
                 style={{
                 }}
               >
