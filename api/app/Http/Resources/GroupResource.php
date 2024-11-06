@@ -65,7 +65,7 @@ class GroupResource extends JsonResource
                 } else if (in_array($uID, $members)) {
                     $status = 'member'; //เป็นสมาชิกแล้ว
                 }
-            } else if (count($members) >= $this->tutoring->memberMax) {
+            } else if (count($members) >= $this->hobby->memberMax) {
                 $status = 'full'; //กลุ่มเต็ม
             }
 
@@ -143,8 +143,8 @@ class GroupResource extends JsonResource
                     'teachBy' => $this->tutoring->leaderGroup->username,
                     'location' => $this->tutoring->location,
                     'detail' => $this->tutoring->detail,
-                    'Starttime' => $this->tutoring->startTime,
-                    'Endtime' => $this->tutoring->endTime,
+                    'startTime' => $this->tutoring->startTime,
+                    'endTime' => $this->tutoring->endTime,
                     'date' => $this->tutoring->date,
                     'faculty' => $this->tutoring->faculty->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
                     'major' => $this->tutoring->major->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
@@ -166,8 +166,8 @@ class GroupResource extends JsonResource
                     'teachBy' => $this->tutoring->leaderGroup->username,
                     'location' => $this->tutoring->location,
                     'detail' => $this->tutoring->detail,
-                    'Starttime' => $this->tutoring->startTime,
-                    'Endtime' => $this->tutoring->endTime,
+                    'startTime' => $this->tutoring->startTime,
+                    'endTime' => $this->tutoring->endTime,
                     'date' => $this->tutoring->date,
                     'faculty' => $this->tutoring->faculty->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
                     'major' => $this->tutoring->major->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
