@@ -72,7 +72,6 @@ function AboutLibrary() {
           headers: headersCookie,
         }
       );
-      console.log(response.data);
       if (response.data.status === "ok") {
         console.log("1");
         setFileData(response.data.data);

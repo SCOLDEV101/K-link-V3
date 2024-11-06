@@ -317,7 +317,8 @@ function List({ listItem, fetchData }) {
               selectedItemId === item.groupID ? "highlighted zIndex-9999" : ""
             }`}
           >
-            <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item?.leader}</p>
+            {item.leader && <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item.leader}</p> }
+            {item.teachBy && <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item.teachBy}</p> }
             <div className="card p-3 border-0 mx-3" style={{ borderRadius: "15px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", }}>
               <div
                 onClick={(e) => {
@@ -534,19 +535,15 @@ function List({ listItem, fetchData }) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {item.type === "library" ? (
-                    "PDF | 120 หน้า"
-                  ) : item.type === "hobby" ? (
-                    item.actTime
-                  ) : item.type === "tutoring" ? (
-                    formatDateThai(item.date) +
-                    " | " +
-                    item.Starttime +
-                    " - " +
-                    item.Endtime
-                  ) : (
-                    <></>
-                  )}
+                    {item.type === "library" ? (
+                      item.totalpages ? `PDF | ${item.totalpages} หน้า` : null
+                    ) : item.type === "hobby" ? (
+                      item.actTime
+                    ) : item.type === "tutoring" ? (
+                      `${formatDateThai(item.date)} | ${item.Starttime} - ${item.Endtime}`
+                    ) : (
+                      <></>
+                    )}
                 </p>
                 {item.detail && (
                   <p

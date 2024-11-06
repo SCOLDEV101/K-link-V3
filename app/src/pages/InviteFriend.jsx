@@ -33,7 +33,7 @@ const ListItem = ({ item, func }) => {
   return (
       <div className="d-flex flex-row justify-content-between align-items-center gap-3 my-2 flex-row"
       >
-        <div className="d-flex">
+        <div className="d-flex align-items-center">
           <img
             src={
               item.profileImage
@@ -49,9 +49,11 @@ const ListItem = ({ item, func }) => {
             style={{ fontSize: ".8rem" }}
           >
                 <span>
-                <span>{item.username}</span>{" "}
+                <span className="fw-bold">{item.username}</span>
                 <br />
-                <span>{item.uID}</span>{" "}
+                <span>{item.fullname}</span>
+                <br />
+                <span className="fw-bold">{item.email}</span>
               </span>
           </div>
         </div> 
@@ -178,7 +180,7 @@ const InviteFriend = () => {
         height: "100vh",
         overflow: "hidden",
         paddingTop: "95px",
-        background: "linear-gradient(0deg, #F85B03, #F86A03, #F89603)",
+        background: "#F6F6F6",
       }}
     >
       <form className="px-1" onSubmit={(e) => e.preventDefault()}>
@@ -218,7 +220,7 @@ const InviteFriend = () => {
         }}
       >
     <div
-      className="bg-white py-2 px-2 mx-3 border-none"
+      className="bg-white py-2 px-2 mx-3 my-3 border-none"
       style={{
         borderRadius:"15px",
         boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",

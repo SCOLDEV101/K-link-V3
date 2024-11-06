@@ -193,7 +193,7 @@ const Modal = ({ isOpen, onClose, FileData }) => {
       >
         <p className="fw-bold text-center" style={{color:"#FF8500" , fontSize:"20px"}}>{FileData?.filename}.pdf</p>
         <div className="p-4" style={{backgroundColor:"#F6F6F6", border:"1px solid #E7E7E7", borderRadius:"5px"}}>
-        <p style={{fontSize:"16px" , marginBottom:"10px"}}>วิชา : {FileData?.subject}</p>
+        <p style={{fontSize:"16px" , marginBottom:"10px"}}>วิชา : {FileData?.name}</p>
         <p style={{fontSize:"16px", marginBottom:"10px"}}>คณะ : {FileData?.faculty}</p>
         <p style={{fontSize:"16px", marginBottom:"10px"}}>ขนาดไฟล์ : {formatFileSize(FileData?.filesizeInBytes)}</p>
         <p style={{fontSize:"16px", marginBottom:"10px"}}>จำนวนหน้า : {FileData?.totalpages} หน้า</p>
