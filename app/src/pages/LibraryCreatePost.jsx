@@ -244,7 +244,6 @@ function LibraryCreatePost() {
     <div
       style={{
         height: "100vh",
-        background: "linear-gradient(0deg, #F85B03, #F86A03, #F89603)",
         overflow: "hidden",
       }}
     >
@@ -512,7 +511,7 @@ function LibraryCreatePost() {
                       overflowX: "auto",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
-                      scrollbarWidth: "none"
+                      scrollbarWidth: "none",
                     }}
                   >
                     {file ? file.name : "เลือกไฟล์"}
@@ -697,8 +696,6 @@ function LibraryCreatePost() {
 }
 
 export default LibraryCreatePost;
-
-
 
 // Dropdown Menu สียังไม่ตรง เพราะกุทำไม่เป็น
 // หมายถึงเวลากด dropdown ลงมาแล้วเลือก อันที่เลือกต้องเป็นสีส้มๆ
