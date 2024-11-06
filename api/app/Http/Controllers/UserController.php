@@ -310,42 +310,49 @@ class UserController extends Controller
             ], 404);
         };
 
-        $memberArray = [];
+        $member = [];
         foreach ($groupDb->member as $eachMember) {
-            $memberArray[] = $eachMember->id;
+            $member[] = $eachMember->id;
         }
 
-        $requestArray = [];
+        $request = [];
         foreach ($groupDb->request as $eachRequest) {
-            $requestArray[] = $eachRequest->id;
+            $request[] = $eachRequest->id;
         }
 
-        if (!in_array($uID, $memberArray)) {
+        if (!in_array($uID, $member)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'unauthorize.',
             ], 401);
         }
 
-        $userDb = UserModel::select('username', 'id')->get();
+        $userDb = UserModel::select('username', 'id', 'fullname', 'email')->get();
         $data = [];
 
         foreach ($userDb as $user) {
-            if (in_array($user->id, $memberArray)) {
+            if (in_array($user->id, $member)) {
+                // $data[] = [
+                //     'username' => $user->username,
+                //     'fullname' => $user->fullname,
+                //     'email' => $user->email,
+                //     'uID' => $user->id,
+                //     'status' => 'member'
+                // ];
+                continue;
+            } else if (in_array($user->id, $request)) {
                 $data[] = [
                     'username' => $user->username,
-                    'uID' => $user->id,
-                    'status' => 'member'
-                ];
-            } else if (in_array($user->id, $requestArray)) {
-                $data[] = [
-                    'username' => $user->username,
+                    'fullname' => $user->fullname,
+                    'email' => $user->email,
                     'uID' => $user->id,
                     'status' => 'request'
                 ];
             } else {
                 $data[] = [
                     'username' => $user->username,
+                    'fullname' => $user->fullname,
+                    'email' => $user->email,
                     'uID' => $user->id,
                     'status' => 'none'
                 ];
