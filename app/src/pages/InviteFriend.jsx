@@ -31,67 +31,52 @@ const ListItem = ({ item, func }) => {
   };
 
   return (
-    <li
-      className="bg-white py-1 px-2 mx-3 mt-2"
-      style={{ borderRadius: "5px" }}
-    >
-      <div className="d-flex flex-row justify-content-between align-items-center gap-3">
-        <div
-          className="d-flex flex-column"
-          style={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            width: "calc(100% - 80px)",
-          }}
-        >
-          <h5
-            className="m-0"
+      <div className="d-flex flex-row justify-content-between align-items-center gap-3 my-2 flex-row"
+      >
+        <div className="d-flex">
+          <img
+            src={
+              item.profileImage
+                ? `http://127.0.0.1:8000/uploaded/profileImage/${item.profileImage}`
+                : "./Empty-Profile-Image.svg"
+            }
+            alt="profile"
+            className="rounded-circle position-relative bg-dark"
+            style={{ width: "50px", height: "50px" }}
+          />
+          <div
+            className="ms-2 d-flex align-items-center text-break"
+            style={{ fontSize: ".8rem" }}
+          >
+                <span>
+                <span>{item.username}</span>{" "}
+                <br />
+                <span>{item.uID}</span>{" "}
+              </span>
+          </div>
+        </div> 
+        <button
+            onClick={handleClick}
+            className="btn d-flex flex-row align-items-center justify-content-center gap-1 text-nowrap border-none"
             style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              background:
+                buttonState === 1
+                  ? "#F89603"
+                  : "#E7E7E7",
+              borderRadius: "10px",
+              width:"70px",
+              color: buttonState === 2 ? "#000000" : "#ffffff",
             }}
           >
-            {item.username}
-          </h5>
-          <small>{item.uID}</small>
-        </div>
-        <button
-          onClick={handleClick}
-          className="btn p-1 px-2 d-flex flex-row align-items-center gap-1 text-nowrap"
-          style={{
-            background:
-              buttonState === 1
-                ? "#FFB600"
-                : buttonState === 2
-                ? "transparent"
-                : "#7CB518",
-            border:
-              buttonState === 1
-                ? "none"
-                : buttonState === 2
-                ? "3px solid #FFB600"
-                : "none",
-            borderRadius: "10px",
-          }}
-        >
-          {/* <MdGroupAdd style={{ transform: "rotateY(180deg)" }} /> */}
-          {/* <span>ชวน</span> */}
-          {buttonState === 1 && (
-            <MdGroupAdd style={{ transform: "rotateY(180deg)" }} />
-          )}
-          {buttonState === 1 && "ชวน"}
-          {buttonState === 2 && "เลิกทำ"}
-          {buttonState === 3 && "ชวนแล้ว"}
-        </button>
+            {buttonState === 1 && "ชวน"}
+            {buttonState === 2 && "เลิกทำ"}
+            {buttonState === 3 && "ชวนแล้ว"}
+          </button>
       </div>
-    </li>
   );
 };
 
 const InviteFriend = () => {
-  // const items = Array.from({ length: 10 }, (_, i) => i + 1);
   const [Users, setUsers] = useState([]);
   const [filter, setFilter] = useState({
     filter_faculty: "",
@@ -138,19 +123,6 @@ const InviteFriend = () => {
     }
   }, [filter.search_Field_Box]);
 
-  // useEffect(() => {
-  //   if (filter.filter_faculty) {
-  //     sendFilterToApi({ filter_faculty: filter.filter_faculty });
-  //   }
-  // }, [filter.filter_faculty]);
-
-  // useEffect(() => {
-  //   if (filter.filter_major) {
-  //     sendFilterToApi({ filter_major: filter.filter_major });
-  //   }
-  // }, [filter.filter_major]);
-
-  // const getMajors = (faculty) => Object.values(data[faculty]).flat();
 
   const sendFilterToApi = async (filter) => {
     try {
@@ -245,6 +217,13 @@ const InviteFriend = () => {
           overflowX: "hidden",
         }}
       >
+    <div
+      className="bg-white py-2 px-2 mx-3 border-none"
+      style={{
+        borderRadius:"15px",
+        boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+        }} 
+    >
         <ul className="list-unstyled m-0 p-0">
           {Users.length > 0 &&
             Users.map((item, i) => (
@@ -253,6 +232,7 @@ const InviteFriend = () => {
         </ul>
       </div>
     </div>
+  </div>
   );
 };
 
