@@ -301,6 +301,7 @@ class LibraryController extends Controller
             'major' => $groupDb->library->major->nameEN ?? 'none',
             'department' => $groupDb->library->department->name ?? 'none',
             'filename' => $originname,
+            'name' => $groupDb->library->name,
             'owner' => $groupDb->library->leaderGroup->username,
             'uploadDate' => $groupDb->created_at,
             'filesizeInBytes' => $filesize,
