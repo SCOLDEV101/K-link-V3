@@ -15,7 +15,9 @@ class AuthController extends Controller
         $count = count($allUser);
         $randomIndex = rand(0,$count-1);
         $id = $allUser[$randomIndex]->id;
-        // $id = $request->input('id');
+        if($request->input('id')){
+            $id = $request->input('id');
+        }
         $user = UserModel::where('id', $id)->first();
         if (empty($user)) {
             return response()->json([

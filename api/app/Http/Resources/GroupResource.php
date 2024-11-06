@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\UserModel;
+use Illuminate\Support\Facades\File;
 
 class GroupResource extends JsonResource
 {
@@ -101,12 +101,10 @@ class GroupResource extends JsonResource
                 $status = 'join';
                 if (in_array($uID, $requests)) {
                     $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
-                }
-                else if (in_array($uID, $members)) {
+                } else if (in_array($uID, $members)) {
                     $status = 'member'; //เป็นสมาชิกแล้ว
                 }
-            }
-            else if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
+            } else if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
 
@@ -140,7 +138,17 @@ class GroupResource extends JsonResource
             ];
         }
         if ($this->type == 'library') {
-
+            $filename = basename($this->library->imageOrFile->name, '.pdf');
+            $imagePath = public_path('\\pdfImage\\' . $filename);
+            $allImagePath = [];
+            if (File::exists($imagePath)) {
+                $allpages = File::files($imagePath);
+                $totalpages = count($allpages);
+                for ($index = 1; $index <= $totalpages; $index++) {
+                    $imagePath = '/pdfImage/' . $filename . '/output_page_' . $index . '.jpg';
+                    array_push($allImagePath, $imagePath);
+                }
+            } else $imagePath = null;
             if ($this->library->leaderGroup->id == $uID) {
                 $role = 'leader';
             } else {
@@ -152,12 +160,13 @@ class GroupResource extends JsonResource
                 'type' => $this->type,
                 'img' => '/pdfImage/' . basename($this->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
                 'tag' => $tags,
-                'activityName' => $this->library->name,
+                'name' => $this->library->name,
                 'faculty' => $this->library->faculty->nameTH ?? $this->library->major->nameEN ?? 'Unknown',
                 'major' => $this->library->major->nameTH ?? $this->library->major->nameEN ?? 'Unknown',
                 'section' => $this->library->department->name ?? 'Unknown',
                 'leader' => $this->library->leaderGroup->username,
                 'detail' => $this->library->detail,
+                '$totalpages' => $totalpages,
                 'downloaded' => $this->library->download,
                 'role' => $role,
                 'bookmark' => $bookmark ?? false
