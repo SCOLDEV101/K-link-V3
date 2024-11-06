@@ -475,7 +475,14 @@ class UserController extends Controller
                 'message' => 'members not found.',
             ], 404);
         } else {
-            $memberArray = $groupDb->member->pluck('id')->toArray();
+            $members = $groupDb->member->pluck('id')->toArray();
+        }
+
+        if (in_array($uID, $members)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'already be a member.',
+            ], 400);
         }
 
         if (empty($groupDb->request)) {
@@ -484,17 +491,10 @@ class UserController extends Controller
                 'message' => 'request not found.',
             ], 404);
         } else {
-            $requestArray = $groupDb->request->pluck('id')->toArray();
+            $requests = $groupDb->request->pluck('id')->toArray();
         }
 
-        if (in_array($uID, $memberArray)) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'already be a member.',
-            ], 400);
-        }
-
-        if (in_array($uID, $requestArray)) {
+        if (in_array($uID, $requests)) {
             $deleteRequest = RequestModel::where('userID', $uID)
                 ->where('groupID', $groupDb->id)
                 ->first();
@@ -510,7 +510,7 @@ class UserController extends Controller
                     'message' => 'failed to cancel request.',
                 ], 500);
             }
-        } else if (!in_array($uID, $requestArray)) {
+        } else if (!in_array($uID, $requests)) {
             $addRequest = RequestModel::create([
                 'userID' => $uID,
                 'groupID' => $groupDb->id,

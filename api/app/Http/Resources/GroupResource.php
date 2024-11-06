@@ -58,19 +58,20 @@ class GroupResource extends JsonResource
         }
 
         if ($this->type == 'hobby') {
-            if ($this->hobby->memberMax == null) {
+            if ($this->tutoring->memberMax == null || count($members) < $this->tutoring->memberMax) {
                 $status = 'join';
                 if (in_array($uID, $requests)) {
                     $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
                 } else if (in_array($uID, $members)) {
                     $status = 'member'; //เป็นสมาชิกแล้ว
                 }
-            } else if (count($members) >= $this->hobby->memberMax && $this->hobby->memberMax != null && !in_array($uID, $members)) {
+            } else if (count($members) >= $this->tutoring->memberMax) {
                 $status = 'full'; //กลุ่มเต็ม
             }
 
             if ($this->hobby->leaderGroup->id == $uID) {
                 $role = 'leader';
+                $status = 'member';
             } else {
                 $role = 'normal';
             };
@@ -97,19 +98,20 @@ class GroupResource extends JsonResource
         }
 
         if ($this->type == 'tutoring') {
-            if ($this->tutoring->memberMax == null) {
+            if ($this->tutoring->memberMax == null || count($members) < $this->tutoring->memberMax) {
                 $status = 'join';
                 if (in_array($uID, $requests)) {
                     $status = 'request'; //ส่งคำขอเข้าร่วมแล้ว
                 } else if (in_array($uID, $members)) {
                     $status = 'member'; //เป็นสมาชิกแล้ว
                 }
-            } else if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
+            } else if (count($members) >= $this->tutoring->memberMax) {
                 $status = 'full'; //กลุ่มเต็ม
             }
 
             if ($this->tutoring->leaderGroup->id == $uID) {
                 $role = 'leader';
+                $status = 'member';
             } else {
                 $role = 'normal';
             };
@@ -149,7 +151,7 @@ class GroupResource extends JsonResource
                     array_push($allImagePath, $imagePath);
                 }
             } else $imagePath = null;
-            if ($this->library->leaderGroup->id == $uID) {
+            if ($this->library->createdBy == $uID) {
                 $role = 'leader';
             } else {
                 $role = 'normal';
