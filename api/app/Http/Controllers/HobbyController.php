@@ -520,6 +520,7 @@ class HobbyController extends Controller
                 $requestArray[] = [
                     'username' => $request->username,
                     'uID' => (int)$request->id,
+                    'timestamps' => date($request->created_at)
                 ];
             }
         }

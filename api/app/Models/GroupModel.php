@@ -37,7 +37,7 @@ class GroupModel extends Model
 
     public function request(): BelongsToMany
     {
-        return $this->belongsToMany(UserModel::class, 'request_models', 'groupID', 'userID')->select('user_models.id', 'user_models.username');
+        return $this->belongsToMany(UserModel::class, 'request_models', 'groupID', 'userID')->select('user_models.id', 'user_models.username', 'request_models.created_at');
     }
 
     public function bookmark(): BelongsToMany
