@@ -92,7 +92,7 @@ class TutoringModelFactory extends Factory
             'facultyID' => $facultyID,
             'majorID' => $majorID,
             'departmentID' => $departmentID,
-            'imageOrFileID' => $this->faker->randomElement([3,4,5]),
+            'imageOrFileID' => $this->faker->randomElement([2,8,9,10,11]),
             'name' => $this->faker->randomElement($activityNames),
             'memberMax' => $this->faker->randomElement([$memberMax, null]),
             'location' => $this->faker->randomElement($locations),

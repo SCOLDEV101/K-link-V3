@@ -14,6 +14,7 @@ use App\Models\GroupTagModel;
 use App\Models\BookmarkModel;
 use App\Models\DayModel;
 use App\Models\GroupDayModel;
+use App\Models\imageOrFileModel;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LibraryModel>
@@ -78,7 +79,7 @@ class LibraryModelFactory extends Factory
             'facultyID' => $facultyID,
             'majorID' => $majorID,
             'departmentID' => $departmentID,
-            'imageOrFileID' => $this->faker->randomElement([9,10]),
+            'imageOrFileID' => $this->faker->randomElement([15,16]),
             'name' => $this->faker->randomElement($activityNames),
             'detail' => $this->faker->randomElement($details),
             'createdBy' => $createdBy,

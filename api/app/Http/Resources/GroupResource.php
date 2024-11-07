@@ -182,16 +182,12 @@ class GroupResource extends JsonResource
         }
         if ($this->type == 'library') {
             $filename = basename($this->library->imageOrFile->name, '.pdf');
-            $imagePath = public_path('\\pdfImage\\' . $filename);
-            $allImagePath = [];
+            $imagePath = public_path("\\pdfImage\\" . $filename);
+            $totalpages = 0;
             if (File::exists($imagePath)) {
                 $allpages = File::files($imagePath);
                 $totalpages = count($allpages);
-                for ($index = 1; $index <= $totalpages; $index++) {
-                    $imagePath = '/pdfImage/' . $filename . '/output_page_' . $index . '.jpg';
-                    array_push($allImagePath, $imagePath);
-                }
-            } else $imagePath = null;
+            }
             if ($this->library->createdBy == $uID) {
                 $role = 'leader';
             } else {
