@@ -15,6 +15,7 @@ use App\Models\GroupTagModel;
 use App\Models\TagModel;
 use App\Models\NotifyModel;
 use App\Models\imageOrFileModel;
+use App\Models\MajorModel;
 
 class LibraryController extends Controller
 {
@@ -121,11 +122,14 @@ class LibraryController extends Controller
             //-----------------------
 
             //----------- library part
+            if(gettype($request->input('majorID'))=="string"){
+                $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
+            }
             $libraryDb = LibraryModel::create([
                 'id' => $groupID,
                 'imageOrFileID' => $imageOrFile->id,
                 'facultyID' => $request->input('facultyID'),
-                'majorID' => $request->input('majorID') ?? null,
+                'majorID' => $majorDb->id ?? $request->input('majorID'),
                 'departmentID' => $request->input('departmentID') ?? null,
                 'name' => $request->input('activityName'),
                 'detail' => $request->input('detail') ?? null,

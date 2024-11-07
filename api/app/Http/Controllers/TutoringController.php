@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\imageOrFileModel;
 use App\Models\TagModel;
 use App\Models\RequestModel;
+use App\Models\MajorModel;
 
 class TutoringController extends Controller
 {
@@ -107,13 +108,42 @@ class TutoringController extends Controller
             ]);
             //-----------
 
+            //----------------------groupday part
+            if ($request->has('weekDate')) {
+                $days = explode(',', $request->input('weekDate'));
+                //loop through array of days input and save to Db
+                foreach ($days as $day) {
+                    //if array is empty then set day to today of weekday (it will has only one array)
+                    if ($day == '' || $day == null) {
+                        $day = (int)date('w');
+                    }
+                    GroupDayModel::create([
+                        'dayID' => (int)$day,
+                        'groupID' => $groupDb->id,
+                    ]);
+                }
+            }
+            //using today of weekday if days input is empty
+            else {
+                $day = date('w');
+                GroupDayModel::create([
+                    'dayID' => (int)$day,
+                    'groupID' => $groupDb->id,
+                ]);
+            }
+            //----------------------
+
             //-----------tutoring part
+            if(gettype($request->input('majorID'))=="string"){
+                $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
+            }
+            $defaultImage = imageOrFileModel::where('name', 'tutoring-group-default.png')->first();
             $tutoringDb = TutoringModel::create([
                 'id' => $groupID,
                 'facultyID' => (int)$request->input('facultyID'),
-                'majorID' => $request->input('majorID') ?? null,
+                'majorID' => $majorDb->id ?? $request->input('majorID'),
                 'departmentID' => $request->input('departmentID') ?? null,
-                'imageOrFileID' => $imageOrFileDb->id ?? null,
+                'imageOrFileID' => $imageOrFileDb->id ?? $defaultImage->id,
                 'name' => $request->input('activityName'),
                 'memberMax' => $request->input('memberMax') ?? null,
                 'location' =>  $request->input('location'),
@@ -297,9 +327,41 @@ class TutoringController extends Controller
         }
         // -----------------------------
 
+        //-------- แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน
+        if ($request->has('weekDate')) {
+            $deleteOldDay = GroupDayModel::where('groupID', $groupDb->id)->delete();
+            $days = explode(',', $request->input('weekDate'));
+            //loop through array of days input and save to Db
+            foreach ($days as $day) {
+                //if array is empty then set day to today of weekday (it will has only one array)
+                if ($day == '' || $day == null) {
+                    $day = (int)date('w');
+                }
+                if (empty(GroupDayModel::where([['groupID', $groupDb->id], ['dayID', $day]])->first())) {
+                    GroupDayModel::create([
+                        'dayID' => (int)$day,
+                        'groupID' => $groupDb->id,
+                    ]);
+                }
+            }
+        } else {
+            $day = (int)date('w');
+            if (empty(GroupDayModel::where([['groupID', $groupDb->id], ['dayID', $day]])->first())) {
+                GroupDayModel::create([
+                    'dayID' => (int)$day,
+                    'groupID' => $groupDb->id,
+                ]);
+            }
+        }
+        //------------------------------
+
+        //----------------- tutoring data
+        if(gettype($request->input('majorID'))=="string"){
+            $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
+        }
         $data = [
             'facultyID' => $request->input('facultyID') ?? $groupDb->tutoring->facultyID,
-            'majorID' => $request->input('majorID') ?? $groupDb->tutoring->majorID,
+            'majorID' => $majorDb->id ?? $request->input('majorID'),
             'departmentID' => $request->input('departmentID') ?? $groupDb->tutoring->departmentID,
             'imageOrFileID' => $imageOrFileDb->id ?? $groupDb->tutoring->imageOrFile->id,
             'name' => $request->input('activityName') ?? $groupDb->tutoring->activityName,
@@ -312,6 +374,7 @@ class TutoringController extends Controller
             'leader' => $uID,
             'updated_at' => now()
         ];
+        //-----------------------
 
         // อัพเดตข้อมูลทั่วไปของ tutoring และส่งแจ้งเตือนอัพเดต
         if (TutoringModel::where('id', $groupID)->update($data) && GroupModel::where('groupID', $groupID)->update(['updated_at' => now()])) {

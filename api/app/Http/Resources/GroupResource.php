@@ -148,7 +148,7 @@ class GroupResource extends JsonResource
                     'date' => $this->tutoring->date,
                     'faculty' => $this->tutoring->faculty->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
                     'major' => $this->tutoring->major->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
-                    'section' => $this->tutoring->department->name ?? 'Unknown',
+                    'department' => $this->tutoring->department->name ?? 'Unknown',
                     'role' => $role,
                     'userstatus' => $status,
                     'bookmark' => $bookmark ?? false
@@ -171,7 +171,7 @@ class GroupResource extends JsonResource
                     'date' => $this->tutoring->date,
                     'faculty' => $this->tutoring->faculty->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
                     'major' => $this->tutoring->major->nameTH ?? $this->tutoring->major->nameEN ?? 'Unknown',
-                    'section' => $this->tutoring->department->name ?? 'Unknown',
+                    'department' => $this->tutoring->department->name ?? 'Unknown',
                     'role' => $role,
                     'userstatus' => $status,
                     'bookmark' => $bookmark ?? false
@@ -206,7 +206,7 @@ class GroupResource extends JsonResource
                 'activityName' => $this->library->name,
                 'faculty' => $this->library->faculty->nameTH ?? $this->library->major->nameEN ?? 'Unknown',
                 'major' => $this->library->major->nameTH ?? $this->library->major->nameEN ?? 'Unknown',
-                'section' => $this->library->department->name ?? 'Unknown',
+                'department' => $this->library->department->name ?? 'Unknown',
                 'leader' => $this->library->leaderGroup->username,
                 'detail' => $this->library->detail,
                 'totalpages' => $totalpages,

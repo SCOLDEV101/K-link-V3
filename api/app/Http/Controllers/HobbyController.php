@@ -114,9 +114,10 @@ class HobbyController extends Controller
             //-----------
 
             //-----------hobby part
+            $defaultImage = imageOrFileModel::where('name', 'hobby-group-default.png')->first();
             $hobbyDb = HobbyModel::create([
                 'id' => $groupID,
-                'imageOrFileID' => $imageOrFileDb->id ?? null,
+                'imageOrFileID' => $imageOrFileDb->id ?? $defaultImage->id,
                 'name' => $request->input('activityName'),
                 'memberMax' => $request->input('memberMax') ?? null,
                 'location' =>  $request->input('location'),
