@@ -5,9 +5,8 @@ import axios from "axios";
 import config from "../constants/function";
 import { useLocation, useNavigate } from "react-router-dom";
 import AddTag from "../components/AddTag";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 import "../index.css";
-
 
 function CreateGroupPage() {
   const navigate = useNavigate();
@@ -21,7 +20,7 @@ function CreateGroupPage() {
   const [activityName, setActivityName] = useState(
     groupData.activityName || ""
   );
-  const [disabledMemberMax, setDisabledMemberMax] = useState(false)
+  const [disabledMemberMax, setDisabledMemberMax] = useState(false);
   const [weekDate, setWeekDate] = useState(initialWeekDate || []);
   const [startTime, setStartTime] = useState(groupData.startTime || "");
   const [endTime, setEndTime] = useState(groupData.endTime || "");
@@ -53,7 +52,7 @@ function CreateGroupPage() {
   const handleImageChange = (event) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
     const selectedFile = event.target.files[0];
-    setImageSelected(selectedFile)
+    setImageSelected(selectedFile);
 
     if (selectedFile && allowedTypes.includes(selectedFile.type)) {
       setDefaultImage(null);
@@ -61,6 +60,8 @@ function CreateGroupPage() {
       event.target.value = "";
     } else {
       alert("ไฟล์ที่คุณเลือกไม่รองรับ กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)");
+      setDefaultImage(null);
+      setImage(null);
       event.target.value = "";
     }
   };
@@ -69,7 +70,7 @@ function CreateGroupPage() {
     try {
       const response = await fetch(src);
       const blob = await response.blob();
-      const file = new File([blob], src.split('/').pop(), { type: blob.type });
+      const file = new File([blob], src.split("/").pop(), { type: blob.type });
       setDefaultImage(file);
       console.log("Selected Image File:", file);
     } catch (error) {
@@ -85,10 +86,10 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
@@ -99,10 +100,10 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
@@ -113,10 +114,10 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
@@ -127,10 +128,10 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
@@ -142,12 +143,12 @@ function CreateGroupPage() {
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
-        container: 'swal-container',
-        title: 'swal-title',
-        popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button',
-        cancelButton: 'swal-cancel-button'
-      }
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        confirmButton: "swal-confirm-button",
+        cancelButton: "swal-cancel-button",
+      },
     });
 
     if (result.isConfirmed) {
@@ -159,12 +160,12 @@ function CreateGroupPage() {
       formData.append("memberMax", memberMax);
       formData.append("location", location);
       formData.append("detail", detail);
-      if (image && (image !== defaultImage && defaultImage)) {
-        console.log(defaultImage);
-        formData.append("image", defaultImage)
-      } else if (image && (defaultImage === null)) {
-        formData.append("image", image)
-        console.log(image);
+      if (defaultImage) {
+        console.log("Default IMG:", defaultImage);
+        formData.append("image", defaultImage);
+      } else if (image && defaultImage === null) {
+        formData.append("image", image);
+        console.log("IMG", image);
       }
       const tagsString = tags.join(", ");
       console.log("Save tags:", tagsString);
@@ -195,12 +196,12 @@ function CreateGroupPage() {
             showConfirmButton: false,
             timer: 2000,
             customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-success',
-            }
+              title: "swal-title-success",
+              container: "swal-container",
+              popup: "swal-popup-success",
+            },
           });
-          navigate(-1);
+          // navigate(-1);
         } else {
           console.log("failed to create group");
           console.log(response.data);
@@ -210,10 +211,10 @@ function CreateGroupPage() {
             showConfirmButton: false,
             timer: 2000,
             customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-error',
-            }
+              title: "swal-title-success",
+              container: "swal-container",
+              popup: "swal-popup-error",
+            },
           });
         }
       } catch (error) {
@@ -224,10 +225,10 @@ function CreateGroupPage() {
           showConfirmButton: false,
           timer: 2000,
           customClass: {
-            title: 'swal-title-success',
-            container: 'swal-container',
-            popup: 'swal-popup-error',
-          }
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-error",
+          },
         });
       }
     }
@@ -241,10 +242,10 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
@@ -255,10 +256,10 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
@@ -270,10 +271,10 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
@@ -284,14 +285,13 @@ function CreateGroupPage() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: 'swal-title-success',
-          container: 'swal-container',
-          popup: 'swal-popup-error',
-        }
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
       });
       return;
     }
-
 
     const result = await Swal.fire({
       title: "ยืนยันการบันทึกหรือไม่?",
@@ -300,12 +300,12 @@ function CreateGroupPage() {
       confirmButtonText: "ตกลง",
       cancelButtonText: "ยกเลิก",
       customClass: {
-        container: 'swal-container',
-        title: 'swal-title',
-        popup: 'swal-popup',
-        confirmButton: 'swal-confirm-button',
-        cancelButton: 'swal-cancel-button'
-      }
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        confirmButton: "swal-confirm-button",
+        cancelButton: "swal-cancel-button",
+      },
     });
 
     if (result.isConfirmed) {
@@ -352,10 +352,10 @@ function CreateGroupPage() {
               showConfirmButton: false,
               timer: 2000,
               customClass: {
-                title: 'swal-title-success',
-                container: 'swal-container',
-                popup: 'swal-popup-success',
-              }
+                title: "swal-title-success",
+                container: "swal-container",
+                popup: "swal-popup-success",
+              },
             });
             navigate(-1);
           } else {
@@ -366,10 +366,10 @@ function CreateGroupPage() {
               showConfirmButton: false,
               timer: 2000,
               customClass: {
-                title: 'swal-title-success',
-                container: 'swal-container',
-                popup: 'swal-popup-error',
-              }
+                title: "swal-title-success",
+                container: "swal-container",
+                popup: "swal-popup-error",
+              },
             });
           }
         } catch (error) {
@@ -380,10 +380,10 @@ function CreateGroupPage() {
             showConfirmButton: false,
             timer: 2000,
             customClass: {
-              title: 'swal-title-success',
-              container: 'swal-container',
-              popup: 'swal-popup-error',
-            }
+              title: "swal-title-success",
+              container: "swal-container",
+              popup: "swal-popup-error",
+            },
           });
         }
       }
@@ -399,21 +399,29 @@ function CreateGroupPage() {
     "ส.": "#A970C4",
     "อา.": "#B3261E",
   };
-  const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+  const daysThai = [
+    { index: "1", day: "จ." },
+    { index: "2", day: "อ." },
+    { index: "3", day: "พ." },
+    { index: "4", day: "พฤ." },
+    { index: "5", day: "ศ." },
+    { index: "6", day: "ส." },
+    { index: "7", day: "อา." },
+  ];
 
   const DefaultImageUrl = [
     {
       src: "../slide/s1.jpeg",
-      alt: "d-1"
+      alt: "d-1",
     },
     {
       src: "../slide/s2.jpg",
-      alt: "d-2"
+      alt: "d-2",
     },
     {
       src: "../slide/s3.jpg",
-      alt: "d-3"
-    }
+      alt: "d-3",
+    },
   ];
 
   return (
@@ -424,7 +432,7 @@ function CreateGroupPage() {
         marginTop: "90px",
         overflow: "hidden",
         fontSize: "3.5vw",
-        background: "#fff"
+        background: "#fff",
       }}
     >
       <div
@@ -434,7 +442,14 @@ function CreateGroupPage() {
           overflowY: "auto",
         }}
       >
-        <div className="card m-3 mt-5" style={{ borderRadius: "10px", boxShadow: "0 4px 13px rgba(0, 0, 0, .2)", minWidth: "285px" }}>
+        <div
+          className="card m-3 mt-5"
+          style={{
+            borderRadius: "10px",
+            boxShadow: "0 4px 13px rgba(0, 0, 0, .2)",
+            minWidth: "285px",
+          }}
+        >
           <div className="row p-3 my-2">
             <form action="">
               <label htmlFor="">
@@ -459,8 +474,7 @@ function CreateGroupPage() {
               </label>
               <div
                 className="p-0 w-100 d-flex flex-row justify-content-start align-items-center gap-2"
-                style={{
-                }}
+                style={{}}
               >
                 <div
                   className="d-flex flex-row justify-content-center align-items-center"
@@ -468,7 +482,7 @@ function CreateGroupPage() {
                     border: "1.5px solid #E7E7E7",
                     borderRadius: "5px",
                     width: "45px",
-                    height: "45px"
+                    height: "45px",
                   }}
                 >
                   <input
@@ -493,7 +507,7 @@ function CreateGroupPage() {
                   </label>
                 </div>
                 <div className="position-relative">
-                  {image ?
+                  {image ? (
                     <img
                       src={
                         image instanceof File
@@ -501,16 +515,21 @@ function CreateGroupPage() {
                           : `${config.SERVER_PATH}/uploaded/hobbyImage/${image}`
                       }
                       alt=""
-                      onClick={() => { setImageSelected(image); setImage(image); setDefaultImage(null); }}
+                      onClick={() => {
+                        setImageSelected(image);
+                        setImage(image);
+                        setDefaultImage(null);
+                      }}
                       style={{
                         width: "45px",
                         height: "45px",
                         borderRadius: "5px",
                         border: "1.5px solid #E7E7E7",
-                        boxShadow: imageSelected === image ? "0 0 5px #FFB600" : "",
+                        boxShadow:
+                          imageSelected === image ? "0 0 5px #FFB600" : "",
                       }}
                     />
-                    :
+                  ) : (
                     <div
                       style={{
                         width: "45px",
@@ -519,25 +538,29 @@ function CreateGroupPage() {
                         background: "#D9D9D9D9",
                         border: "1.5px solid #E7E7E7",
                       }}
-                    >
-                    </div>
-                  }
+                    ></div>
+                  )}
                 </div>
-                {DefaultImageUrl.length > 0 && DefaultImageUrl.map((item, idx) => (
-                  <img
-                    key={item.alt}
-                    onClick={() => { handleSelectedDefaultImageFile(item.src); setImageSelected(idx); }}
-                    src={item.src}
-                    alt={item.alt}
-                    style={{
-                      width: "45px",
-                      height: "45px",
-                      borderRadius: "5px",
-                      border: "1.5px solid #E7E7E7",
-                      boxShadow: imageSelected === idx ? "0 0 5px #FFB600" : "",
-                    }}
-                  />
-                ))}
+                {DefaultImageUrl.length > 0 &&
+                  DefaultImageUrl.map((item, idx) => (
+                    <img
+                      key={item.alt}
+                      onClick={() => {
+                        handleSelectedDefaultImageFile(item.src);
+                        setImageSelected(idx);
+                      }}
+                      src={item.src}
+                      alt={item.alt}
+                      style={{
+                        width: "45px",
+                        height: "45px",
+                        borderRadius: "5px",
+                        border: "1.5px solid #E7E7E7",
+                        boxShadow:
+                          imageSelected === idx ? "0 0 5px #FFB600" : "",
+                      }}
+                    />
+                  ))}
               </div>
             </div>
             <div>
@@ -548,9 +571,9 @@ function CreateGroupPage() {
                   </p>
                 </label>
                 <div className="d-flex gap-2 my-2">
-                  {daysThai.map((day, index) => (
+                  {daysThai.map((day) => (
                     <button
-                      key={index}
+                      key={day.index}
                       type="button"
                       className="m-0"
                       style={{
@@ -558,14 +581,18 @@ function CreateGroupPage() {
                         paddingRight: ".40rem",
                         color: "#000000",
                         fontSize: "14px",
-                        border: `1.5px solid ${dayColors[day]}`,
-                        background: weekDate.includes(index) && `${dayColors[day]}`,
+                        border: `1.5px solid ${dayColors[day.day]}`,
+                        background:
+                          weekDate.includes(day.index) &&
+                          `${dayColors[day.day]}`,
                         borderRadius:
-                          day === "อา." || day === "พฤ." ? "15px" : "50%",
+                          day.day === "อา." || day.day === "พฤ."
+                            ? "15px"
+                            : "50%",
                       }}
-                      onClick={() => toggleDay(index)}
+                      onClick={() => toggleDay(day.index)}
                     >
-                      {day}
+                      {day.day}
                     </button>
                   ))}
                 </div>
@@ -642,12 +669,29 @@ function CreateGroupPage() {
                       border: "1.5px solid #E7E7E7",
                       borderRadius: "5px",
                     }}
-                    placeholder={disabledMemberMax ? "ไม่จำกัด" : "ชั้นต่ำ 2 คน"}
+                    placeholder={
+                      disabledMemberMax ? "ไม่จำกัด" : "ชั้นต่ำ 2 คน"
+                    }
                     min="2"
                     step="1"
                     disabled={disabledMemberMax}
                   />
-                  <button type="button" onClick={() => { setMemberMax(""); setDisabledMemberMax(!disabledMemberMax); }} className="p-1 fs-6 text-dark" style={{ width: "40%", background: disabledMemberMax ? "#F89603" : "#E7E7E7", border: "1.5px solid #E7E7E7", borderRadius: "5px" }}>ไม่จำกัด</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMemberMax("");
+                      setDisabledMemberMax(!disabledMemberMax);
+                    }}
+                    className="p-1 fs-6 text-dark"
+                    style={{
+                      width: "40%",
+                      background: disabledMemberMax ? "#F89603" : "#E7E7E7",
+                      border: "1.5px solid #E7E7E7",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    ไม่จำกัด
+                  </button>
                 </div>
               </div>
 
@@ -751,7 +795,10 @@ function CreateGroupPage() {
                               >
                                 <p
                                   className="my-0 mx-1 py-2"
-                                  style={{ fontSize: "1.025rem", color: "#FFFF" }}
+                                  style={{
+                                    fontSize: "1.025rem",
+                                    color: "#FFFF",
+                                  }}
                                 >
                                   เพิ่มแท็ก
                                 </p>
@@ -769,14 +816,25 @@ function CreateGroupPage() {
             <div className="d-flex justify-content-center align-items-center mt-2 gap-2">
               <button
                 className="btn py-2 px-4 text-dark"
-                style={{ fontSize: "1rem", borderRadius: "10px", background: "#E7E7E7", width: "40%" }}
+                style={{
+                  fontSize: "1rem",
+                  borderRadius: "10px",
+                  background: "#E7E7E7",
+                  width: "40%",
+                }}
                 onClick={() => window.history.back()}
               >
                 ยกเลิก
               </button>
               <button
                 className="btn py-2 px-4"
-                style={{ color: "#FFFF", fontSize: "1rem", borderRadius: "10px", width: "60%", background: "#F89603" }}
+                style={{
+                  color: "#FFFF",
+                  fontSize: "1rem",
+                  borderRadius: "10px",
+                  width: "60%",
+                  background: "#F89603",
+                }}
                 onClick={() => {
                   if (status === "update") handleSaved();
                   else handleFormSubmit();

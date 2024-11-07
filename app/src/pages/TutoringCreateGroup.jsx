@@ -2,11 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import config from "../constants/function";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  fetchData,
-  getFacultyMajorSection,
-  nestDataFacultys,
-} from "../constants/constants";
+import { fetchData, nestDataFacultys } from "../constants/constants";
 import AddTag from "../components/AddTag";
 import { FaPlus } from "react-icons/fa6";
 import Swal from "sweetalert2";
@@ -40,19 +36,29 @@ function TutoringCreateGroup() {
   const [defaultImage, setDefaultImage] = useState(null);
   const [memberMax, setMemberMax] = useState(groupData.memberMax || "");
   const [disabledMemberMax, setDisabledMemberMax] = useState(false);
-  const [detail, setDetail] = useState(groupData.detail || "");
 
   const handleImageChange = (event) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
     const selectedFile = event.target.files[0];
+
     setImageSelected(selectedFile);
 
     if (selectedFile && allowedTypes.includes(selectedFile.type)) {
       setDefaultImage(null);
       setImage(selectedFile);
+
+      setFormData({
+        ...formData,
+        image: selectedFile,
+      });
+
       event.target.value = "";
     } else {
       alert("ไฟล์ที่คุณเลือกไม่รองรับ กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)");
+
+      setDefaultImage(null);
+      setImage(null);
+
       event.target.value = "";
     }
   };
@@ -63,6 +69,10 @@ function TutoringCreateGroup() {
       const blob = await response.blob();
       const file = new File([blob], src.split("/").pop(), { type: blob.type });
       setDefaultImage(file);
+      setFormData({
+        ...formData,
+        image: file,
+      });
       console.log("Selected Image File:", file);
     } catch (error) {
       console.error("Error fetching image:", error);
@@ -83,8 +93,6 @@ function TutoringCreateGroup() {
     ? groupData.weekDate.split(",").map((day) => day.trim())
     : [];
   const [weekDate, setWeekDate] = useState(initialWeekDate || []);
-  const [endTime, setEndTime] = useState(groupData.endTime || "");
-  const [startTime, setStartTime] = useState(groupData.startTime || "");
   const toggleDay = (indexOfDay) => {
     if (weekDate.includes(indexOfDay)) {
       setWeekDate(weekDate.filter((d) => d !== indexOfDay));
@@ -107,14 +115,14 @@ function TutoringCreateGroup() {
           department.majorNameTH === groupData.major ||
           department.majorNameEN === groupData.major
       )?.majorID || "";
-  const initialSectionID =
+  const initialdepartmentID =
     data
       .find((faculty) => faculty.facultyID === initialFacultyID)
       ?.departments.find((department) => department.majorID === initialMajorID)
-      ?.sections.find((section) => section.sectionName === groupData.section)
-      ?.sectionID || "";
+      ?.sections.find((section) => section.sectionName === groupData.department)
+      ?.departmentID || "";
 
-  console.log(initialFacultyID, initialMajorID, initialSectionID);
+  console.log(initialFacultyID, initialMajorID, initialdepartmentID);
 
   const formatInitialTime = (time) => {
     console.log(groupData);
@@ -132,16 +140,16 @@ function TutoringCreateGroup() {
   });
   const defaultValue = {
     activityName: groupData.activityName || "",
-    // subjectName: groupData.subjectName || "",
     facultyID: initialFacultyID || "",
     majorID: initialMajorID || "",
-    sectionID: initialSectionID || "",
+    departmentID: initialdepartmentID || "",
     date: groupData.date || "",
     memberMax: groupData.memberMax || "",
     startTime: formatInitialTime(groupData.Starttime),
     endTime: formatInitialTime(groupData.Endtime),
     location: groupData.location || "",
     detail: groupData.detail || "",
+    image: null,
     tag: tags || "",
   };
   const [formData, setFormData] = useState(defaultValue);
@@ -158,30 +166,18 @@ function TutoringCreateGroup() {
         memberMax: updatedValue,
       });
     }
-    // if (name === "startTime" && formData.endTime && formData.endTime <= value) {
-    //   setFormData({
-    //     ...formData,
-    //     [name]: value,
-    //     endTime: value,
-    //   });
-    // } else if (
-    //   name === "endTime" &&
-    //   formData.startTime &&
-    //   value <= formData.startTime
-    // ) {
-    //   setFormData({
-    //     ...formData,
-    //     [name]: formData.startTime,
-    //   });
-    // } else {
-    //   setFormData({
-    //     ...formData,
-    //     [name]: value,
-    //   });
-    // }
+
     setFormData({
       ...formData,
       [name]: value,
+    });
+  };
+
+  const handleMemberMaxChange = (count) => {
+    setMemberMax(count);
+    setFormData({
+      ...formData,
+      memberMax: count,
     });
   };
 
@@ -190,7 +186,7 @@ function TutoringCreateGroup() {
       ...formData,
       facultyID: e.target.value,
       majorID: "",
-      sectionID: "",
+      departmentID: "",
     });
   };
 
@@ -198,7 +194,7 @@ function TutoringCreateGroup() {
     setFormData({
       ...formData,
       majorID: e.target.value,
-      sectionID: "",
+      departmentID: "",
     });
   };
 
@@ -287,7 +283,7 @@ function TutoringCreateGroup() {
 
         if (result.isConfirmed) {
           const response = await axios.post(
-            config.SERVER_PATH + "/api/tutoring/create",
+            config.SERVER_PATH + "/api/tutoring/createGroup",
             _newFormData_,
             { headers: headersAuth, withCredentials: true }
           );
@@ -304,7 +300,7 @@ function TutoringCreateGroup() {
                 popup: "swal-popup-success",
               },
             });
-            navigate(-1);
+            // navigate(-1);
           } else {
             Swal.fire({
               position: "center",
@@ -334,74 +330,6 @@ function TutoringCreateGroup() {
           popup: "swal-popup-error",
         },
       });
-    }
-  };
-
-  const deleteGroup = async (hID) => {
-    const result = await Swal.fire({
-      title: "ยืนยันการลบกลุ่มหรือไม่?",
-      showCancelButton: true,
-      confirmButtonText: "ตกลง",
-      cancelButtonText: "ยกเลิก",
-      customClass: {
-        container: "swal-container",
-        title: "swal-title",
-        popup: "swal-popup",
-        confirmButton: "swal-confirm-button",
-        cancelButton: "swal-cancel-button",
-      },
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await axios
-          .delete(config.SERVER_PATH + "/api/tutoring/delete/" + hID, {
-            headers: config.Headers().headers,
-            withCredentials: true,
-          })
-          .then((res) => {
-            if (res.data.status === "ok") {
-              console.log("Delete tutoring group success");
-              Swal.fire({
-                position: "center",
-                title: "ลบกลุ่มแล้ว",
-                showConfirmButton: false,
-                timer: 2000,
-                customClass: {
-                  title: "swal-title-success",
-                  container: "swal-container",
-                  popup: "swal-popup-error",
-                },
-              });
-              navigate("/tutoring");
-            } else {
-              Swal.fire({
-                position: "center",
-                title: "เกิดข้อผิดพลาด",
-                showConfirmButton: false,
-                timer: 2000,
-                customClass: {
-                  title: "swal-title-success",
-                  container: "swal-container",
-                  popup: "swal-popup-error",
-                },
-              });
-            }
-          });
-      } catch (error) {
-        console.error("ERROR: ", error);
-        Swal.fire({
-          position: "center",
-          title: "เกิดข้อผิดพลาด",
-          showConfirmButton: false,
-          timer: 2000,
-          customClass: {
-            title: "swal-title-success",
-            container: "swal-container",
-            popup: "swal-popup-error",
-          },
-        });
-      }
     }
   };
 
@@ -610,14 +538,14 @@ function TutoringCreateGroup() {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="sectionID" style={{ fontSize: ".8rem" }}>
+              <label htmlFor="departmentID" style={{ fontSize: ".8rem" }}>
                 สาขาวิชา
               </label>
               <select
                 className="form-control py-1 px-2"
-                id="sectionID"
-                name="sectionID"
-                value={formData.sectionID}
+                id="departmentID"
+                name="departmentID"
+                value={formData.departmentID}
                 onChange={handleChange}
                 style={{
                   borderRadius: "6px",
@@ -736,8 +664,10 @@ function TutoringCreateGroup() {
                 <div>
                   <input
                     type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
+                    id="startTime"
+                    name="startTime"
+                    value={formData.startTime}
+                    onChange={handleChange}
                     className="p-1 px-2 fs-6 w-100 form-control"
                     style={{
                       color: "#000",
@@ -759,8 +689,10 @@ function TutoringCreateGroup() {
                 <div>
                   <input
                     type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
+                    id="endTime"
+                    name="endTime"
+                    value={formData.endTime}
+                    onChange={handleChange}
                     className="p-1 px-2 fs-6 w-100 form-control"
                     style={{
                       color: "#000",
@@ -783,7 +715,7 @@ function TutoringCreateGroup() {
                 name="detail"
                 className="p-1 ps-2 fs-6 w-100 form-control"
                 value={formData.detail}
-                onChange={(e) => setDetail(e.target.value)}
+                onChange={handleChange}
                 style={{
                   color: "#000",
                   width: "60%",
@@ -817,13 +749,15 @@ function TutoringCreateGroup() {
               <div className="w-100 d-flex gap-2 flex-row justify-content-center align-items-center">
                 <input
                   type="number"
+                  name="memberMax"
+                  id="memberMax"
                   value={memberMax === null ? "" : memberMax}
                   onChange={(e) => {
                     const value =
                       e.target.value === ""
                         ? null //null
                         : Math.max(0, Math.min(99, Number(e.target.value)));
-                    setMemberMax(value);
+                    handleMemberMaxChange(value);
                   }}
                   className="p-1 px-2 form-control"
                   style={{
@@ -836,6 +770,7 @@ function TutoringCreateGroup() {
                   min="2"
                   step="1"
                   disabled={disabledMemberMax}
+                  required
                 />
                 <button
                   type="button"
@@ -861,12 +796,16 @@ function TutoringCreateGroup() {
               </label>
               <input
                 type="text"
-                className="form-control"
+                className="form-control px-2 py-1"
                 id="location"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="สถานที่ติว"
+                style={{
+                  border: "1.5px solid #E7E7E7",
+                  borderRadius: "5px",
+                }}
                 required
               />
             </div>
@@ -948,7 +887,12 @@ function TutoringCreateGroup() {
               <button
                 type="button"
                 className="btn py-2 px-4 text-dark"
-                style={{ fontSize: "1rem", borderRadius: "10px", background: "#E7E7E7", width: "40%" }}
+                style={{
+                  fontSize: "1rem",
+                  borderRadius: "10px",
+                  background: "#E7E7E7",
+                  width: "40%",
+                }}
                 onClick={() => {
                   setFormData(defaultValue);
                   navigate(-1);
@@ -999,3 +943,26 @@ export default TutoringCreateGroup;
 
 //03 August 2024
 //แก้ไข tutoring | เมื่อพยายามแก้ไข หากใส่เพียงคณะไม่สามารถเซฟได้ ต้องใส่ครบทั้งคณะ สาขา ภาควิชา
+
+// .was-validated .form-control:valid,
+// .was-validated .form-select:valid {
+//   border: 1.5px solid green !important
+// }
+
+// .was-validated .form-control:invalid,
+// .was-validated .form-select:invalid {
+//   border: 1.5px solid red !important
+// }
+
+// /* แสดงไอคอนเฉพาะที่ต้องการ (เช่น input ที่มี id="validationDefault01") */
+// .was-validated #date:valid,
+// .was-validated #startTime:valid,
+// .was-validated #endTime:valid {
+//   background-image: none !important;
+// }
+
+// .was-validated #date:invalid,
+// .was-validated #startTime:invalid,
+// .was-validated #endTime:invalid {
+//   background-image: none !important;
+// }
