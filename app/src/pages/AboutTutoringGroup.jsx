@@ -325,7 +325,7 @@ const dayColors = {
                         <span
                           className="position-absolute text-center text-white"
                           style={{
-                            background: "#FF0101",
+                            background: "#FF4800",
                             width: "25px",
                             height: "25px",
                             borderRadius: "50%",
