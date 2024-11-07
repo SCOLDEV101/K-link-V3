@@ -219,6 +219,11 @@ function List({ listItem, fetchData }) {
     return date.getDay(); 
   };
 
+  const formatTime = (time) => {
+    const [hours, minutes] = time.split(":");
+    return `${hours}.${minutes} น.`;
+  }
+
   const deleteGroup = async (groupID , feature) => {
     const result = await Swal.fire({
       title: "ยืนยันการลบกลุ่มหรือไม่?",
@@ -538,9 +543,9 @@ function List({ listItem, fetchData }) {
                     {item.type === "library" ? (
                       item.totalpages ? `PDF | ${item.totalpages} หน้า` : null
                     ) : item.type === "hobby" ? (
-                      item.actTime
+                      `${formatTime(item.startTime)} - ${formatTime(item.endTime)}`
                     ) : item.type === "tutoring" ? (
-                      `${formatDateThai(item.date)} | ${item.Starttime} - ${item.Endtime}`
+                      `${formatDateThai(item.date)} | ${formatTime(item.startTime)} - ${formatTime(item.endTime)}`
                     ) : (
                       <></>
                     )}

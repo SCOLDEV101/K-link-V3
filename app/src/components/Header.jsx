@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { IoIosNotifications } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RouterPathAndName } from "../constants/routes";
-import { FaArrowLeft } from "react-icons/fa";
 import { MdInfoOutline } from "react-icons/md";
+import { IoIosArrowBack } from "react-icons/io";
+
 
 
 function Header({ groupName, FileData }) {
@@ -70,7 +71,7 @@ function Header({ groupName, FileData }) {
           className="container-fluid d-flex flex-row justify-content-between align-items-center mx-3"
         >
           {showBackButton ? (
-            <FaArrowLeft
+            <IoIosArrowBack
               onClick={() => {
                 if (location.pathname === "/aboutmyaccount") {
                   navigate("/setting");
@@ -78,10 +79,11 @@ function Header({ groupName, FileData }) {
                   navigate(-1);
                 }
               }}
+              className="fw-bold"
               style={{
-                color: "#fff",
-                width: "23px",
-                height: "23px",
+                color: "#ffffff",
+                width: "24px",
+                height: "24px",
               }}
             />
           ) : (

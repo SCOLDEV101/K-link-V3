@@ -66,6 +66,36 @@ function AcceptFriendRequest() {
 
   };
 
+  const formatTimestamp = (timestamp) => {
+    const monthsOfYear = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  
+    const now = new Date();
+    const date = new Date(timestamp);
+  
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+  
+    const isToday = date >= today;
+    const isYesterday = date >= yesterday && date < today;
+  
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+    if (isToday) {
+      return `วันนี้ - ${hours}.${minutes}น.`;
+    } else if (isYesterday) {
+      return `เมื่อวาน - ${hours}.${minutes}น.`;
+    } else {
+      const day = date.getDate();
+      const month = monthsOfYear[date.getMonth()];
+      const year = date.getFullYear() + 543; 
+      return `${day} ${month} ${year} - ${hours}.${minutes}น.`;
+    }
+  }
+  
+  
+
   return (
     <>
     <div className="container px-3 py-2" style={{ height: "100vh" }}>
@@ -76,7 +106,6 @@ function AcceptFriendRequest() {
           {reQuests.length > 0 ? (
             reQuests.map((request, i) => (
               <li
-              onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}
                 key={request.uID}
                 className="d-flex align-items-center flex-row border-none p-3" 
         style={{
@@ -86,6 +115,7 @@ function AcceptFriendRequest() {
           }} 
               >
             <img
+             onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}
             src={
               request.profileImage
                 ? `http://127.0.0.1:8000/uploaded/profileImage/${request.profileImage}`
@@ -99,11 +129,12 @@ function AcceptFriendRequest() {
             className="ms-3 d-flex text-break flex-column w-100"
             style={{ fontSize: ".8rem" }}
           >
-                <span className="fw-bold my-0">{request?.username}</span>
+                <span className="fw-bold my-0"  onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}>{request?.username}</span>
+                <span className="my-0"  onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}>{formatTimestamp(request?.timestamps)}</span>
 
                   {!acceptedItems.includes(request.uID) && !rejectedItems.includes(request.uID) ? ( // เช็คว่าควรจะเป็น สถานะหรือว่าเป็นปุ่ม
-                    <div className="row row-cols-lg-auto px-2">
-                      <div className="col-6 px-1">
+                    <div className="row row-cols-lg-auto px-2 mt-2">
+                      <div className="col-6 px-1" onClick={() => rejected(request.uID)}>
                       <button
                         onClick={() => rejected(request.uID)}
                         type="button"
@@ -119,7 +150,7 @@ function AcceptFriendRequest() {
                       </button>
                       </div>
 
-                      <div className="col-6 px-1">
+                      <div className="col-6 px-1" onClick={() => accepted(request.uID)}>
                       <button
                         onClick={() => accepted(request.uID)}
                         type="button"
