@@ -25,10 +25,10 @@ class LibraryController extends Controller
             ->orderBy('updated_at', 'DESC')
             ->paginate(8);
 
-        if (!$libraryDb) {
+        if (sizeof($libraryDb) <= 0) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'library not found.',
+                'message' => 'group not found.',
             ], 404);
         }
 
@@ -220,7 +220,6 @@ class LibraryController extends Controller
             }
         } else {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->first();
-
         }
         //--------------------------
 
@@ -235,7 +234,7 @@ class LibraryController extends Controller
             'detail' => $request->input('detail') ?? null,
             'updated_at' => now()
         ]);
-        $groupDb = GroupModel::where('groupID',$groupID)->update([
+        $groupDb = GroupModel::where('groupID', $groupID)->update([
             'updated_at' => now()
         ]);
         //--------------------------

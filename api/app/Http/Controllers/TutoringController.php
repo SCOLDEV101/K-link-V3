@@ -23,47 +23,46 @@ use App\Models\RequestModel;
 class TutoringController extends Controller
 {
     function showAllGroup(Request $request)
-    { {
-            $tutoringDb = GroupModel::where([['type', 'tutoring'], ['status', 1]])
-                ->orderBy('updated_at', 'DESC')
-                ->with([
-                    'tutoring',
-                    'bookmark',
-                    'tutoring.imageOrFile',
-                    'tutoring.leaderGroup',
-                    'tutoring.faculty',
-                    'tutoring.major',
-                    'tutoring.department',
-                    'member',
-                    'request',
-                    'groupDay',
-                    'groupTag'
-                ])
-                ->paginate(8);
+    {
+        $tutoringDb = GroupModel::where([['type', 'tutoring'], ['status', 1]])
+            ->orderBy('updated_at', 'DESC')
+            ->with([
+                'tutoring',
+                'bookmark',
+                'tutoring.imageOrFile',
+                'tutoring.leaderGroup',
+                'tutoring.faculty',
+                'tutoring.major',
+                'tutoring.department',
+                'member',
+                'request',
+                'groupDay',
+                'groupTag'
+            ])
+            ->paginate(8);
 
-            if (!$tutoringDb) {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'group not found.',
-                ], 404);
-            }
-
-            $data = GroupResource::collection($tutoringDb);
-            if (sizeof($data) != 0) {
-                return response()->json([
-                    'prevPageUrl' => $tutoringDb->previousPageUrl(),
-                    'status' => 'ok',
-                    'message' => 'fetch all tutoring group success.',
-                    'listItem' => $data,
-                    'nextPageUrl' => $tutoringDb->nextPageUrl()
-                ], 200);
-            } else {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'failed to fetch tutoring group.',
-                ], 500);
-            };
+        if (sizeof($tutoringDb) <= 0) { //เช็คจำนวนข้อมูลที่เจอ
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'group not found.',
+            ], 404);
         }
+
+        $data = GroupResource::collection($tutoringDb);
+        if (sizeof($data) != 0) {
+            return response()->json([
+                'prevPageUrl' => $tutoringDb->previousPageUrl(),
+                'status' => 'ok',
+                'message' => 'fetch all tutoring group success.',
+                'listItem' => $data,
+                'nextPageUrl' => $tutoringDb->nextPageUrl()
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'failed to fetch tutoring group.',
+            ], 500);
+        };
     }
 
     function createGroup(Request $request)

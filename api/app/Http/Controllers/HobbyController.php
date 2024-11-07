@@ -37,7 +37,7 @@ class HobbyController extends Controller
         if (sizeof($hobbyDb) <= 0) { //เช็คจำนวนข้อมูลที่เจอ
             return response()->json([
                 'status' => 'failed',
-                'message' => 'hobby not found.',
+                'message' => 'group not found.',
             ], 404);
         }
 
