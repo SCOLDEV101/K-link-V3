@@ -87,8 +87,8 @@ function MemberPage() {
         boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
       }}
       >
-        <p className="fw-bold text-center mx-4 my-1 py-1" style={{fontSize:"20px" , color:"#FF4800"}}>หัวหน้ากลุ่ม</p>
-        <p className="fw-bold text-center mx-4 my-1 py-1" style={{ fontSize: "16px", borderRadius:"5px" , backgroundColor:"#F6F6F6"}}>
+        <p className="fw-bold text-center mx-4 my-0 py-1" style={{fontSize:"20px" , color:"#FF4800"}}>หัวหน้ากลุ่ม</p>
+        <p className="fw-bold text-center mx-4 my-0 py-1" style={{ fontSize: "16px", borderRadius:"5px" , backgroundColor:"#F6F6F6"}}>
         {members[0]?.username} {members[0]?.isMe ? "(Me)" : ""}
         </p>      
         </div>
