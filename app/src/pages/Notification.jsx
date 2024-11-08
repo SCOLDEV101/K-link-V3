@@ -88,7 +88,7 @@ function List_Notify_Component({ listData }) {
   const handleClick = (listData) => {
     switch (listData.notiType) {
       case 'report':
-        // Define action for report
+        navigate("/AboutReport")
         break;
       case 'invite':
         // Define action for invite

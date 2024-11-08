@@ -168,27 +168,29 @@ function AcceptFriendRequest() {
                     </div>
                   ) : acceptedItems.includes(request.uID) ? ( // เช็คว่าอันไหนเป็น acceptedItems บ้าง
                     <div
-                      className="text-center py-1 w-50 text-white"
+                      className="text-center py-1 w-100"
                       style={{
                         border: "none",
                         borderRadius: "5px",
-                        background: "#7CB518",
+                        background: "#E7E7E7",
+                        color:"#979797",
                         fontSize:"15px",
                       }}
                     >
-                      เข้าร่วมกลุ่มแล้ว
+                      ยอมรับคำขอเข้ากลุ่มแล้ว
                     </div>
                   ) : (
                     <div
-                    className="text-center py-1 w-50 text-white"
+                    className="text-center py-1 w-100"
                     style={{
                       border: "none",
                       borderRadius: "5px",
-                      background: "#B3261E",
+                      background: "#E7E7E7",
+                      color:"#979797",
                       fontSize:"15px",
                     }}
                     >
-                      ปฎิเสธคำขอแล้ว
+                      ปฏิเสธคำขอเข้ากลุ่มแล้ว
                     </div>
                   )}
                 </div>
