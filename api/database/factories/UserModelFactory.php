@@ -30,7 +30,7 @@ class UserModelFactory extends Factory
             'id' => '65010' . str_pad($index, 3, '0', STR_PAD_LEFT),
             'facultyID' => str_pad(($index % 16) + 1, 2, '0', STR_PAD_LEFT),
             'majorID' => $this->faker->numberBetween(1,71),//'ENG' . str_pad(($index % 15) + 1, 2, '0', STR_PAD_LEFT),
-            'imageOrFileID' => $this->faker->randomElement([6,7,8]),
+            'imageOrFileID' => $this->faker->randomElement([12,13,14]),
             'roleID' => '100',
             'username' => 'IoT-' . $index,
             'fullname' => $prefix . 'ไอโอที-' . $index,
