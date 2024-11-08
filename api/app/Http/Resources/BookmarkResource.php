@@ -81,7 +81,7 @@ class BookmarkResource extends JsonResource
             };
     
             return [
-                'hID' => $this->group->hobby->id,
+                'groupID' => $this->group->hobby->id,
                 'type' => $this->group->type,
                 'image' => $this->group->hobby->imageOrFile->name ?? 'group-default.jpg',
                 'tag' => $tags,
@@ -121,7 +121,7 @@ class BookmarkResource extends JsonResource
             };
 
             return [
-                'tID' => $this->group->tutoring->id,
+                'groupID' => $this->group->tutoring->id,
                 'type' => $this->group->type,
                 'tag' => $tags,
                 'image' => $this->group->tutoring->imageOrFile->name ?? 'group-default.jpg',
@@ -159,9 +159,9 @@ class BookmarkResource extends JsonResource
             };
 
             return [
-                'lID' => $this->group->library->id,
+                'groupID' => $this->group->library->id,
                 'type' => $this->group->type,
-                'img' => $this->group->library->imageOrFile->name ?? 'group-default.jpg',
+                'image' => '/pdfImage/' . basename($this->group->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
                 'tag' => $tags,
                 'activityName' => $this->group->library->name,
                 'faculty' => $this->group->library->faculty->nameTH ?? $this->group->library->major->nameEN ?? 'Unknown',

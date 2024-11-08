@@ -197,7 +197,7 @@ class GroupResource extends JsonResource
             return [
                 'groupID' => $this->library->id,
                 'type' => $this->type,
-                'img' => '/pdfImage/' . basename($this->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
+                'image' => '/pdfImage/' . basename($this->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
                 'tag' => $tags,
                 'activityName' => $this->library->name,
                 'faculty' => $this->library->faculty->nameTH ?? $this->library->major->nameEN ?? 'Unknown',
