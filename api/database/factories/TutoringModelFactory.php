@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\BookmarkModel;
 use App\Models\DayModel;
 use App\Models\GroupDayModel;
+use App\Models\NotifyModel;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TutoringModel>
@@ -128,6 +129,13 @@ class TutoringModelFactory extends Factory
             RequestModel::create([
                 'groupID' => $createGroup['id'],
                 'userID' => $request,
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $leader,
+                'senderID' => $request,
+                'postID' => $createGroup['groupID'],
+                'type' => $createGroup['type'],
             ]);
         }
 

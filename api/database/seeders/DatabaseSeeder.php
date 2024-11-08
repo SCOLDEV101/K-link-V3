@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             LibrarySeeder::class,
             BookmarkSeeder::class,
             ImageOrFileModelSeeder::class,
+            ReportedSeeder::class,
         ]);
     }
 }

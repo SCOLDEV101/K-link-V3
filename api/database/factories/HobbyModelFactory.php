@@ -13,6 +13,7 @@ use App\Models\GroupDayModel;
 use App\Models\MemberModel;
 use App\Models\RequestModel;
 use App\Models\BookmarkModel;
+use App\Models\NotifyModel;
 
 use Illuminate\Support\Facades\Log;
 // use Illuminate\Support\Facades\DB;
@@ -112,6 +113,13 @@ class HobbyModelFactory extends Factory
             RequestModel::create([
                 'groupID' => $createGroup['id'],
                 'userID' => $request,
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $leader,
+                'senderID' => $request,
+                'postID' => $createGroup['groupID'],
+                'type' => $createGroup['type'],
             ]);
         }
 
