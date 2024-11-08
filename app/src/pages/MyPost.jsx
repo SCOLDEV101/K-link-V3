@@ -102,7 +102,7 @@ function MyPost() {
       <div
         className="position-relative"
         style={{
-          overflow: "auto",
+          overflowX:"hidden",
           overflowY: "scroll",
           maxWidth: "550px",
           width: "95vw",
