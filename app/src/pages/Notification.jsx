@@ -65,26 +65,34 @@ function List_Notify_Component({ listData }) {
   const avialableTypes = ["report", "invite", "request", "acceptRequest"];
   const navigate = useNavigate();
 
-  function timeAgo(dateString) {
+  const formatTimestamp = (timestamp) => {
+    const monthsOfYear = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  
     const now = new Date();
-    const past = new Date(dateString);
-    const secondsPast = (now - past) / 1000;
-
-    if (secondsPast < 60) {
-      return "เมื่อไม่นานมานี้";
-    } else if (secondsPast < 3600) {
-      return `${Math.floor(secondsPast / 60)} นาที`;
-    } else if (secondsPast < 86400) {
-      return `${Math.floor(secondsPast / 3600)} ชั่วโมง`;
-    } else if (secondsPast < 604800) {
-      return `${Math.floor(secondsPast / 86400)} วัน`;
-    } else if (secondsPast < 2592000) {
-      return `${Math.floor(secondsPast / 604800)} สัปดาห์`;
+    const date = new Date(timestamp);
+  
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+  
+    const isToday = date >= today;
+    const isYesterday = date >= yesterday && date < today;
+  
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+    if (isToday) {
+      return `วันนี้ - ${hours}.${minutes}น.`;
+    } else if (isYesterday) {
+      return `เมื่อวาน - ${hours}.${minutes}น.`;
     } else {
-      return `${Math.floor(secondsPast / 2592000)} เดือน`;
+      const day = date.getDate();
+      const month = monthsOfYear[date.getMonth()];
+      const year = date.getFullYear() + 543; 
+      return `${day} ${month} ${year} - ${hours}.${minutes}น.`;
     }
   }
-
+  
   const handleClick = (listData) => {
     switch (listData.notiType) {
       case 'report':
@@ -145,7 +153,7 @@ function List_Notify_Component({ listData }) {
               <span> {listData.group} </span> 
               ถูกรายงาน{" "}
               <span className="fw-medium">
-              <br /> {timeAgo(listData.createdAt)}
+              <br /> {formatTimestamp(listData.createdAt)}
               </span>
             </span>
             
@@ -157,7 +165,7 @@ function List_Notify_Component({ listData }) {
                 <span>{listData.group}</span>{" "}
                 <span className="fw-medium">
                 <br />
-                {timeAgo(listData.createdAt)}
+                {formatTimestamp(listData.createdAt)}
                 </span>
               </span>
             ) : listData.notiType === "request" ? (
@@ -166,7 +174,7 @@ function List_Notify_Component({ listData }) {
                 <span className="fw-bold">{listData.sender}</span>{" "}
                 ต้องการเข้าร่วมกลุ่ม
                 <span className="fw-medium">
-                <br />{timeAgo(listData.createdAt)} | <span className="fw-bold">{listData.group}</span>
+                <br />{formatTimestamp(listData.createdAt)} | <span className="fw-bold">{listData.group}</span>
                 </span>
               </span>
             ) : listData.notiType === "acceptRequest" ? (
@@ -175,10 +183,22 @@ function List_Notify_Component({ listData }) {
                 คุณได้เข้าร่วมกลุ่ม
                 <span className="fw-bold"> {listData.group} </span> แล้ว{" "}
                 <span className="fw-medium">
-                <br />{timeAgo(listData.createdAt)} | <span className="fw-bold">{listData.group}</span>
+                <br />{formatTimestamp(listData.createdAt)} | <span className="fw-bold">{listData.group}</span>
                 </span>
               </span>
-            ) : null}
+            ) : (
+              <div
+              className="d-flex align-items-center justify-content-center flex-row border-none px-5 py-4 mt-3 mx-1"
+              style={{
+                borderRadius: "15px",
+                backgroundColor: "#ffffff",
+                boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+                color: "#979797",
+              }}
+            >
+              -- ไม่พบการแจ้งเตือน --
+            </div>
+            )}
           </div>
         </li>
       ) : null}

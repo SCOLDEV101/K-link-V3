@@ -7,6 +7,7 @@ import config from "../constants/function";
 import { useInView } from "react-intersection-observer";
 import { useSearchList } from "../contextProivder/SearchListProvider";
 import { FaPlus } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 
 
 function TutoringHomepage() {
@@ -109,37 +110,26 @@ function TutoringHomepage() {
         )}
         <div ref={ref} style={{ height: "1px" }} />
       </div>
-      <div style={{ zIndex: 1 }}>
-        <a href="/tutoringcreategroup">
-          <div
-            style={{
-              width: "10vw",
-              height: "10vw",
-              maxHeight:"25px",
-              maxWidth:"25px",
-              position: "fixed",
-              right: "10%",
-              bottom: "22%",
-              borderRadius: "50%",
-              backgroundColor: "white",
-            }}
-          ></div>
-
-          <IoAddCircle
-            style={{
-              color: "#FFB600",
-              width: "20vw",
-              height: "20vw",
-              maxHeight:"50px",
-              maxWidth:"50px",
-              position: "fixed",
-              right: "5%",
-              bottom: "20%",
-              borderRadius: "50%",
-              padding: "2%",
-            }}
-          />
-        </a>
+      <div
+        className="position-fixed"
+        style={{
+          bottom: "15%",
+          right: "5%",
+          backgroundColor: "#FFB600",
+          borderRadius: "50%",
+        }}
+      >
+        <Link
+          to="/librarycreatepost"
+          className="btn fw-bold position-relative"
+          style={{
+            boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+            borderRadius: "50%",
+            padding: "0.75rem",
+          }}
+        >
+          <FaPlus className="text-white fs-1" />
+        </Link>
       </div>
     </div>
   );

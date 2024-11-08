@@ -341,11 +341,12 @@ function List({ listItem, fetchData }) {
               >
                 <img
                   src={
-                    item.type==="library" && item.img != null  && item.img != undefined  ? `${config.SERVER_PATH}${item.img}`
-                    : item.image != null  && item.image != undefined
+                    item.type==="library" &&  item.image  ?`${config.SERVER_PATH}${item.image}`
+                    : item.image
                       ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
                       : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
                   }
+                  alt="group img"
                   style={{
                     width: "100%",
                     height: "100%",

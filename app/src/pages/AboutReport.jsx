@@ -17,17 +17,27 @@ function AboutReport() {
           boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
           }} 
           >
-            <div className="d-flex">
-            <IoWarningOutline style={{color:"#B3261E"}} className="fs-1 fw-bold"/>
-             <span className="fw-bold mx-2">ldogjoerihjhufihuwihffg
-                gegjareoig9eajgogpfsdighuisdfhguisfdfg
-                gie9ighidfghidfhidfhgihdfiughdighdi</span> 
+            <div className="row row-cols-lg-auto px-2 mt-2">
+            <div className="col-2 m-auto">
+            <IoWarningOutline style={{color:"#B3261E" , marginLeft:"0.2rem"}} className="fs-1 fw-bold"/>
             </div>
-         <p style={{textIndent: "2em"}} className="my-3">ldogjoerihjwirojtoiwjpiwjgpehjpoerog
+
+            <div className="col-10">
+            <p className="fw-bold my-0">
+                ldogjoerihjhufihuwihffg
+                gegjareoig9eajgogpfsdighuisdfhgu
+                isfdfg
+                gie9ighidfghidfhidfhgihdfiughdighdi
+            </p> 
+            </div>
+            </div>
+         <p style={{textIndent: "2em"}} className="my-3 text-wrap">
+            ldogjoerihjwirojtoiwjpiwjgpehjpoerog
             fojdfijsdifjidsjfpsdjfisdfj
             kfosjgiohpojgdiohdiughiuhtegihfgiudshfgfgh
-            ghiufdhgiudhgihiughfihgufdhgiuhghugighihgoijf8ehtyeiyitoijfiodj
-            erigherihgierniinbiifogjoisfd</p> 
+            ghiufdhgiudhgihiughfihgufdhgiuhghugighihg้uk
+            erigherihgierniinbiifogjoisfd
+            </p> 
          </li> 
       </ul>
     </div>
