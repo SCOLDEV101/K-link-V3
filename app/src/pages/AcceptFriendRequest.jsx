@@ -168,7 +168,7 @@ function AcceptFriendRequest() {
                     </div>
                   ) : acceptedItems.includes(request.uID) ? ( // เช็คว่าอันไหนเป็น acceptedItems บ้าง
                     <div
-                      className="text-start py-1 w-100"
+                      className="text-center py-1 w-100"
                       style={{
                         border: "none",
                         borderRadius: "5px",
@@ -181,7 +181,7 @@ function AcceptFriendRequest() {
                     </div>
                   ) : (
                     <div
-                    className="text-start py-1 w-100"
+                    className="text-center py-1 w-100"
                     style={{
                       border: "none",
                       borderRadius: "5px",
