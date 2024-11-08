@@ -571,7 +571,7 @@ class TutoringController extends Controller
                 'status' => 'failed',
                 'message' => 'user not found.',
             ], 404);
-        } else $userID = (int)$request->input('uID');
+        } else $userID = strval($request->input('uID'));
 
         if (empty($groupDb->request)) {
             return response()->json([

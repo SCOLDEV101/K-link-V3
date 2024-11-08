@@ -16,12 +16,12 @@ class RequestModel extends Model
 
     public static $validator = [
         [
-            'userID' => ['required', 'regex:/^[0-9]+$/u'],
+            'uID' => ['required', 'regex:/^[0-9]+$/u'],
             'method' => ['required', 'regex:/accept|reject/u'],
         ],
         [
-            'userID.required' => 'userID is required for this action',
-            'userID.regex' => 'invalid input for userID',
+            'uID.required' => 'userID is required for this action',
+            'uID.regex' => 'invalid input for userID',
             'method.required' => 'method is required for this action',
             'method.regex' => 'invalid input for method'
         ]

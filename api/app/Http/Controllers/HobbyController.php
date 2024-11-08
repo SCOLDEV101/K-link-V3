@@ -547,7 +547,7 @@ class HobbyController extends Controller
             ], 400);
         }
 
-        $userID = (int)$request->input('userID');
+        $userID = strval($request->input('uID'));
         $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'member', 'request'])
             ->first();
