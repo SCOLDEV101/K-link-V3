@@ -220,6 +220,7 @@ function List({ listItem, fetchData }) {
   };
 
   const formatTime = (time) => {
+    if (!time) return ; 
     const [hours, minutes] = time.split(":");
     return `${hours}.${minutes} น.`;
   }
@@ -340,7 +341,7 @@ function List({ listItem, fetchData }) {
               >
                 <img
                   src={
-                    item.type==="library" && item.thumbnail != null  && item.thumbnail != undefined  ? `${config.SERVER_PATH}${item.thumbnail}`
+                    item.type==="library" && item.img != null  && item.img != undefined  ? `${config.SERVER_PATH}${item.img}`
                     : item.image != null  && item.image != undefined
                       ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
                       : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
@@ -545,7 +546,7 @@ function List({ listItem, fetchData }) {
                     ) : item.type === "hobby" ? (
                       `${formatTime(item.startTime)} - ${formatTime(item.endTime)}`
                     ) : item.type === "tutoring" ? (
-                      `${formatDateThai(item.date)} | ${formatTime(item.startTime)} - ${formatTime(item.endTime)}`
+                      `${formatDateThai(item.date)} | ${formatTime(item.Starttime)} - ${formatTime(item.Endtime)}`
                     ) : (
                       <></>
                     )}
@@ -666,14 +667,6 @@ function List({ listItem, fetchData }) {
                     <TbEye style={{ marginRight: "5px" }} />
                     ดูตัวอย่าง
                   </button>
-                    <button
-                    className="btn bg-white py-1 px-1 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
-                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.encodedfilename}`, "_blank", "noopener noreferrer")}
-                  >
-                    <MdOutlineDownload style={{marginRight:"5px" }}/>
-                    ดาวน์โหลด
-                  </button>
                   <button
                     className="btn bg-white py-1 px-2 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
@@ -682,13 +675,30 @@ function List({ listItem, fetchData }) {
                     <LuShare2 style={{ marginRight: "5px" }} />
                     แชร์
                   </button>
+                    <button
+                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14.5px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
+                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.encodedfilename}`, "_blank", "noopener noreferrer")}
+                  >
+                    <MdOutlineDownload/>
+                  </button>
+                  {item.role === "leader" && 
+                    <button
+                    className="btn py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "15px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", backgroundColor:"#B3261E" }}
+                    onClick={() => {
+                      deleteGroup(item.groupID , item.type);
+                    }}
+                  >
+                    <TbTrashFilled className="text-white"/>
+                  </button>
+                    }
                   </>) 
                   : item.userstatus === "request" ? ( <>
                     <button
                       className="btn py-1 px-2 my-auto mx-1"
                       style={{ fontSize: "14px", borderRadius: "10px" , backgroundColor:"#B3261E" , color:"#E7E7E7" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
-                        // handleButtonClick(item.groupID);
                         handleStatusUpdate(item.groupID, "join");
                       }}
                     >
@@ -696,8 +706,30 @@ function List({ listItem, fetchData }) {
                     </button>
 
                     </>
-                  ) : item.userstatus === "member" || item.role === "leader" ? (
+                  ) : item.userstatus === "full" ? (
                     <button
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
+                      disabled
+                    >
+                      กลุ่มเต็ม
+                    </button>
+                  ) : item.userstatus === "join" ? (
+                    <button
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
+                      onClick={() => {
+                        handleStatusUpdate(item.groupID, "request");
+                      }}
+                    >
+                      เข้าร่วมกลุ่ม
+                    </button>
+                  ) : (
+                    <></>
+                  )}
+                  {item.type !== "library" ? 
+                  <>
+                  <button
                       className="btn bg-white py-1 px-2 my-auto mx-1"
                       style={{ fontSize: "14px", borderRadius: "10px" ,boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
                       onClick={() => {
@@ -715,36 +747,6 @@ function List({ listItem, fetchData }) {
                       <FiInfo style={{marginRight:"5px" , marginBottom:"2px"}}/>
                       เกี่ยวกับกลุ่ม
                     </button>
-                  ) : item.userstatus === "full" ? (
-                    <button
-                      className="btn bg-white py-1 px-2 my-auto mx-1"
-                      style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
-                      disabled
-                    >
-                      กลุ่มเต็ม
-                    </button>
-                  ) : (
-                    <button
-                      className="btn bg-white py-1 px-2 my-auto mx-1"
-                      style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
-                      onClick={() => {
-                        handleStatusUpdate(item.groupID, "request");
-                      }}
-                    >
-                      เข้าร่วมกลุ่ม
-                    </button>
-                  )}
-                  {item.type !== "library" ? 
-                  <>
-                  <button
-                    className="btn bg-white py-1 px-2 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
-                    onClick={() =>
-                      navigate("/members", { state: { groupID: item.groupID, type: item.type }})
-                    }
-                  >
-                    สมาชิกกลุ่ม
-                  </button>
                   <button
                     className="btn bg-white py-1 px-3 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}

@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiLogOut , FiEdit3 } from "react-icons/fi";
 import { IoMdPersonAdd } from "react-icons/io";
 import config from "../constants/function";
+import Swal from "sweetalert2";
+
 
 function AboutTutoringGroup() {
   const navigate = useNavigate();
@@ -104,6 +106,86 @@ const dayColors = {
       console.error("There was an error leaving the group!", error);
     }
   };
+
+  const handleButtonClick = async (id, status) => {
+    try {
+      const res = await axios.post(
+        config.SERVER_PATH + `/api/user/joinGroup/${id}`,
+        {},
+        { headers: headersAuth, withCredentials: true }
+      );
+
+      if (res.data.status === "ok") {
+        let successMessage = "ส่งคำขอเข้าร่วมกลุ่มแล้ว";
+
+        if (status === "join") {
+          successMessage = "ยกเลิกคำขอเข้าร่วมกลุ่มแล้ว";
+        }
+
+        Swal.fire({
+          position: "center",
+          title: successMessage,
+          showConfirmButton: false,
+          timer: 2000,
+          customClass: {
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-success",
+          },
+        });
+
+        console.log(status + " group success");
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-error",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
+    }
+  };
+
+  const handleStatusUpdate = async (groupID, newStatus) => {
+    let swalOptions = {
+      showCancelButton: true,
+      reverseButtons: true,
+      cancelButtonText: "ยกเลิก",
+      customClass: {
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        cancelButton: "swal-cancel-button",
+      },
+    };
+
+    if (newStatus === "request") {
+      swalOptions.title = "ต้องการขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText = "ตกลง";
+      swalOptions.customClass.confirmButton = "swal-confirm-button";
+    } else if (newStatus === "join") {
+      swalOptions.title = "ยกเลิกคำขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText = "ยกเลิกคำขอ";
+      swalOptions.customClass.confirmButton = "swal-confirmRed-button";
+    }
+
+    const result = await Swal.fire(swalOptions);
+
+    if (result.isConfirmed) {
+      setAboutGroupData_tutoring((prevData) => ({
+        ...prevData,
+        userstatus: newStatus,
+      }));
+      handleButtonClick(groupID, newStatus);
+    }
+  };
+
   
 
   return (
@@ -411,87 +493,147 @@ const dayColors = {
             </div>
             </div>
   
-            {aboutGroupData_tutoring.role === "leader" && (
-              <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
-                <div className="col-10">
+            {aboutGroupData_tutoring.role === "leader" &&
+          aboutGroupData_tutoring.userstatus === "member" ? (
+            <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
+              <div className="col-10">
                 <Link
-                to={"/hobbyeditgroup"}
-                state={{
-                  groupData: aboutGroupData_tutoring,
-                  status: "update",
-                  groupID: groupID,
-                }}
-                className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
-                style={{
-                  background: "#FFB600",
-                  borderRadius:"10px"
-                }}
-              >
-                <span className="text-dark text-decoration-none mt-1" style={{fontSize:"20px"}}>
-                  แก้ไขกลุ่ม
-                </span>
-                < FiEdit3 
-                  className="mx-2"
-                  style={{
-                    fontSize: "20px",
-                    color: "#000000",
+                  to={"/hobbyeditgroup"}
+                  state={{
+                    groupData: aboutGroupData_tutoring,
+                    status: "update",
+                    groupID: groupID,
                   }}
-                />
-              </Link>
-                </div>
-                <div className="col-2">
-                  <p onClick={() => navigate("/invitefriend", { 
-                      state: { 
-                        groupID: aboutGroupData_tutoring.groupID, 
-                        name: aboutGroupData_tutoring.activityName 
-                      } 
-                    })}
-                  className="text-white text-center border-none my-0 px-1 py-2 "
-                  style={{backgroundColor:"#7CB518" , borderRadius:"10px" , fontSize: "22.67px", }}
-                    >
-                      <IoMdPersonAdd style={{transform: "scaleX(-1)"}}/>
-                  </p>
-                </div>
+                  className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
+                  style={{
+                    background: "#FFB600",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <span
+                    className="text-dark text-decoration-none mt-1"
+                    style={{ fontSize: "20px" }}
+                  >
+                    แก้ไขกลุ่ม
+                  </span>
+                  <FiEdit3
+                    className="mx-2"
+                    style={{
+                      fontSize: "20px",
+                      color: "#000000",
+                    }}
+                  />
+                </Link>
               </div>
-            )}
-            {aboutGroupData_tutoring.role === "normal" && (
-              <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
-                <div className="col-10">
+              <div className="col-2">
+                <p
+                  onClick={() =>
+                    navigate("/invitefriend", {
+                      state: {
+                        groupID: aboutGroupData_tutoring.groupID,
+                        name: aboutGroupData_tutoring.activityName,
+                      },
+                    })
+                  }
+                  className="text-white text-center border-none my-0 px-1 py-2 "
+                  style={{
+                    backgroundColor: "#7CB518",
+                    borderRadius: "10px",
+                    fontSize: "22.67px",
+                  }}
+                >
+                  <IoMdPersonAdd style={{ transform: "scaleX(-1)" }} />
+                </p>
+              </div>
+            </div>
+          ) : aboutGroupData_tutoring.userstatus === "member" ? (
+            <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
+              <div className="col-10">
                 <Link
-                to={"/invitefriend"}
-                state={{
-                  groupID: aboutGroupData_tutoring.groupID,
-                  name: aboutGroupData_tutoring.activityName,
-                }}
-                className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
-                style={{
-                  background: "#FFB600",
-                  borderRadius:"10px"
-                }}
-              >
-                <span className="text-dark text-decoration-none mt-1" style={{fontSize:"20px"}}>
-                  เพิ่มเพื่อน
-                </span>
-                <IoMdPersonAdd
-                  className="mx-2"
-                  style={{
-                    fontSize: "20px",
-                    color: "#000000",
-                    transform: "scaleX(-1)",
+                  to={"/invitefriend"}
+                  state={{
+                    groupID: aboutGroupData_tutoring.groupID,
+                    name: aboutGroupData_tutoring.activityName,
                   }}
-                />
-              </Link>
-                </div>
-                <div className="col-2">
-                  <p onClick={() => leaveGroup(aboutGroupData_tutoring.groupID)}
-                  className="text-white text-center border-none my-0 px-1 py-2 "
-                  style={{backgroundColor:"#B3261E" , borderRadius:"10px" , fontSize: "22.67px", }}
-                    >
-                      <FiLogOut />
-                  </p>
-                </div>
+                  className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
+                  style={{
+                    background: "#FFB600",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <span
+                    className="text-dark text-decoration-none mt-1"
+                    style={{ fontSize: "20px" }}
+                  >
+                    เพิ่มเพื่อน
+                  </span>
+                  <IoMdPersonAdd
+                    className="mx-2"
+                    style={{
+                      fontSize: "20px",
+                      color: "#000000",
+                      transform: "scaleX(-1)",
+                    }}
+                  />
+                </Link>
               </div>
-            )}
+              <div className="col-2">
+                <p
+                  onClick={() => leaveGroup(aboutGroupData_tutoring.groupID)}
+                  className="text-white text-center border-none my-0 px-1 py-2 "
+                  style={{
+                    backgroundColor: "#B3261E",
+                    borderRadius: "10px",
+                    fontSize: "22.67px",
+                  }}
+                >
+                  <FiLogOut />
+                </p>
+              </div>
+            </div>
+          ) : aboutGroupData_tutoring.userstatus !== "member" &&
+            aboutGroupData_tutoring.role !== "leader" ? (
+            <>
+              <div>
+                <button
+                  className="w-100 text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
+                  style={{
+                    background:
+                      aboutGroupData_tutoring.userstatus === "join"
+                        ? "#7CB518"
+                        : aboutGroupData_tutoring.userstatus === "request"
+                        ? "#B3261E"
+                        : aboutGroupData_tutoring.userstatus === "full"
+                        ? "#E7E7E7"
+                        : "transparent",
+                    borderRadius: "10px",
+                    border: "none",
+                  }}
+                  disabled={aboutGroupData_tutoring.userstatus === "full"}
+                  onClick={() => {
+                    if (aboutGroupData_tutoring.userstatus === "join") {
+                      handleStatusUpdate(aboutGroupData_tutoring.groupID, "request");
+                    } else if (aboutGroupData_tutoring.userstatus === "request") {
+                      handleStatusUpdate(aboutGroupData_tutoring.groupID, "join");
+                    } else if (aboutGroupData_tutoring.userstatus === "full") {
+                      return;
+                    }
+                  }}
+                >
+                  <span
+                    className="text-white text-decoration-none mt-1"
+                    style={{ fontSize: "20px" }}
+                  >
+                    {aboutGroupData_tutoring.userstatus === "join" && "ขอเข้าร่วมกลุ่ม"}
+                    {aboutGroupData_tutoring.userstatus === "request" && "ยกเลิกคำขอเข้าร่วมกลุ่ม"}
+                    {aboutGroupData_tutoring.userstatus === "full" && "กลุ่มเต็ม"}
+                  </span>
+                </button>
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
           </div>
         </div>
       </div>
@@ -502,23 +644,3 @@ const dayColors = {
 
 export default AboutTutoringGroup;
 
-            {/* {aboutGroupData_tutoring.role === 'leader' ?  (
-              <div
-                className="position-absolute me-2 cursor-pointer"
-                style={{ fontSize: "40px", right: "0px", color: "#949494" }}
-              >
-                <IoMdSettings
-                  onClick={() => {
-                    navigate("/tutoringeditgroup", {
-                      state: {
-                        groupData: aboutGroupData_tutoring,
-                        status: "update",
-                        groupID: groupID,
-                      },
-                    });
-                  }}
-                />
-              </div>
-            ) :(
-              null
-            )} */}

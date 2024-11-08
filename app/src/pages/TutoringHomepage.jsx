@@ -6,6 +6,8 @@ import axios from "axios";
 import config from "../constants/function";
 import { useInView } from "react-intersection-observer";
 import { useSearchList } from "../contextProivder/SearchListProvider";
+import { FaPlus } from "react-icons/fa6";
+
 
 function TutoringHomepage() {
   const { searchListsArray } = useSearchList(); // search context
@@ -113,6 +115,8 @@ function TutoringHomepage() {
             style={{
               width: "10vw",
               height: "10vw",
+              maxHeight:"25px",
+              maxWidth:"25px",
               position: "fixed",
               right: "10%",
               bottom: "22%",
@@ -126,6 +130,8 @@ function TutoringHomepage() {
               color: "#FFB600",
               width: "20vw",
               height: "20vw",
+              maxHeight:"50px",
+              maxWidth:"50px",
               position: "fixed",
               right: "5%",
               bottom: "20%",
