@@ -246,65 +246,91 @@ class SearchController extends Controller
         } else {
             if($name){
                 $suggestedTags = $this->suggestTags($name,$tagsModified);
-            }else{
-                //แสดง tag ยอดนิยมทั้งหมด ยกเว้นช่วงเวลา ------------------------------------------------
-                $Alltags = GroupTagModel::where('type',$type)->with(['tagName'])
-                                                                ->select('tagID')
-                                                                // ->distinct()
-                                                                ->get();
-    
-                $tagsModified = $Alltags->pluck('tagName.name')->toArray();
-                $excludedTags = ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'];
-    
-                //เอา tag ช่วงเวลาออก
-                $tagsModified = array_filter($tagsModified, function($tag) use ($excludedTags) {
-                    return !in_array($tag, $excludedTags);
-                });
-    
-                //นับจำนวน element แต่ละตัวใน array
-                $valueCounts = array_count_values($tagsModified);
-    
-                //เรียงจากมากไปน้อย
-                arsort($valueCounts);
-    
-                //หั่นเอา 10 ตัวแรก
-                $topTags = array_slice($valueCounts, 0, 10, true); 
-    
-                $suggestedTags = [];
-                foreach ($topTags as $value => $count) {
-                    $suggestedTags[] = ['keyword' => $value,'percent' => 100];
+                //หั่นเอา 5 ตัวแรก
+                $suggestedTags = array_slice($suggestedTags, 0, 5, true); 
+
+                if($place){
+                    $suggestedFromPlace = $this->suggestPlaces($place, $tagsModified);
+                    $suggestedTags = array_merge($suggestedTags, $suggestedFromPlace);
+        
+                    usort($suggestedTags, function($a, $b) {
+                        return $b['percent'] <=> $a['percent'];
+                    });
+        
+                    $suggestedTags = array_map(function($suggestion) {
+                        return $suggestion['keyword'];
+                    }, $suggestedTags);
+        
+                    $suggestedTags = array_values(array_unique($suggestedTags));
+                    $suggestedTags = array_slice($suggestedTags, 0, 5, true); 
+                }
+                
+                if(!$place){
+                    $suggestedTags = array_map(function($suggestion) {
+                        return $suggestion['keyword'];
+                    }, $suggestedTags);
+                }
+
+            }
+            
+            if(!$name){
+                if($place){
+                    // $suggestedFromPlace = $this->suggestPlaces($place, $tagsModified);
+                    // $suggestedTags = array_merge($suggestedTags, $suggestedFromPlace);
+                    $suggestedTags = $this->suggestPlaces($place, $tagsModified);
+
+                    usort($suggestedTags, function($a, $b) {
+                        return $b['percent'] <=> $a['percent'];
+                    });
+        
+                    $suggestedTags = array_map(function($suggestion) {
+                        return $suggestion['keyword'];
+                    }, $suggestedTags);
+        
+                    $suggestedTags = array_values(array_unique($suggestedTags));
+                    $suggestedTags = array_slice($suggestedTags, 0, 5, true); 
+                }
+                
+                if(!$place){
+                    //แสดง tag ยอดนิยมทั้งหมด ยกเว้นช่วงเวลา ------------------------------------------------
+                    $Alltags = GroupTagModel::where('type',$type)->with(['tagName'])
+                        ->select('tagID')
+                        // ->distinct()
+                        ->get();
+
+                    $tagsModified = $Alltags->pluck('tagName.name')->toArray();
+                    $excludedTags = ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'];
+
+                    //เอา tag ช่วงเวลาออก
+                    $tagsModified = array_filter($tagsModified, function($tag) use ($excludedTags) {
+                        return !in_array($tag, $excludedTags);
+                    });
+
+                    //นับจำนวน element แต่ละตัวใน array
+                    $valueCounts = array_count_values($tagsModified);
+
+                    //เรียงจากมากไปน้อย
+                    arsort($valueCounts);
+
+                    //หั่นเอา 5 ตัวแรก
+                    $topTags = array_slice($valueCounts, 0, 5, true); 
+                    
+                    // $suggestedTags = array_map(function($suggestion) {
+                    //     return $suggestion['keyword'];
+                    // }, $topTags);
+
+                    foreach ($topTags as $value => $count) {
+                        $suggestedTags[] = $value;
+                    }   
                 }
                 // ----------------------------------------------------------------------------------
             }
     
-            if($place){
-                $suggestedFromPlace = $this->suggestPlaces($place, $tagsModified);
-                $suggestedTags = array_merge($suggestedTags, $suggestedFromPlace);
-    
-                usort($suggestedTags, function($a, $b) {
-                    return $b['percent'] <=> $a['percent'];
-                });
-    
-                $suggestedTags = array_map(function($suggestion) {
-                    return $suggestion['keyword'];
-                }, $suggestedTags);
-    
-                $suggestedTags = array_values(array_unique($suggestedTags));
-                $suggestedTags = array_slice($suggestedTags, 0, 10, true); 
-            }
-            
-            
-            if(!$place){
-                $suggestedTags = array_map(function($suggestion) {
-                    return $suggestion['keyword'];
-                }, $suggestedTags);
-            }
-    
             if($startTime){
                 $suggestedFromTime = $this->suggestTime($startTime);
-                if(count($suggestedTags) == 10){
+                if(count($suggestedTags) == 5){
                     array_pop($suggestedTags);
-                    array_splice($suggestedTags, 9, 0, $suggestedFromTime);
+                    array_splice($suggestedTags, 4, 0, $suggestedFromTime);
                 }else{
                     $suggestedTags[] = $suggestedFromTime;
                 }
@@ -408,7 +434,7 @@ class SearchController extends Controller
             // Get the maximum similarity percent
             $percent = $this->isSameThaiText($nameWithNoVowel, $keywordWithNoVowel);
     
-            if ($percent > 30 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
+            if ($percent > 50 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
                 $suggestions[] = [
                     'keyword' => strtolower($keyword),
                     'percent' => $percent
@@ -447,7 +473,7 @@ class SearchController extends Controller
             // Get the maximum similarity percent
             $percent = $this->isSameThaiText($searchWithNoVowel, $keywordWithNoVowel);
     
-            if ($percent > 30 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
+            if ($percent > 50 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
                 $suggestions[] = [
                     'keyword' => strtolower($keyword),
                     'percent' => $percent
@@ -486,7 +512,7 @@ class SearchController extends Controller
             // Get the maximum similarity percent
             $percent = $this->isSameThaiText($placeWithNoVowel, $keywordWithNoVowel);
     
-            if ($percent > 30 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
+            if ($percent > 50 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
                 $suggestions[] = [
                     'keyword' => strtolower($keyword),
                     'percent' => $percent
