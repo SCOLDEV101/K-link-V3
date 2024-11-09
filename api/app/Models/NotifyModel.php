@@ -27,7 +27,7 @@ class NotifyModel extends Model
     }    
 
     public function sender(): BelongsTo {
-        return $this->belongsTo(UserModel::class, 'senderID', 'id')->select('user_models.username', 'user_models.id');
+        return $this->belongsTo(UserModel::class, 'senderID', 'id')->select('user_models.username', 'user_models.id', 'user_models.imageOrFileID');
     }    
 
     public function report(): BelongsTo {

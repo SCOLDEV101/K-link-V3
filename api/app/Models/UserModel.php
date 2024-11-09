@@ -43,7 +43,7 @@ class UserModel extends Model
             'aboutMe' => 'ชอบเล่นฟุตบอล วันหยุดมักจะไปเที่ยวกับเพื่อน เก่งแคลคูลัส',
             'telephone' => '0650650111',
             'email' => '65010111@kmitl.ac.th',
-            'imageOrFileID' => '8',
+            'imageOrFileID' => '12',
             'facultyID' => '1',
             'majorID' => '1',
             'roleID' => '100'
@@ -55,7 +55,7 @@ class UserModel extends Model
             'aboutMe' => 'เป็นประธานชมรมยิงปืน ตัวแทนนักกีฬา',
             'telephone' => '0650650222',
             'email' => '65010222@kmitl.ac.th',
-            'imageOrFileID' => '8',
+            'imageOrFileID' => '13',
             'facultyID' => '1',
             'majorID' => '3',
             'roleID' => '100'
@@ -67,7 +67,7 @@ class UserModel extends Model
             'aboutMe' => 'ประธานรุ่นปี 2565 ปัจจุบันเรียนอยู่ปี 3 เคลไปแลกเปลี่ยนที่ฝรั่งเศษ เรียนเก่งมาก',
             'telephone' => '0650650333',
             'email' => '65010333@kmitl.ac.th',
-            'imageOrFileID' => '8',
+            'imageOrFileID' => '14',
             'facultyID' => '2',
             'majorID' => '24',
             'roleID' => '100'
@@ -79,7 +79,7 @@ class UserModel extends Model
             'aboutMe' => 'ลูกครึ่งไทย-แคนนาดา รับงานแสดงเป็นบางครั้ง ไม่ชอบกินเผ็ด',
             'telephone' => '0650650444',
             'email' => '65010444@kmitl.ac.th',
-            'imageOrFileID' => '8',
+            'imageOrFileID' => '12',
             'facultyID' => '3',
             'majorID' => '34',
             'roleID' => '100'
@@ -91,7 +91,7 @@ class UserModel extends Model
             'aboutMe' => 'เป็นคนใต้ที่ไม่กินเผ็ด กลัวผีแต่ก็ชอบดูหนังผี',
             'telephone' => '0650650555',
             'email' => '65010555@kmitl.ac.th',
-            'imageOrFileID' => '8',
+            'imageOrFileID' => '13',
             'facultyID' => '4',
             'majorID' => '38',
             'roleID' => '100'
@@ -103,7 +103,7 @@ class UserModel extends Model
             'aboutMe' => 'เป็นคนสวย มั่นใจ เล่นกีฬาเก่ง พูดเก่ง รักการเดินทาง',
             'telephone' => '0650650666',
             'email' => '65010666@kmitl.ac.th',
-            'imageOrFileID' => '8',
+            'imageOrFileID' => '14',
             'facultyID' => '4',
             'majorID' => '43',
             'roleID' => '100'

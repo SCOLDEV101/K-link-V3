@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\UserModel;
+use App\Models\imageOrFileModel;
 
 class NotificationResource extends JsonResource
 {
@@ -18,6 +20,7 @@ class NotificationResource extends JsonResource
             if ($this->type == "report") {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->hobby->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->hobby->name ?? null,
                     'groupType' => 'hobby',
@@ -28,6 +31,7 @@ class NotificationResource extends JsonResource
             } else if ($this->type == "delete") {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->hobby->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->postID ?? null,
                     'groupType' => 'hobby',
@@ -38,6 +42,7 @@ class NotificationResource extends JsonResource
             } else {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->hobby->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->hobby->name ?? null,
                     'groupType' => 'hobby',
@@ -50,6 +55,7 @@ class NotificationResource extends JsonResource
             if ($this->type == "report") {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->tutoring->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->tutoring->name ?? null,
                     'groupType' => 'tutoring',
@@ -60,6 +66,7 @@ class NotificationResource extends JsonResource
             } else if ($this->type == "delete") {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->tutoring->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->postID ?? null,
                     'groupType' => 'tutoring',
@@ -70,6 +77,7 @@ class NotificationResource extends JsonResource
             } else {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->tutoring->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->tutoring->name ?? null,
                     'groupType' => 'tutoring',
@@ -82,6 +90,7 @@ class NotificationResource extends JsonResource
             if ($this->type == "report") {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->library->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->library->name ?? null,
                     'groupType' => 'library',
@@ -92,6 +101,7 @@ class NotificationResource extends JsonResource
             } else {
                 return [
                     'notiType' => $this->type,
+                    'image' => $this->group->library->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->library->name ?? null,
                     'groupType' => 'library',
@@ -103,6 +113,7 @@ class NotificationResource extends JsonResource
         } else if ($this->type == "delete") {
             return [
                 'notiType' => $this->type,
+                'image' => null,
                 'sender' => $this->sender->username,
                 'group' => $this->postID ?? null,
                 'groupType' => 'library',
@@ -111,8 +122,13 @@ class NotificationResource extends JsonResource
                 'createdAt' => $this->created_at
             ];
         } else {
+            $image = UserModel::where('imageOrFileID',$this->sender->imageOrFileID)
+                                        ->where('id',$this->sender->id)
+                                        ->with('imageOrFile')
+                                        ->first();
             return [
                 'notiType' => $this->type,
+                'image' => $image->imageOrFile->name,
                 'sender' => $this->sender->username,
                 'group' => null,
                 'groupType' => 'user', 
