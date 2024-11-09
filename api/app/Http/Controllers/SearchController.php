@@ -233,73 +233,82 @@ class SearchController extends Controller
         $startTime = trim($request->input('startTime'));
         $place = trim($request->input('location'));
         $type = trim($request->input('type'));                               
-        
+        $search = trim($request->input('search'));                               
+
         $tags = TagModel::get();
         $tagsModified = $tags->pluck('name')->toArray();
 
-        if($name){
-            $suggestedTags = $this->suggestTags($name,$tagsModified);
-        }else{
-            //แสดง tag ยอดนิยมทั้งหมด ยกเว้นช่วงเวลา ------------------------------------------------
-            $Alltags = GroupTagModel::where('type',$type)->with(['tagName'])
-                                                            ->select('tagID')
-                                                            // ->distinct()
-                                                            ->get();
-
-            $tagsModified = $Alltags->pluck('tagName.name')->toArray();
-            $excludedTags = ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'];
-
-            //เอา tag ช่วงเวลาออก
-            $tagsModified = array_filter($tagsModified, function($tag) use ($excludedTags) {
-                return !in_array($tag, $excludedTags);
-            });
-
-            //นับจำนวน element แต่ละตัวใน array
-            $valueCounts = array_count_values($tagsModified);
-
-            //เรียงจากมากไปน้อย
-            arsort($valueCounts);
-
-            //หั่นเอา 10 ตัวแรก
-            $topTags = array_slice($valueCounts, 0, 10, true); 
-
-            $suggestedTags = [];
-            foreach ($topTags as $value => $count) {
-                $suggestedTags[] = ['keyword' => $value,'percent' => 100];
-            }
-            // ----------------------------------------------------------------------------------
-        }
-
-        if(!$place){
+        if($search){
+            $suggestedTags = $this->suggestSearch($search,$tagsModified);
             $suggestedTags = array_map(function($suggestion) {
                 return $suggestion['keyword'];
             }, $suggestedTags);
-        }
-
-        if($place){
-            $suggestedFromPlace = $this->suggestPlaces($place, $tagsModified);
-            $suggestedTags = array_merge($suggestedTags, $suggestedFromPlace);
-
-            usort($suggestedTags, function($a, $b) {
-                return $b['percent'] <=> $a['percent'];
-            });
-
-            $suggestedTags = array_map(function($suggestion) {
-                return $suggestion['keyword'];
-            }, $suggestedTags);
-
-            $suggestedTags = array_values(array_unique($suggestedTags));
-            $suggestedTags = array_slice($suggestedTags, 0, 10, true); 
-        }
-        
-        if($startTime){
-            $suggestedFromTime = $this->suggestTime($startTime);
-            if(count($suggestedTags) == 10){
-                array_pop($suggestedTags);
-                array_splice($suggestedTags, 9, 0, $suggestedFromTime);
+        } else {
+            if($name){
+                $suggestedTags = $this->suggestTags($name,$tagsModified);
             }else{
-                $suggestedTags[] = $suggestedFromTime;
+                //แสดง tag ยอดนิยมทั้งหมด ยกเว้นช่วงเวลา ------------------------------------------------
+                $Alltags = GroupTagModel::where('type',$type)->with(['tagName'])
+                                                                ->select('tagID')
+                                                                // ->distinct()
+                                                                ->get();
+    
+                $tagsModified = $Alltags->pluck('tagName.name')->toArray();
+                $excludedTags = ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'];
+    
+                //เอา tag ช่วงเวลาออก
+                $tagsModified = array_filter($tagsModified, function($tag) use ($excludedTags) {
+                    return !in_array($tag, $excludedTags);
+                });
+    
+                //นับจำนวน element แต่ละตัวใน array
+                $valueCounts = array_count_values($tagsModified);
+    
+                //เรียงจากมากไปน้อย
+                arsort($valueCounts);
+    
+                //หั่นเอา 10 ตัวแรก
+                $topTags = array_slice($valueCounts, 0, 10, true); 
+    
+                $suggestedTags = [];
+                foreach ($topTags as $value => $count) {
+                    $suggestedTags[] = ['keyword' => $value,'percent' => 100];
+                }
+                // ----------------------------------------------------------------------------------
             }
+    
+            if($place){
+                $suggestedFromPlace = $this->suggestPlaces($place, $tagsModified);
+                $suggestedTags = array_merge($suggestedTags, $suggestedFromPlace);
+    
+                usort($suggestedTags, function($a, $b) {
+                    return $b['percent'] <=> $a['percent'];
+                });
+    
+                $suggestedTags = array_map(function($suggestion) {
+                    return $suggestion['keyword'];
+                }, $suggestedTags);
+    
+                $suggestedTags = array_values(array_unique($suggestedTags));
+                $suggestedTags = array_slice($suggestedTags, 0, 10, true); 
+            }
+            
+            
+            if(!$place){
+                $suggestedTags = array_map(function($suggestion) {
+                    return $suggestion['keyword'];
+                }, $suggestedTags);
+            }
+    
+            if($startTime){
+                $suggestedFromTime = $this->suggestTime($startTime);
+                if(count($suggestedTags) == 10){
+                    array_pop($suggestedTags);
+                    array_splice($suggestedTags, 9, 0, $suggestedFromTime);
+                }else{
+                    $suggestedTags[] = $suggestedFromTime;
+                }
+            }    
         }
 
         return response()->json([
@@ -311,96 +320,11 @@ class SearchController extends Controller
     // ฟังก์ชันลบสระ 
     private function removeThaiVowelsAndDiacritics($text) {
         // $diacritics = ['ะ', 'า', 'ิ', 'ี', 'ึ', 'ื', 'ุ', 'ู', 'เ', 'แ', 'โ', 'ใ', 'ไ', 'ั', '็', '่', '้', '๊', '๋', '์'];
-        $diacritics = ['ะ', 'า', 'ิ', 'ี', 'ึ', 'ื', 'ุ', 'ู', 'ั', '็', '่', '้', '๊', '๋', '์'];
+        $diacritics = ['ะ', 'ิ', 'ี', 'ึ', 'ื', 'ุ', 'ู', 'ั', '็', '่', '้', '๊', '๋', '์'];
         return str_replace($diacritics, '', $text);
     }
 
     // เทียบ No Caps Lock กับ Caps Lock
-    // private function isSameThaiText($text) {
-    //     //Caps Lock => No Caps Lock
-    //     $similarCharacters = [
-    //         '๐' => 'ๆ', 
-    //         '"' => 'ไ', 
-    //         'ฎ' => 'ำ',
-    //         'ฑ' => 'พ', 
-    //         'ธ' => 'ะ', 
-    //         'ํ' => 'ั',
-    //         '๊' => 'ี', 
-    //         'ณ' => 'ร', 
-    //         'ฯ' => 'น',
-    //         'ญ' => 'ย', 
-    //         'ฐ' => 'บ', 
-    //         ',' => 'ล',
-    //         'ฅ' => 'ฃ', 
-    //         'ฤ' => 'ฟ', 
-    //         'ฆ' => 'ห',
-    //         'ฏ' => 'ก', 
-    //         'โ' => 'ด', 
-    //         'ฌ' => 'เ',
-    //         '็' => '้', 
-    //         '๋' => '่', 
-    //         'ษ' => 'า',
-    //         'ศ' => 'ส', 
-    //         'ซ' => 'ว', 
-    //         '.' => 'ง',
-    //         '(' => 'ผ', 
-    //         ')' => 'ป', 
-    //         'ฉ' => 'แ',
-    //         'ฮ' => 'อ', 
-    //         'ฺ' => 'ิ', 
-    //         '์' => 'ื',
-    //         '?' => 'ท', 
-    //         'ฒ' => 'ม', 
-    //         'ฬ' => 'ใ',
-    //         'ฦ' => 'ฝ', 
-    //         '+' => 'ๅ', 
-    //         '๑' => '/',
-    //         '๒' => '-', 
-    //         '๓' => 'ภ', 
-    //         '๔' => 'ถ',
-    //         'ู' => 'ุ', 
-    //         '฿' => 'ึ', 
-    //         '๕' => 'ค',
-    //         '๖' => 'ต', 
-    //         '๗' => 'จ', 
-    //         '๘' => 'ข',
-    //         '๙' => 'ช',
-    //     ];
-    
-    //     $text = strtr($text, $similarCharacters);
-    //     return $text;
-    // }
-    // private function isSameThaiText($text1, $text2) {
-    //     $capsToNoCaps = [
-    //         '๐' => 'ๆ', '"' => 'ไ', 'ฎ' => 'ำ', 'ฑ' => 'พ', 'ธ' => 'ะ', 'ํ' => 'ั',
-    //         '๊' => 'ี', 'ณ' => 'ร', 'ฯ' => 'น', 'ญ' => 'ย', 'ฐ' => 'บ', ',' => 'ล',
-    //         'ฅ' => 'ฃ', 'ฤ' => 'ฟ', 'ฆ' => 'ห', 'ฏ' => 'ก', 'โ' => 'ด', 'ฌ' => 'เ',
-    //         '็' => '้', '๋' => '่', 'ษ' => 'า', 'ศ' => 'ส', 'ซ' => 'ว', '.' => 'ง',
-    //         '(' => 'ผ', ')' => 'ป', 'ฉ' => 'แ', 'ฮ' => 'อ', 'ฺ' => 'ิ', '์' => 'ื',
-    //         '?' => 'ท', 'ฒ' => 'ม', 'ฬ' => 'ใ', 'ฦ' => 'ฝ', '+' => 'ๅ', '๑' => '/',
-    //         '๒' => '-', '๓' => 'ภ', '๔' => 'ถ', 'ู' => 'ุ', '฿' => 'ึ', '๕' => 'ค',
-    //         '๖' => 'ต', '๗' => 'จ', '๘' => 'ข', '๙' => 'ช',
-    //     ];
-
-    //     // Reverse the mapping to include both directions
-    //     $noCapsToCaps = array_flip($capsToNoCaps);
-
-    //     // Create two transformed versions of each text to compare both ways
-    //     $text1ToNoCaps = strtr($text1, $capsToNoCaps);
-    //     $text1ToCaps = strtr($text1, $noCapsToCaps);
-
-    //     $text2ToNoCaps = strtr($text2, $capsToNoCaps);
-    //     $text2ToCaps = strtr($text2, $noCapsToCaps);
-
-    //     // Check if any transformation makes the texts identical
-    //     return $text1 === $text2 ||
-    //         $text1ToNoCaps === $text2 ||
-    //         $text1ToCaps === $text2 ||
-    //         $text2ToNoCaps === $text1 ||
-    //         $text2ToCaps === $text1 ||
-    //         $text1ToNoCaps === $text2ToNoCaps ||
-    //         $text1ToCaps === $text2ToCaps;
-    // }
     private function isSameThaiText($text1, $text2) {
         $capsToNoCaps = [
             '๐' => 'ๆ', '"' => 'ไ', 'ฎ' => 'ำ', 'ฑ' => 'พ', 'ธ' => 'ะ', 'ํ' => 'ั',
@@ -468,48 +392,7 @@ class SearchController extends Controller
         return $text;
     }
 
-    // แท็กแนะนำจากการพิมพ์
-    // private function suggestTags($name, $keywords) {
-    //     $suggestions = [];
-    //     foreach ($keywords as $keyword) {
-    //         $keywordWithDirectSpelling = $this->thaiSpelling($keyword);
-    //         $nameWithDirectSpelling = $this->thaiSpelling($name);
-
-    //         $keywordWithNoVowel = $this->removeThaiVowelsAndDiacritics($keywordWithDirectSpelling);
-    //         $nameWithNoVowel = $this->removeThaiVowelsAndDiacritics($nameWithDirectSpelling);
-
-    //         $normalizedKeyword = $this->isSameThaiText($keywordWithNoVowel);
-    //         $normalizedName = $this->isSameThaiText($nameWithNoVowel);
-
-    //         similar_text(strtolower($normalizedName), strtolower($normalizedKeyword), $percent);
-            
-    //         if (strpos(strtolower($name), strtolower($keyword)) !== false 
-    //             || strpos(strtolower($keyword), strtolower($name)) !== false 
-    //             || strpos(strtolower($keywordWithDirectSpelling), strtolower($nameWithDirectSpelling)) !== false 
-    //             || strpos(strtolower($nameWithDirectSpelling), strtolower($keywordWithDirectSpelling)) !== false
-    //             || strpos(strtolower($nameWithNoVowel), strtolower($keywordWithNoVowel)) !== false 
-    //             || strpos(strtolower($keywordWithNoVowel), strtolower($nameWithNoVowel)) !== false
-    //             || strpos(strtolower($normalizedKeyword), strtolower($normalizedName)) !== false
-    //             || strpos(strtolower($normalizedName), strtolower($normalizedKeyword)) !== false
-    //         ){
-    //             if ($percent > 50 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
-    //                 $suggestions[] = ['keyword' => strtolower($keyword), 'percent' => $percent];               
-    //             }
-    //         }
-    //     }
-
-    //     usort($suggestions, function($a, $b) {
-    //         return $b['percent'] <=> $a['percent'];
-    //     });
-
-    //     if($suggestions == []){
-    //         $suggestions[] = $name;
-    //     }else{
-    //         $suggestions = array_slice(array_column($suggestions, 'keyword'), 0, 10);
-    //     }
-
-    //     return $suggestions;
-    // }
+    // แท็กแนะนำจากชื่อ
     private function suggestTags($name, $keywords) {
         $suggestions = [];
     
@@ -525,7 +408,7 @@ class SearchController extends Controller
             // Get the maximum similarity percent
             $percent = $this->isSameThaiText($nameWithNoVowel, $keywordWithNoVowel);
     
-            if ($percent > 50 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
+            if ($percent > 30 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
                 $suggestions[] = [
                     'keyword' => strtolower($keyword),
                     'percent' => $percent
@@ -548,48 +431,46 @@ class SearchController extends Controller
         }
     }
 
+    // แท็กแนะนำจากการพิมพ์
+    private function suggestSearch($search, $keywords) {
+        $suggestions = [];
+    
+        // Normalize the direct spelling and remove vowels from the name
+        $searchWithDirectSpelling = $this->thaiSpelling($search);
+        $searchWithNoVowel = $this->removeThaiVowelsAndDiacritics($searchWithDirectSpelling);
+    
+        foreach ($keywords as $keyword) {
+            // Normalize the keyword similarly
+            $keywordWithDirectSpelling = $this->thaiSpelling($keyword);
+            $keywordWithNoVowel = $this->removeThaiVowelsAndDiacritics($keywordWithDirectSpelling);
+    
+            // Get the maximum similarity percent
+            $percent = $this->isSameThaiText($searchWithNoVowel, $keywordWithNoVowel);
+    
+            if ($percent > 30 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
+                $suggestions[] = [
+                    'keyword' => strtolower($keyword),
+                    'percent' => $percent
+                ];
+            }
+        }
+    
+        // Sort suggestions by similarity percentage
+        usort($suggestions, function($a, $b) {
+            return $b['percent'] <=> $a['percent'];
+        });
+    
+        // Handle cases where no suggestions match
+        if (empty($suggestions)) {
+            // Fallback if no suggestions
+            return [['keyword' => $search, 'percent' => 100]];
+        } else {
+            // Limit to the top 10 suggestions
+            return array_slice($suggestions, 0, 10);
+        }
+    }
+
     // แท็กแนะนำจากสถานที่
-    // private function suggestPlaces($place, $keywords) {
-    //     $suggestions = [];
-    //     foreach ($keywords as $keyword) {
-    //         $keywordWithDirectSpelling = $this->thaiSpelling($keyword);
-    //         $placeWithDirectSpelling = $this->thaiSpelling($place);
-
-    //         $keywordWithNoVowel = $this->removeThaiVowelsAndDiacritics($keywordWithDirectSpelling);
-    //         $placeWithNoVowel = $this->removeThaiVowelsAndDiacritics($placeWithDirectSpelling);
-
-    //         $normalizedKeyword = $this->isSameThaiText($keywordWithNoVowel);
-    //         $normalizedPlace = $this->isSameThaiText($placeWithNoVowel);
-
-    //         similar_text(strtolower($normalizedPlace), strtolower($normalizedKeyword), $percent);
-            
-    //         if (strpos(strtolower($place), strtolower($keyword)) !== false 
-    //             || strpos(strtolower($keyword), strtolower($place)) !== false 
-    //             || strpos(strtolower($keywordWithDirectSpelling), strtolower($placeWithDirectSpelling)) !== false 
-    //             || strpos(strtolower($placeWithDirectSpelling), strtolower($keywordWithDirectSpelling)) !== false
-    //             || strpos(strtolower($placeWithNoVowel), strtolower($keywordWithNoVowel)) !== false 
-    //             || strpos(strtolower($keywordWithNoVowel), strtolower($placeWithNoVowel)) !== false
-    //             || strpos(strtolower($normalizedKeyword), strtolower($normalizedPlace)) !== false
-    //             || strpos(strtolower($normalizedPlace), strtolower($normalizedKeyword)) !== false
-    //         ){
-    //             if ($percent > 50 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
-    //                 $suggestions[] = ['keyword' => strtolower($keyword), 'percent' => $percent];               
-    //             }
-    //         }
-    //     }
-
-    //     usort($suggestions, function($a, $b) {
-    //         return $b['percent'] <=> $a['percent'];
-    //     });
-
-    //     if($suggestions == []){
-    //         $suggestions[] = $place;
-    //     }else{
-    //         $suggestions = array_slice(array_column($suggestions, 'keyword'), 0, 1);
-    //     }
-
-    //     return $suggestions;
-    // }
     private function suggestPlaces($place, $keywords) {
         $suggestions = [];
     
@@ -605,7 +486,7 @@ class SearchController extends Controller
             // Get the maximum similarity percent
             $percent = $this->isSameThaiText($placeWithNoVowel, $keywordWithNoVowel);
     
-            if ($percent > 50 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
+            if ($percent > 30 && !in_array($keyword, ['ช่วงเช้า', 'ช่วงสาย', 'ช่วงบ่าย', 'ช่วงเย็น', 'ช่วงค่ำ', 'ช่วงดึก'])) {
                 $suggestions[] = [
                     'keyword' => strtolower($keyword),
                     'percent' => $percent
