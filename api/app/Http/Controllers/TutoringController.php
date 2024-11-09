@@ -379,7 +379,7 @@ class TutoringController extends Controller
         if(gettype($request->input('majorID'))=="string"){
             $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
         }
-        if($request->input('memberMax') == "ไม่จำกัด"){
+        if($request->input('memberMax') == "ไม่จำกัด" || $request->input('memberMax') == null){
             $memberMax = null;
         }else {
             $memberMax = $request->input('memberMax');

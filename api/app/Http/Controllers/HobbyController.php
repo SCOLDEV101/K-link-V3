@@ -369,7 +369,7 @@ class HobbyController extends Controller
         //------------------------------
 
         //---------- hobby data
-        if($request->input('memberMax') == "ไม่จำกัด"){
+        if($request->input('memberMax') == "ไม่จำกัด" || $request->input('memberMax') == null){
             $memberMax = null;
         }else {
             $memberMax = $request->input('memberMax');

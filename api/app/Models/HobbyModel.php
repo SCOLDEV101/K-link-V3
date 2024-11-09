@@ -73,7 +73,7 @@ class HobbyModel extends Model
             'endTime' => ['required', 'regex:/^[0-9:]+$/u'],
             // 'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
             'deleteimage'=> ['sometimes','nullable'],
-            'memberMax' => ['nullable', 'regex:/^a-zA-Z0-9ก-๙\b([0-9]|[1-9][0-9])\b/'],
+            'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b|ไม่จำกัด/u'],
             'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
             'weekDate' => ['nullable', 'regex:/^[0-9,]+$/u'],
             'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
