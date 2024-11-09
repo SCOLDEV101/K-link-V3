@@ -224,7 +224,7 @@ class SearchController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => $suggestedTags,
+            'data' => $suggestedTags,
         ], 200);
     }
 
@@ -304,7 +304,7 @@ class SearchController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => $suggestedTags,
+            'data' => $suggestedTags,
         ], 200);
     }
 
