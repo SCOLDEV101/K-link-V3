@@ -28,6 +28,8 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
     Route::controller(SearchController::class)->group(function () {
         Route::post('/search/{type?}', 'searchGroup')->where('type', 'hobby|tutoring|library');;
         Route::post('/searchInvite/{groupID}', 'searchInvite');
+        Route::post('/searchTag', 'tagQuerySearch');
+        Route::post('/tag', 'tagQueryGroup');
     });
 
     Route::prefix('hobby')->group(function () {
