@@ -82,6 +82,8 @@ function Notification() {
       });
     }
   };
+
+
   
   return (
     <div className="container px-3 py-2" style={{ height: "100vh" }}>
@@ -101,7 +103,13 @@ function Notification() {
               onClick={() => handleClick(item)}  
               key={i}
             >
-              <img
+            <div className="position-relative" 
+            style={{
+              width: "50px",
+              height: "50px",
+            }}
+            >
+            <img
               src={
                  item.image
                   ? `${config.SERVER_PATH}${item.image}`
@@ -118,12 +126,50 @@ function Notification() {
                 style={{
                   width: "50px",
                   height: "50px",
-                  border: item.notiType === "report" || item.notiType === "kick" || item.notiType === "delete" ? "2px solid #B3261E" : "none",
+                  border: 
+                    item.notiType === "report" || item.notiType === "kick" || item.notiType === "delete"
+                      ? "2px solid #B3261E"
+                      : (item.notiType === "acceptRequest" || item.notiType === "request" || item.notiType === "invite") && item.groupType === "tutoring"
+                      ? "2px solid #FFB600"
+                      : (item.notiType === "acceptRequest" || item.notiType === "request" || item.notiType === "invite") && item.groupType === "hobby"
+                      ? "2px solid #21005D"
+                      : "none",
                   objectFit: "cover",
                   boxShadow: "inset 0px 0px 5.6px 0px rgba(0, 0, 0, 0.25)",
                 }}
               />
+              {item.notiType === "report" && (
+              <div className="position-absolute"
+              style={{
+                bottom:"0",
+                right:"-5px",
+              }}
+              >
+              <img src="../reportIcon.svg" alt="" width='25px'/>
+              </div>
+              )}
+              {item.notiType === "delete" && (
+              <div className="position-absolute"
+              style={{
+                bottom:"0",
+                right:"-5px",
+              }}
+              >
+              <img src="../deleteIcon.svg" alt="" width='25px'/>
+              </div>
+              )}
+              {item.notiType === "kick" && (
+              <div className="position-absolute"
+              style={{
+                bottom:"0",
+                right:"-5px",
+              }}
+              >
+              <img src="../kickIcon.svg" alt="" width='25px'/>
+              </div>
+              )}
   
+            </div>
               <div
                 className="ms-3 d-flex align-items-center text-break"
                 style={{ fontSize: ".8rem" }}
@@ -146,46 +192,101 @@ function Notification() {
                       <br /> {formatTimestamp(item.createdAt)}
                     </span>
                   </span>
+                ) : item.notiType === "delete" && item.groupType === 'library' ? ( //โพสไลบารี่โดนลบ
+                  <span>
+                    <span className="fw-bold my-0">เนื้อหาของคุณถูกลบ</span>
+                    <br />
+                    เนื่องจากขัดกับมาตราฐานชุมชน
+                    <span className="fw-medium">
+                      <br /> {formatTimestamp(item.createdAt)}
+                    </span>
+                  </span>
                 )
-                 : item.notiType === "tutoring" ? (
+                : item.notiType === "delete" ? ( //กลุ่มโดนลบ
                   <span>
-                    <span className="fw-bold my-0">เชิญเข้ากลุ่ม</span>
+                    <span className="fw-bold my-0">กลุ่มที่คุณเป็นสมาชิกอยู่ถูกลบ</span>
                     <br />
-                    <span>{item.sender}</span> เชิญคุณเข้าร่วมกลุ่ม{" "}
-                    <span>{item.group}</span>{" "}
+                    {item.groupType === 'tutoring' ? "กลุ่มติว" :"กลุ่ม"} {" "}
+                    <span className="text-decoration-underline my-0">{item.group}</span>
                     <span className="fw-medium">
-                      <br />
-                      {formatTimestamp(item.createdAt)}
+                      <br /> {formatTimestamp(item.createdAt)}
                     </span>
                   </span>
-                ) : item.notiType === "hobby" ? (
-                  <span>
-                    <span className="fw-bold my-0">คำขอเข้าร่วมกลุ่ม</span>
+                )
+                : item.notiType === "acceptRequest" ? ( //ได้เข้าร่วมกลุ่ม
+                  <span
+                  onClick={() => {
+                    if (item.groupType === "hobby") {
+                      navigate("/abouthobbygroup", {
+                        state: { groupID: item.groupID },
+                      });
+                    } else if (item.groupType === "tutoring") {
+                      navigate("/abouttutoringgroup", {
+                        state: { groupID: item.groupID },
+                      });
+                    }
+                  }}
+                  >
+                    <span className="fw-bold my-0">คุณได้เข้าร่วมกลุ่มแล้ว</span>
                     <br />
-                    <span className="fw-bold">{item.sender}</span>{" "}
-                    ต้องการเข้าร่วมกลุ่ม
+                    {item.groupType === 'tutoring' ? "กลุ่มติว" :"กลุ่ม"} {" "}
+                    <span className="text-decoration-underline my-0">{item.group}</span>
                     <span className="fw-medium">
-                      <br />
-                      {formatTimestamp(item.createdAt)} |{" "}
-                      <span className="fw-bold">{item.group}</span>
+                      <br /> {formatTimestamp(item.createdAt)}
                     </span>
                   </span>
-                ) : item.notiType === "acceptRequest" ? (
+                )
+                : item.notiType === "kick" ? ( //โดนไล่ออกจากกลุ่ม
                   <span>
-                    <span className="fw-bold my-0">การตอบรับคำขอ</span>
+                    <span className="fw-bold my-0">คุณถูกลบออกจากกลุ่ม</span>
                     <br />
-                    คุณได้เข้าร่วมกลุ่ม
-                    <span className="fw-bold">
-                      {" "}
-                      {item.group}{" "}
-                    </span> แล้ว{" "}
+                    {item.groupType === 'tutoring' ? "กลุ่มติว" :"กลุ่ม"} {" "}
+                    <span className="text-decoration-underline my-0">{item.group}</span>
                     <span className="fw-medium">
-                      <br />
-                      {formatTimestamp(item.createdAt)} |{" "}
-                      <span className="fw-bold">{item.group}</span>
+                      <br /> {formatTimestamp(item.createdAt)}
                     </span>
                   </span>
-                ) : (
+                )
+                : item.notiType === "request" ? ( //ขอเข้าร่วมกลุ่ม
+                  <span    
+                   onClick={() => navigate("/acceptRequest", {
+                    state: { groupID: item.groupID, name: item.group, groupType: item.groupType },
+                  })}
+                  >
+                    <span className="fw-bold my-0">{item.sender}</span>{" "}
+                    <span className="my-0">ต้องการเข้าร่วมกลุ่ม</span>
+                    <br />
+                    {item.groupType === 'tutoring' ? "กลุ่มติว" :"กลุ่ม"} {" "}
+                    <span className="text-decoration-underline my-0">{item.group}</span>
+                    <span className="fw-medium">
+                      <br /> {formatTimestamp(item.createdAt)}
+                    </span>
+                  </span>
+                ) 
+                : item.notiType === "invite" ? ( //ได้รับคำเชิญเ้ากลุ่ม
+                  <span    
+                  onClick={() => {
+                    if (item.groupType === "hobby") {
+                      navigate("/abouthobbygroup", {
+                        state: { groupID: item.groupID },
+                      });
+                    } else if (item.groupType === "tutoring") {
+                      navigate("/abouttutoringgroup", {
+                        state: { groupID: item.groupID },
+                      });
+                    }
+                  }}
+                  >
+                    <span className="fw-bold my-0">คุณได้รับคำเชิญเข้าร่วมกลุ่ม</span>
+                    <br />
+                    {item.groupType === 'tutoring' ? "กลุ่มติว" :"กลุ่ม"} {" "}
+                    <span className="text-decoration-underline my-0">{item.group}</span>
+                    <span className="fw-medium">
+                      <br /> {formatTimestamp(item.createdAt)}
+                    </span>
+                  </span>
+                ) 
+                : (
                   <></>
                 )}
               </div>
