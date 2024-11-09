@@ -517,8 +517,12 @@ class HobbyController extends Controller
         // เอา request มาเก็บเป็น array
         $requestArray = [];
         foreach ($hobbyDb->request as $request) {
+            $image = UserModel::where('id',$request->id)
+                                        ->with('imageOrFile')
+                                        ->first();
             if ($request != null && $request != "") {
                 $requestArray[] = [
+                    "image" => '/uploaded/profileImage/' . $image->imageOrFile->name,
                     'username' => $request->username,
                     'uID' => (int)$request->id,
                     'timestamps' => date($request->created_at)
