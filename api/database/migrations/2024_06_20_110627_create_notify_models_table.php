@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('receiverID');
             $table->integer('senderID');
+            $table->integer('reportID')->nullable();
             $table->string('postID');
             $table->string('type');
             $table->timestamps();
