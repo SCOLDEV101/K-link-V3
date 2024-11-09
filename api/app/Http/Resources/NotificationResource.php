@@ -20,7 +20,7 @@ class NotificationResource extends JsonResource
             if ($this->type == "report") {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->hobby->imageOrFile->name,
+                    'image' => '/uploaded/hobbyImage/' . $this->group->hobby->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->hobby->name ?? null,
                     'groupType' => 'hobby',
@@ -31,7 +31,7 @@ class NotificationResource extends JsonResource
             } else if ($this->type == "delete") {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->hobby->imageOrFile->name,
+                    'image' => '/uploaded/hobbyImage/' . $this->group->hobby->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->postID ?? null,
                     'groupType' => 'hobby',
@@ -42,7 +42,7 @@ class NotificationResource extends JsonResource
             } else {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->hobby->imageOrFile->name,
+                    'image' => '/uploaded/hobbyImage/' . $this->group->hobby->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->hobby->name ?? null,
                     'groupType' => 'hobby',
@@ -55,7 +55,7 @@ class NotificationResource extends JsonResource
             if ($this->type == "report") {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->tutoring->imageOrFile->name,
+                    'image' => '/uploaded/hobbyImage/' . $this->group->tutoring->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->tutoring->name ?? null,
                     'groupType' => 'tutoring',
@@ -66,7 +66,7 @@ class NotificationResource extends JsonResource
             } else if ($this->type == "delete") {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->tutoring->imageOrFile->name,
+                    'image' => '/uploaded/hobbyImage/' . $this->group->tutoring->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->postID ?? null,
                     'groupType' => 'tutoring',
@@ -77,7 +77,7 @@ class NotificationResource extends JsonResource
             } else {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->tutoring->imageOrFile->name,
+                    'image' => '/uploaded/hobbyImage/' . $this->group->tutoring->imageOrFile->name,
                     'sender' => $this->sender->username,
                     'group' => $this->group->tutoring->name ?? null,
                     'groupType' => 'tutoring',
