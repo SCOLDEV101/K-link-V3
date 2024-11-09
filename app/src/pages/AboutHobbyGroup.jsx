@@ -11,8 +11,10 @@ function AboutHobbyGroup() {
   const headersAuth = config.Headers().headers;
   const location = useLocation();
   const groupID = location.state?.groupID || {};
-  const [activeDays, setActiveDays] = useState([]);
+  // const [activeDays, setActiveDays] = useState([]);
   const [aboutGroupData, setAboutGroupData] = useState({});
+  const [editaboutGroupData, setEditAboutGroupData] = useState({});
+
 
   useEffect(() => {
     Get_AboutGroupData(groupID);
@@ -26,15 +28,21 @@ function AboutHobbyGroup() {
       );
       if (request.data.status === "ok") {
         console.log("hobby/aboutGroup/" + groupID, request.data.data);
+        const transformedData = {
+          ...request.data.data,
+          tag: request.data.data.tag.join(", "),
+        };
+        setEditAboutGroupData(transformedData);
         setAboutGroupData(request.data.data);
+
       } else {
         console.error("Something went wrong !, please try again.");
       }
 
-      const activeDaysArray = request.data.data.weekDate // <-- edit here too
-        .split(",")
-        .map((day) => day.trim().replace(".", ""));
-      setActiveDays(activeDaysArray);
+      // const activeDaysArray = request.data.data.weekDate // <-- edit here too
+      //   .split(",")
+      //   .map((day) => day.trim().replace(".", ""));
+      // setActiveDays(activeDaysArray);
     } catch (error) {
       console.error(error);
     }
@@ -380,9 +388,9 @@ function AboutHobbyGroup() {
                 className="p-2 d-flex flex-row flex-wrap align-items-start gap-2" //card-body
               >
                 {aboutGroupData.tag !== undefined &&
-                  aboutGroupData.tag.map((tag) => (
+                  aboutGroupData.tag.map((tag, index) => (
                     <div
-                      key={tag}
+                      key={index}
                       className="badge text-dark px-3 py-2"
                       style={{
                         background: "#FFB600",
@@ -406,7 +414,7 @@ function AboutHobbyGroup() {
                 <Link
                   to={"/hobbyeditgroup"}
                   state={{
-                    groupData: aboutGroupData,
+                    groupData: editaboutGroupData,
                     status: "update",
                     groupID: groupID,
                   }}

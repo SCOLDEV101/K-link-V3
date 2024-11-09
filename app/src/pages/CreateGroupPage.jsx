@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { IoIosCloseCircle } from "react-icons/io";
 import { FaPlus } from "react-icons/fa6";
 import axios from "axios";
 import config from "../constants/function";
@@ -11,10 +10,52 @@ import "../index.css";
 function CreateGroupPage() {
   const navigate = useNavigate();
   const Location = useLocation();
-  const { groupData = {}, status, hID } = Location.state || {};
+  const { groupData = {}, status, groupID } = Location.state || {};
+
+  // const initialWeekDate = groupData.weekDate
+  //   ? groupData.weekDate.split(",").map((day) => day.trim())
+  //   : [];
+  const dayColors = {
+    "จ.": "#FFB600",
+    "อ.": "#EFB8C8",
+    "พ.": "#7CB518",
+    "พฤ.": "#F96E20",
+    "ศ.": "#729BC0",
+    "ส.": "#A970C4",
+    "อา.": "#B3261E",
+  };
+  const daysThai = [
+    { index: "1", day: "จ." },
+    { index: "2", day: "อ." },
+    { index: "3", day: "พ." },
+    { index: "4", day: "พฤ." },
+    { index: "5", day: "ศ." },
+    { index: "6", day: "ส." },
+    { index: "7", day: "อา." },
+  ];
+
+  const DefaultImageUrl = [
+    {
+      src: "../slide/s1.jpeg",
+      alt: "d-1",
+    },
+    {
+      src: "../slide/s2.jpg",
+      alt: "d-2",
+    },
+    {
+      src: "../slide/s3.jpg",
+      alt: "d-3",
+    },
+  ];
 
   const initialWeekDate = groupData.weekDate
-    ? groupData.weekDate.split(",").map((day) => day.trim())
+    ? groupData.weekDate
+        .map((day) => {
+          const matchedDay = daysThai.find((d) => d.day === day);
+          return matchedDay ? matchedDay.index : null;
+        })
+        .filter((index) => index !== null)
     : [];
 
   const [activityName, setActivityName] = useState(
@@ -35,8 +76,14 @@ function CreateGroupPage() {
     return [];
   });
   const [tag, setTag] = useState(groupData.tag || "");
+  const [firstStateImage, setFirstStateImage] = useState(
+    groupData.image || null
+  );
+  useEffect(() => {
+    setFirstStateImage(groupData.image);
+  }, []);
 
-  const [imageSelected, setImageSelected] = useState(null);
+  const [imageSelected, setImageSelected] = useState(image || null);
   const [defaultImage, setDefaultImage] = useState(null);
 
   const headersAuth = config.Headers().headers;
@@ -50,7 +97,7 @@ function CreateGroupPage() {
   };
 
   const handleImageChange = (event) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
     const selectedFile = event.target.files[0];
     setImageSelected(selectedFile);
 
@@ -173,7 +220,7 @@ function CreateGroupPage() {
 
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
-          console.log(`${key}:`, value.name); // แสดงชื่อไฟล์
+          console.log(`${key}:`, value.name);
         } else {
           console.log(`${key}:`, value);
         }
@@ -309,6 +356,8 @@ function CreateGroupPage() {
     });
 
     if (result.isConfirmed) {
+      console.log("EDIT SUBMIT", groupID);
+
       const formData = new FormData();
       formData.append("activityName", activityName);
       formData.append("weekDate", weekDate); //JSON.stringify(weekDate)
@@ -317,17 +366,24 @@ function CreateGroupPage() {
       formData.append("memberMax", memberMax);
       formData.append("location", location);
       formData.append("detail", detail);
-      if (image instanceof File) {
-        formData.append("image", image);
-      } else if (image === null) {
-        formData.append("image", null);
-      } else {
-        formData.append("image", groupData.image);
-      }
+      // if (image instanceof File) {
+      //   formData.append("image", image);
+      // } else if (image == firstStateImage || image === null) {
+      //   formData.append("image", '');
+      // } else {
+      //   formData.append("image", groupData.image);
+      // }
       formData.append("tag", tags);
+      if (defaultImage) {
+        console.log("Default IMG:", defaultImage);
+        formData.append("image", defaultImage);
+      } else if (image && defaultImage === null) {
+        formData.append("image", image);
+        console.log("IMG", image);
+      }
 
-      if (hID) {
-        console.log("HID : " + hID);
+      if (groupID) {
+        console.log("groupID : " + groupID);
         for (const [key, value] of formData.entries()) {
           if (value instanceof File) {
             console.log(`${key}:`, value.name);
@@ -337,7 +393,7 @@ function CreateGroupPage() {
         }
         try {
           const response = await axios.post(
-            config.SERVER_PATH + `/api/hobby/updateGroup/${hID}`,
+            config.SERVER_PATH + `/api/hobby/updateGroup/${groupID}`,
             formData,
             {
               headers: headersAuth,
@@ -390,47 +446,13 @@ function CreateGroupPage() {
     }
   };
 
-  const dayColors = {
-    "จ.": "#FFB600",
-    "อ.": "#EFB8C8",
-    "พ.": "#7CB518",
-    "พฤ.": "#F96E20",
-    "ศ.": "#729BC0",
-    "ส.": "#A970C4",
-    "อา.": "#B3261E",
-  };
-  const daysThai = [
-    { index: "1", day: "จ." },
-    { index: "2", day: "อ." },
-    { index: "3", day: "พ." },
-    { index: "4", day: "พฤ." },
-    { index: "5", day: "ศ." },
-    { index: "6", day: "ส." },
-    { index: "7", day: "อา." },
-  ];
-
-  const DefaultImageUrl = [
-    {
-      src: "../slide/s1.jpeg",
-      alt: "d-1",
-    },
-    {
-      src: "../slide/s2.jpg",
-      alt: "d-2",
-    },
-    {
-      src: "../slide/s3.jpg",
-      alt: "d-3",
-    },
-  ];
-
   return (
     <div
       className="d-flex flex-column align-items-center"
       style={{
         height: "calc(100vh - 92px)", //calc(100vh - 180px)
         marginTop: "90px",
-        overflow: "hidden",
+        overflow: "groupIDden",
         fontSize: "3.5vw",
         background: "#fff",
       }}
@@ -490,7 +512,7 @@ function CreateGroupPage() {
                     style={{ display: "none" }}
                     id="profileImageInput"
                     onChange={handleImageChange}
-                    accept="image/jpeg, image/png, image/gif"
+                    accept="image/jpeg, image/png, image/gif, image/jpg"
                   />
                   <label
                     htmlFor="profileImageInput"
@@ -525,8 +547,11 @@ function CreateGroupPage() {
                         height: "45px",
                         borderRadius: "5px",
                         border: "1.5px solid #E7E7E7",
+                        objectFit: "cover",
                         boxShadow:
-                          imageSelected === image ? "0 0 5px #FFB600" : "",
+                          image && imageSelected === image
+                            ? "0 0 5px #FFB600"
+                            : "",
                       }}
                     />
                   ) : (
@@ -555,6 +580,7 @@ function CreateGroupPage() {
                         width: "45px",
                         height: "45px",
                         borderRadius: "5px",
+                        objectFit: "cover",
                         border: "1.5px solid #E7E7E7",
                         boxShadow:
                           imageSelected === idx ? "0 0 5px #FFB600" : "",
@@ -782,7 +808,7 @@ function CreateGroupPage() {
                                       fontWeight: "500",
                                       maxWidth: "120px",
                                       whiteSpace: "nowrap",
-                                      overflow: "hidden",
+                                      overflow: "groupIDden",
                                       textOverflow: "ellipsis",
                                     }}
                                   >
