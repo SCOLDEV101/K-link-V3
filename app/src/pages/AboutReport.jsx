@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate} from "react-router-dom";
+import React from "react";
+import { useLocation } from "react-router-dom";
 import { IoWarningOutline } from "react-icons/io5";
 
 
 
 function AboutReport() {
+  const location = useLocation();
+  const { reportType } = location.state || {}; 
+
   return (
     <div className="container px-3 py-2" style={{ height: "100vh" }}>
       <ul
@@ -23,21 +26,25 @@ function AboutReport() {
             </div>
 
             <div className="col-10">
-            <p className="fw-bold my-0">
-                ldogjoerihjhufihuwihffg
-                gegjareoig9eajgogpfsdighuisdfhgu
-                isfdfg
-                gie9ighidfghidfhidfhgihdfiughdighdi
-            </p> 
+            {reportType === "user" ? <p className="fw-bold fs-2 my-0">คุณถูกรายงาน</p> 
+             : reportType === "group" ? <p className="fw-bold fs-2 my-0">กลุ่มของคุณถูกรายงาน</p>
+              : null  }
             </div>
             </div>
-         <p style={{textIndent: "2em"}} className="my-3 text-wrap">
-            ldogjoerihjwirojtoiwjpiwjgpehjpoerog
-            fojdfijsdifjidsjfpsdjfisdfj
-            kfosjgiohpojgdiohdiughiuhtegihfgiudshfgfgh
-            ghiufdhgiudhgihiughfihgufdhgiuhghugighihg้uk
-            erigherihgierniinbiifogjoisfd
-            </p> 
+            {reportType === "user" ? (
+  <p style={{ textIndent: "2em" }} className="my-3 text-wrap fs-6">
+    คุณอาจทำพฤติกรรมที่ไม่สอดคล้องกับ{" "}
+    <span className="text-decoration-underline fw-bold" style={{color: "#FF4800" }}>มาตรฐานชุมชน</span>
+    {" "}ของเรา หากไม่เป็นความจริง คุณสามารถ ส่งคำขอร้องให้ตรวจสอบ
+  </p>
+) : reportType === "group" ? (
+  <p style={{ textIndent: "2em" }} className="my-3 text-wrap fs-6">
+    กลุ่มของท่านมีเนื้อหาที่อาจ ไม่สอดคล้องกับ{" "}
+    <span className="text-decoration-underline fw-bold" style={{ color: "#FF4800" }}>มาตรฐานชุมชน</span>
+    {" "}ของเรา หากไม่เป็นความจริง คุณสามารถ ส่งคำขอร้องให้ตรวจสอบ เราจะให้เจ้าหน้าที่ตรวจสอบกลุ่มนี้อีกครั้ง
+  </p>
+) : null}
+
          </li> 
       </ul>
     </div>

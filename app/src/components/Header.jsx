@@ -37,7 +37,7 @@ function Header({ groupName, FileData }) {
     "/aboutapp",
     "/librarycreatepost",
     "/aboutlibrary",
-    "/AboutReport",
+    "/aboutReport",
   ];
   const bigHeader = [
     "/aboutaccount",
