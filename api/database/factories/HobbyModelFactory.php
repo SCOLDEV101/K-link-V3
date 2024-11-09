@@ -2081,6 +2081,20 @@ class HobbyModelFactory extends Factory
                 'groupID' => $createGroup['id'],
                 'userID' => $member,
             ]);
+
+            NotifyModel::create([
+                'receiverID' => $member,
+                'senderID' => $leader,
+                'postID' => $createGroup['groupID'],
+                'type' => 'acceptRequest',
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $member,
+                'senderID' => $leader,
+                'postID' => $this->faker->randomElement($activityNames),
+                'type' => 'delete',
+            ]);
         }
 
         // สุ่ม requeset โดยเก็บ userID เป็น id ใน requests Array ซึ่งเป็นส่วนเหลือจากสมาชิกและหัวหน้า
@@ -2095,6 +2109,20 @@ class HobbyModelFactory extends Factory
                 'senderID' => $request,
                 'postID' => $createGroup['groupID'],
                 'type' => 'request',
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $request,
+                'senderID' => $leader,
+                'postID' => $createGroup['groupID'],
+                'type' => 'kick',
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $request,
+                'senderID' => $leader,
+                'postID' => $createGroup['groupID'],
+                'type' => 'rejectRequest',
             ]);
         }
 

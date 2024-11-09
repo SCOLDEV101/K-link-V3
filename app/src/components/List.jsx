@@ -344,7 +344,11 @@ function List({ listItem, fetchData }) {
                     item.type==="library" &&  item.image  ?`${config.SERVER_PATH}${item.image}`
                     : item.image
                       ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
-                      : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
+                      :  item.type === "hobby"  
+                      ? "../Hobby_Default_Cover.png"
+                      :  item.type === "library"  
+                      ? "../Library_Default_Cover.png"
+                      : "../Tutoring_Default_Cover.png"
                   }
                   alt="group img"
                   style={{

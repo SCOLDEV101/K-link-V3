@@ -35,7 +35,7 @@ class imageOrFileModel extends Model
     public static $profileImageStatic = [
         ['name' => 'profile-user1.jpg'], 
         ['name' => 'profile-user2.jpg'],
-        ['name' => 'profile-default.jpg'],
+        ['name' => 'profile-default.svg'],
     ];
 
     public static $fileStatic = [
