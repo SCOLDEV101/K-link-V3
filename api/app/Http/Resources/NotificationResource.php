@@ -128,7 +128,7 @@ class NotificationResource extends JsonResource
                                         ->first();
             return [
                 'notiType' => $this->type,
-                'image' => $image->imageOrFile->name,
+                'image' => '/uploaded/profileImage/' . $image->imageOrFile->name,
                 'sender' => $this->sender->username,
                 'group' => null,
                 'groupType' => 'user', 
