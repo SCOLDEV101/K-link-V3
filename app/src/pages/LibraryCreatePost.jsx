@@ -2,10 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import config from "../constants/function";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  fetchData,
-  nestDataFacultys,
-} from "../constants/constants";
+import { fetchData, nestDataFacultys } from "../constants/constants";
 import AddTag from "../components/AddTag";
 import { FaPlus } from "react-icons/fa6";
 import { FiFileMinus, FiFilePlus } from "react-icons/fi";
@@ -573,17 +570,29 @@ function LibraryCreatePost() {
                             {tags.map((tag, i) => (
                               <div
                                 key={i}
-                                className="badge rounded-pill text-dark px-3 py-2 text-truncate"
+                                className="ps-3 d-flex flex-row align-items-center"
                                 style={{
+                                  borderRadius: "12px",
+                                  paddingBottom: "4.5px",
+                                  paddingTop: "4.5px",
+                                  paddingRight: "17px",
                                   background: "#FFB600",
-                                  boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
-                                  maxWidth: "120px",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
+                                  color: "#fff",
                                 }}
                               >
-                                {tag}
+                                <span
+                                  className="text-truncate m-0"
+                                  style={{
+                                    fontSize: ".75rem",
+                                    fontWeight: "500",
+                                    maxWidth: "120px",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  # {tag}
+                                </span>
                               </div>
                             ))}
                           </div>
