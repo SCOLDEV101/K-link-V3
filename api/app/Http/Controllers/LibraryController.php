@@ -73,6 +73,16 @@ class LibraryController extends Controller
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $extension = $file->getClientOriginalExtension();
+
+                $validExtension = ['pdf'];
+
+                if(!in_array($extension, $validExtension)) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Image type is invalid.'
+                    ], 400);
+                }
+
                 $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
                 $filename = $name . '.' . $extension;
                 $file->move($path, $filename);
@@ -211,6 +221,16 @@ class LibraryController extends Controller
                     imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->delete(); // ลบ data on dby
                     File::delete($path . $groupDb->library->imageOrFile->name);
                 }
+
+                $validExtension = ['pdf'];
+
+                if(!in_array($extension, $validExtension)) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Image type is invalid.'
+                    ], 400);
+                }
+
                 //save new file
                 $path = public_path('uploaded/Library/');
                 $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));

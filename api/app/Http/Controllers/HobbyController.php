@@ -93,6 +93,16 @@ class HobbyController extends Controller
             if ($request->file('image') != null) {
                 $file = $request->file('image');
                 $extension = $file->getClientOriginalExtension();
+
+                $validExtension = ['jpg', 'png', 'jpeg', 'gif'];
+
+                if(!in_array($extension, $validExtension)) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Image type is invalid.'
+                    ], 400);
+                }
+
                 $filename = 'hobby-' . date('YmdHi') . '.' . $extension;
                 $file->move($path, $filename);
                 $imageOrFileDb = imageOrFileModel::create([
@@ -260,7 +270,7 @@ class HobbyController extends Controller
         foreach (imageOrFileModel::$groupImageStatic as $file) {
             array_push($defaultFiles, $file['name']);
         }
-        if (!empty($request->file('image'))) {
+        if (!empty($request->file('image')) && $request->file('image') !== $groupDb->hobby->imageOrFile->id) {
             $file = $request->file('image');
             if (imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->first() && !in_array(strval($groupDb->hobby->imageOrFile->name), $defaultFiles)) {
                 if (File::exists($path . $groupDb->hobby->imageOrFile->name)) {
@@ -269,6 +279,15 @@ class HobbyController extends Controller
                 imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
             }
             $extension = $file->getClientOriginalExtension();
+            $validExtension = ['jpg', 'png', 'jpeg', 'gif'];
+
+            if(!in_array($extension, $validExtension)) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Image type is invalid.'
+                ], 400);
+            }
+
             $filename = 'hobby-' . now()->format('YmdHis') . '.' . $extension;
             $move = $file->move($path, $filename);
             if (!$move) {
@@ -299,8 +318,8 @@ class HobbyController extends Controller
             $newTags = explode(',', $request->input('tag'));
 
             foreach ($newTags as $tag) {
-                if ($tag != '' || $tag != null) {
-                    $tag = ['hobby'];
+                if ($tag == '' || $tag == null) {
+                    $tag = 'hobby';
                 }
                 $querytag = TagModel::where('name', $tag)->first();
                 if (empty($querytag)) {

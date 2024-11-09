@@ -88,6 +88,16 @@ class TutoringController extends Controller
             if ($request->file('image') != null) {
                 $file = $request->file('image');
                 $extension = $file->getClientOriginalExtension();
+
+                $validExtension = ['jpg', 'png', 'jpeg', 'gif'];
+
+                if(!in_array($extension, $validExtension)) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Image type is invalid.'
+                    ], 400);
+                }
+
                 $filename = 'tutoring-' . date('YmdHi') . '.' . $extension;
                 $file->move($path, $filename);
                 $imageOrFileDb = imageOrFileModel::create([
@@ -265,7 +275,7 @@ class TutoringController extends Controller
             array_push($defaultFiles, $file['name']);
         }
         //---
-        if (!empty($request->file('image'))) {
+        if (!empty($request->file('image')) && $request->file('image') !== $groupDb->tutoring->imageOrFile->id) {
             $file = $request->file('image');
             if (imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->first() && !in_array(strval($groupDb->tutoring->imageOrFile->name), $defaultFiles)) {
                 imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
@@ -274,6 +284,16 @@ class TutoringController extends Controller
                 }
             }
             $extension = $file->getClientOriginalExtension();
+
+            $validExtension = ['jpg', 'png', 'jpeg', 'gif'];
+
+            if(!in_array($extension, $validExtension)) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Image type is invalid.'
+                ], 400);
+            }
+
             $filename = 'tutoring-' . now()->format('YmdHis') . '.' . $extension;
             $move = $file->move($path, $filename);
             if (!$move) {

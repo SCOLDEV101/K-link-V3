@@ -71,7 +71,7 @@ class HobbyModel extends Model
             'tag' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙,\s]+$/u'],
             'startTime' => ['required', 'regex:/^[0-9:]+$/u'],
             'endTime' => ['required', 'regex:/^[0-9:]+$/u'],
-            'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+            // 'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
             'deleteimage'=> ['sometimes','nullable'],
             'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
             'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
@@ -81,7 +81,7 @@ class HobbyModel extends Model
         [
             'activityName.required' => 'hobby name required',
             'activityName.regex' => 'hobby name can only contain letters, numbers and whitespaces',
-            'image.mimes'=>"group image only allow png,jpg,jpeg,gif",
+            // 'image.mimes'=>"group image only allow png,jpg,jpeg,gif",
             'tag.regex' => 'tag have invalid characters',
             'startTime.required' => 'activity start time is required',
             'startTime.regex' => 'start time type invalid',
