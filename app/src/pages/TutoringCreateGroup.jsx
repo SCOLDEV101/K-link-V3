@@ -210,10 +210,20 @@ function TutoringCreateGroup() {
     e.target.classList.add("was-validated");
   };
 
-  const sendForm = async (_FormData_) => {
-    const _newFormData_ = { ..._FormData_, tag: tags.join(", ") };
-    const headersAuth = config.Headers().headers;
-    console.log({ _newFormData_ });
+  const sendForm = async (formData) => {
+    const _newFormData_ = new FormData();
+
+    for (const key in formData) {
+      _newFormData_.append(key, formData[key]);
+    }
+
+    _newFormData_.set("tag", tags.join(", "));
+
+    const headersAuth = {
+      ...config.Headers().headers,
+      "Content-Type": "multipart/form-data",
+    };
+
     try {
       if (status && status === "update") {
         const result = await Swal.fire({
@@ -233,10 +243,11 @@ function TutoringCreateGroup() {
 
         if (result.isConfirmed) {
           const response = await axios.post(
-            config.SERVER_PATH + "/api/tutoring/update/" + hID,
+            `${config.SERVER_PATH}/api/tutoring/update/${hID}`,
             _newFormData_,
             { headers: headersAuth, withCredentials: true }
           );
+
           if (response.data.status === "ok") {
             console.log("Update tutoring group success");
             Swal.fire({
@@ -258,13 +269,12 @@ function TutoringCreateGroup() {
               showConfirmButton: false,
               timer: 2000,
               customClass: {
-                title: "swal-title-success",
+                title: "swal-title-error",
                 container: "swal-container",
                 popup: "swal-popup-error",
               },
             });
           }
-          console.log("Response:", response);
         }
       } else {
         const result = await Swal.fire({
@@ -283,10 +293,11 @@ function TutoringCreateGroup() {
 
         if (result.isConfirmed) {
           const response = await axios.post(
-            config.SERVER_PATH + "/api/tutoring/createGroup",
+            `${config.SERVER_PATH}/api/tutoring/createGroup`,
             _newFormData_,
             { headers: headersAuth, withCredentials: true }
           );
+
           if (response.data.status === "ok") {
             console.log("Create tutoring group success");
             Swal.fire({
@@ -300,7 +311,6 @@ function TutoringCreateGroup() {
                 popup: "swal-popup-success",
               },
             });
-            // navigate(-1);
           } else {
             Swal.fire({
               position: "center",
@@ -308,13 +318,12 @@ function TutoringCreateGroup() {
               showConfirmButton: false,
               timer: 2000,
               customClass: {
-                title: "swal-title-success",
+                title: "swal-title-error",
                 container: "swal-container",
                 popup: "swal-popup-error",
               },
             });
           }
-          console.log("Response:", response);
         }
       }
     } catch (error) {
@@ -325,7 +334,7 @@ function TutoringCreateGroup() {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          title: "swal-title-success",
+          title: "swal-title-error",
           container: "swal-container",
           popup: "swal-popup-error",
         },
@@ -877,6 +886,7 @@ function TutoringCreateGroup() {
                           </div>
                         }
                         initialTags={groupData.tag}
+                        typeOfTags={"tutoring"}
                       />
                     </>
                   )}

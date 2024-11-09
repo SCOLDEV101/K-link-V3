@@ -4,7 +4,6 @@ import config from "../constants/function";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   fetchData,
-  getFacultyMajorSection,
   nestDataFacultys,
 } from "../constants/constants";
 import AddTag from "../components/AddTag";
@@ -93,7 +92,7 @@ function LibraryCreatePost() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "files") {
+    if (name === "file") {
       const file = files[0];
       if (file && file.type === "application/pdf") {
         console.log(file);
@@ -139,11 +138,10 @@ function LibraryCreatePost() {
   };
 
   const sendForm = async (_FormData_) => {
-    // const _newFormData_ = { ..._FormData_, tag: tags.join(", "), files: [file] };
     const _newFormData_ = new FormData();
     for (const [key, value] of Object.entries(formData)) {
       if (value) {
-        if (key === "files") {
+        if (key === "file") {
           _newFormData_.append(key, file);
         } else if (key === "tag") {
           _newFormData_.append(key, tags.join(", "));
@@ -185,7 +183,7 @@ function LibraryCreatePost() {
         console.log("Response:", response);
       } else {
         const response = await axios.post(
-          config.SERVER_PATH + "/api/library/createLibrary",
+          config.SERVER_PATH + "/api/library/createGroup",
           _newFormData_,
           {
             headers: headersAuth,
@@ -200,28 +198,6 @@ function LibraryCreatePost() {
       }
     } catch (error) {
       console.error("Error:", error);
-    }
-  };
-
-  const deleteGroup = async (hID) => {
-    alert("Are you sure you want to delete");
-    try {
-      await axios
-        .delete(config.SERVER_PATH + "/api/library/delete/" + hID, {
-          headers: config.Headers().headers,
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (res.data.status === "ok") {
-            console.log("Delete tutoring group success");
-            navigate("/tutoring");
-          } else {
-            alert("Something went wrong: โปรดลองอีกครั้ง");
-          }
-        });
-    } catch (error) {
-      console.error("ERROR: ", error);
-      alert("error 500: SERVER ERROR");
     }
   };
 
@@ -490,7 +466,7 @@ function LibraryCreatePost() {
               </div>
               {postData.flies && <div className="">ไฟล์เก่า</div>}
               <div className="form-group mt-2">
-                <label htmlFor="files" style={{ fontSize: ".8rem" }}>
+                <label htmlFor="file" style={{ fontSize: ".8rem" }}>
                   {/* {postData.flies
                     ? "อัปโหลดไฟล์ใหม่ (เฉพาะ PDF)"
                     : "อัปโหลดไฟล์ (เฉพาะ PDF)"}{" "} */}
@@ -499,7 +475,7 @@ function LibraryCreatePost() {
                 </label>
                 <div className="d-flex flex-row align-items-center">
                   <label
-                    htmlFor="files"
+                    htmlFor="file"
                     className="d-flex flex-row align-items-center px-2"
                     style={{
                       width: "100%",
@@ -517,7 +493,7 @@ function LibraryCreatePost() {
                     {file ? file.name : "เลือกไฟล์"}
                   </label>
                   <label
-                    htmlFor="files"
+                    htmlFor="file"
                     className="d-flex justify-content-center align-items-center"
                     style={{
                       height: "35px",
@@ -533,15 +509,15 @@ function LibraryCreatePost() {
                         className="fw-bold fs-5"
                       />
                     ) : (
-                      <FiFilePlus htmlFor="files" className="fw-bold fs-5" />
+                      <FiFilePlus htmlFor="file" className="fw-bold fs-5" />
                     )}
                   </label>
                 </div>
                 <input
                   type="file"
                   className="form-control"
-                  id="files"
-                  name="files"
+                  id="file"
+                  name="file"
                   onChange={handleChange}
                   accept="application/pdf"
                   style={{
@@ -634,6 +610,7 @@ function LibraryCreatePost() {
                             </div>
                           }
                           initialTags={postData.tag}
+                          typeOfTags={"library"}
                         />
                       </>
                     )}
@@ -669,24 +646,6 @@ function LibraryCreatePost() {
                   {status === "update" ? "บันทึก" : "สร้างหัวข้อ"}
                 </button>
               </div>
-              {status === "update" && (
-                <div className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center">
-                  <button
-                    type="button"
-                    className="btn"
-                    style={{
-                      background: "#FF0101",
-                      width: "100%",
-                      color: "white",
-                    }}
-                    onClick={() => {
-                      deleteGroup(hID);
-                    }}
-                  >
-                    ลบกลุ่ม
-                  </button>
-                </div>
-              )}
             </form>
           </div>
         </div>
