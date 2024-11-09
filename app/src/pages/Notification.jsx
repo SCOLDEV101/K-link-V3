@@ -178,6 +178,8 @@ function Notification() {
                   <span>
                     <span className="fw-bold my-0">คุณถูกรายงาน</span>
                     <br />
+                    <span className="text-decoration-underline my-0">{item.reportID}</span>
+                    <br/>
                     โปรดแก้ไขตามมาตราฐานชุมชน
                     <span className="fw-medium">
                       <br /> {formatTimestamp(item.createdAt)}
@@ -187,6 +189,8 @@ function Notification() {
                   <span>
                     <span className="fw-bold my-0">กลุ่มของคุณถูกรายงาน</span>
                     <br />
+                    <span className="text-decoration-underline my-0">{item.reportID}</span>
+                    <br/>
                     โปรดแก้ไขตามมาตราฐานชุมชน
                     <span className="fw-medium">
                       <br /> {formatTimestamp(item.createdAt)}
