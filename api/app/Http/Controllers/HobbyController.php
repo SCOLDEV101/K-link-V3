@@ -369,10 +369,15 @@ class HobbyController extends Controller
         //------------------------------
 
         //---------- hobby data
+        if($request->input('memberMax') == "ไม่จำกัด"){
+            $memberMax = null;
+        }else {
+            $memberMax = $request->input('memberMax');
+        }
         $data = [
             'imageOrFileID' => $imageOrFileDb->id ??  imageOrFileModel::where('name', 'group-default.jpg')->first()->id,
             'name' => $request->input('activityName') ?? $groupDb->hobby->activityName,
-            'memberMax' => $request->input('memberMax') ?? $groupDb->hobby->memberMax,
+            'memberMax' => $memberMax ?? $groupDb->hobby->memberMax,
             'location' => $request->input('location') ?? $groupDb->hobby->location,
             'detail' => $request->input('detail') ?? $groupDb->hobby->detail,
             'startTime' => $request->input('startTime') ?? $groupDb->hobby->startTime,

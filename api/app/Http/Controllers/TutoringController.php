@@ -379,13 +379,18 @@ class TutoringController extends Controller
         if(gettype($request->input('majorID'))=="string"){
             $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
         }
+        if($request->input('memberMax') == "ไม่จำกัด"){
+            $memberMax = null;
+        }else {
+            $memberMax = $request->input('memberMax');
+        }
         $data = [
             'facultyID' => $request->input('facultyID') ?? $groupDb->tutoring->facultyID,
             'majorID' => $majorDb->id ?? $request->input('majorID'),
             'departmentID' => $request->input('departmentID') ?? $groupDb->tutoring->departmentID,
             'imageOrFileID' => $imageOrFileDb->id ?? $groupDb->tutoring->imageOrFile->id,
             'name' => $request->input('activityName') ?? $groupDb->tutoring->activityName,
-            'memberMax' => $request->input('memberMax') ?? $groupDb->tutoring->memberMax,
+            'memberMax' => $memberMax ?? $groupDb->tutoring->memberMax,
             'location' => $request->input('location') ?? $groupDb->tutoring->location,
             'detail' => $request->input('detail') ?? $groupDb->tutoring->detail ?? null,
             'startTime' => date("H:i:s", strtotime($request->input('startTime'))) ?? $groupDb->tutoring->startTime,
