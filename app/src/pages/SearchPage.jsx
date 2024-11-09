@@ -10,7 +10,7 @@ function SearchPage() {
   const { setSearchListsArray } = useSearchList();
   const location = useLocation();
   const { feature } = location.state || {};
-  const [fetching, setFetching] = useState(false); // for waiting fetching 
+  const [fetching, setFetching] = useState(false); // for waiting fetching
   const navigate = useNavigate();
   const goBack = () => navigate(-1);
   const inputRef = useRef(null);
@@ -18,19 +18,41 @@ function SearchPage() {
   const [randomFaculties, setRandomFaculties] = useState([]);
   const [randomMajors, setRandomMajors] = useState([]);
   const [isFalse, setIsFalse] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState([]);
 
   useEffect(() => {
+    getgetget();
     inputRef.current.focus();
-    const faculties = getRandomItems(facultiesAndMajors, 3);
-    setRandomFaculties(faculties);
-    let majors = [];
-    faculties.forEach((faculty) => {
-      const allMajors = faculty.majors;
-      const selectedMajors = getRandomItems(allMajors, 2);
-      majors = majors.concat(selectedMajors);
-    });
-    setRandomMajors(majors);
+    // const faculties = getRandomItems(facultiesAndMajors, 3);
+    // setRandomFaculties(faculties);
+    // let majors = [];
+    // faculties.forEach((faculty) => {
+    //   const allMajors = faculty.majors;
+    //   const selectedMajors = getRandomItems(allMajors, 2);
+    //   majors = majors.concat(selectedMajors);
+    // });
+    // setRandomMajors(majors);
   }, []);
+
+  const getgetget = async () => {
+    const bodys = new FormData();
+    bodys.append("type", "hobby");
+    try {
+      const response = await axios.post(
+        config.SERVER_PATH + "/api/searchTag",
+        bodys,
+        { headers: config.Headers().headers, withCredentials: true }
+      );
+      if (response.data.status === "success") {
+        console.log("faculties ::", response.data.data);
+        setSuggestedTags(response.data.data)
+      } else {
+        console.error("Error fetching faculties:", response.data.status);
+      }
+    } catch (error) {
+      console.log("Error fetching search");
+    }
+  };
 
   const handleItemClick = (value) => {
     setInputValue(value);
@@ -39,7 +61,8 @@ function SearchPage() {
   const handleSearch = async () => {
     console.log("inputValue ::", inputValue, ":", feature);
     try {
-      setFetching(true); // for waiting fetching 
+      setFetching(true); // for waiting fetching
+      setIsFalse(false);
       await axios
         .post(
           config.SERVER_PATH + `/api/search/${feature}`,
@@ -52,8 +75,9 @@ function SearchPage() {
             console.log("res.data.listItem ::", res.data.listItem);
             setSearchListsArray(res.data.listItem); // <===================== { send back search results} =================
             console.log("inputValue ::", inputValue);
+            setIsFalse(false);
             goBack();
-          } else if (res.data.status === "failed") {
+          } else if (res.data.message === "not found") {
             setFetching(false);
             console.log("Search is no results");
             setIsFalse(true);
@@ -61,6 +85,8 @@ function SearchPage() {
         });
     } catch (error) {
       console.error("Error fetching search results:", error);
+      setFetching(false);
+      setIsFalse(true);
     }
   };
 
@@ -177,6 +203,22 @@ function SearchPage() {
             ))}
           </div>
         </div> */}
+        <div className="d-flex flex-row flex-wrap justify-content-start gap-2 pt-2">
+          {!fetching && !isFalse && suggestedTags.map((tag, index) => (
+            <div
+              key={index}
+              className="badge rounded-pill text-dark px-3 py-2"
+              style={{
+                background: "#FFB600",
+                boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
+                cursor: "pointer",
+              }}
+              onClick={() => handleItemClick(tag)}
+            >
+              {tag}
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );
