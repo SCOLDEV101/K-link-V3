@@ -135,7 +135,7 @@ class TutoringModelFactory extends Factory
                 'receiverID' => $leader,
                 'senderID' => $request,
                 'postID' => $createGroup['groupID'],
-                'type' => $createGroup['type'],
+                'type' => 'request',
             ]);
         }
 

@@ -119,7 +119,7 @@ class HobbyModelFactory extends Factory
                 'receiverID' => $leader,
                 'senderID' => $request,
                 'postID' => $createGroup['groupID'],
-                'type' => $createGroup['type'],
+                'type' => 'request',
             ]);
         }
 

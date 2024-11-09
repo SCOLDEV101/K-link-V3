@@ -22,7 +22,17 @@ class NotificationResource extends JsonResource
                     'group' => $this->group->hobby->name ?? null,
                     'groupType' => 'hobby',
                     'groupID' => $this->group->hobby->id,
-                    'reportID' => $this->id,
+                    'reportID' => $this->report->title,
+                    'createdAt' => $this->created_at
+                ];
+            } else if ($this->type == "delete") {
+                return [
+                    'notiType' => $this->type,
+                    'sender' => $this->sender->username,
+                    'group' => $this->postID ?? null,
+                    'groupType' => 'hobby',
+                    'groupID' => null,
+                    'reportID' => null,
                     'createdAt' => $this->created_at
                 ];
             } else {
@@ -32,6 +42,7 @@ class NotificationResource extends JsonResource
                     'group' => $this->group->hobby->name ?? null,
                     'groupType' => 'hobby',
                     'groupID' => $this->group->hobby->id,
+                    'reportID' => null,
                     'createdAt' => $this->created_at
                 ];
             }
@@ -43,7 +54,17 @@ class NotificationResource extends JsonResource
                     'group' => $this->group->tutoring->name ?? null,
                     'groupType' => 'tutoring',
                     'groupID' => $this->group->tutoring->id,
-                    'reportID' => $this->id,
+                    'reportID' => $this->report->title,
+                    'createdAt' => $this->created_at
+                ];
+            } else if ($this->type == "delete") {
+                return [
+                    'notiType' => $this->type,
+                    'sender' => $this->sender->username,
+                    'group' => $this->postID ?? null,
+                    'groupType' => 'tutoring',
+                    'groupID' => null,
+                    'reportID' => null,
                     'createdAt' => $this->created_at
                 ];
             } else {
@@ -53,6 +74,7 @@ class NotificationResource extends JsonResource
                     'group' => $this->group->tutoring->name ?? null,
                     'groupType' => 'tutoring',
                     'groupID' => $this->group->tutoring->id,
+                    'reportID' => null,
                     'createdAt' => $this->created_at
                 ];
             }
@@ -64,7 +86,7 @@ class NotificationResource extends JsonResource
                     'group' => $this->group->library->name ?? null,
                     'groupType' => 'library',
                     'groupID' => $this->group->library->id,
-                    'reportID' => $this->id,
+                    'reportID' => $this->report->title,
                     'createdAt' => $this->created_at
                 ];
             } else {
@@ -74,15 +96,28 @@ class NotificationResource extends JsonResource
                     'group' => $this->group->library->name ?? null,
                     'groupType' => 'library',
                     'groupID' => $this->group->library->id,
+                    'reportID' => null,
                     'createdAt' => $this->created_at
                 ];
             }
+        } else if ($this->type == "delete") {
+            return [
+                'notiType' => $this->type,
+                'sender' => $this->sender->username,
+                'group' => $this->postID ?? null,
+                'groupType' => 'library',
+                'groupID' => null,
+                'reportID' => null,
+                'createdAt' => $this->created_at
+            ];
         } else {
             return [
                 'notiType' => $this->type,
                 'sender' => $this->sender->username,
-                'group' => "none",
-                'reportID' => $this->id,
+                'group' => null,
+                'groupType' => 'user', 
+                'groupID' => null,
+                'reportID' => $this->report->title,
                 'createdAt' => $this->created_at
             ];
         }

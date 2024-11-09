@@ -163,16 +163,21 @@ class UserController extends Controller
             'updated_at' => now(),
         ];
 
-        $notifyData = [
-            'receiverID' => $receiver,
-            'senderID' => (int)auth()->user()->id,
-            'postID' => $request->input('id'),
-            'type' => 'report',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
+        $reportCreate = ReportedModel::insert($reportdata);
 
-        if (ReportedModel::insert($reportdata) && NotifyModel::create($notifyData)) {
+        if ($reportCreate) {
+            NotifyModel::create($notifyData);
+
+            $notifyData = [
+                'receiverID' => $receiver,
+                'senderID' => (int)auth()->user()->id,
+                'reportID' => (int)$reportCreate->id,
+                'postID' => $request->input('id'),
+                'type' => 'report',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
             return response()->json([
                 'status' => 'ok',
                 'message' => 'create report success.',
@@ -557,6 +562,7 @@ class UserController extends Controller
 
         $data = NotificationResource::collection($notifyDb);
         return response()->json([
+            // 'uID' => auth()->user()->id,
             'status' => 'ok',
             'data' => $data
         ], 200);

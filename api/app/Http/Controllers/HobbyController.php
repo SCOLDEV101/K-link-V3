@@ -704,7 +704,7 @@ class HobbyController extends Controller
                     NotifyModel::create([
                         'receiverID' => $member->id,
                         'senderID' => $groupDb->hobby->leader,
-                        'postID' => $groupDb->id,
+                        'postID' => $groupDb->hobby->name,
                         'type' => "delete",
                     ]);
                 }
