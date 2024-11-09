@@ -311,6 +311,7 @@ function TutoringCreateGroup() {
                 popup: "swal-popup-success",
               },
             });
+            navigate(-1);
           } else {
             Swal.fire({
               position: "center",
