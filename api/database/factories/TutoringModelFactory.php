@@ -117,10 +117,25 @@ class TutoringModelFactory extends Factory
             'groupID' => $createGroup['id'],
             'userID' => $leader,
         ]);
+
         foreach ($members as $member) {
             MemberModel::create([
                 'groupID' => $createGroup['id'],
                 'userID' => $member,
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $member,
+                'senderID' => $leader,
+                'postID' => $createGroup['groupID'],
+                'type' => 'acceptRequest',
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $member,
+                'senderID' => $leader,
+                'postID' => $this->faker->randomElement($activityNames),
+                'type' => 'delete',
             ]);
         }
 
@@ -136,6 +151,20 @@ class TutoringModelFactory extends Factory
                 'senderID' => $request,
                 'postID' => $createGroup['groupID'],
                 'type' => 'request',
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $request,
+                'senderID' => $leader,
+                'postID' => $createGroup['groupID'],
+                'type' => 'kick',
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $request,
+                'senderID' => $leader,
+                'postID' => $createGroup['groupID'],
+                'type' => 'rejectRequest',
             ]);
         }
 
