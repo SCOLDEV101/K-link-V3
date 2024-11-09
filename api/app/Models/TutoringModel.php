@@ -56,7 +56,7 @@ class TutoringModel extends Model
             // 'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
             'deleteimage'=> ['sometimes','nullable'],
             'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
-            'memberMax' => ['nullable', 'regex:/a-zA-Z0-9ก-๙\b([0-9]|[1-9][0-9])\b/'],
+            'memberMax' => ['nullable', 'regex:/^a-zA-Z0-9ก-๙\b([0-9]|[1-9][0-9])\b/'],
             'location' => ['required', 'string'],
             'detail' => ['nullable', 'string'],
         ],
