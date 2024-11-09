@@ -17,8 +17,12 @@ class MyPostResource extends JsonResource
     public function toArray($request)
     {
         $uID = auth()->user()->id;
-
         $days = [];
+
+        $isMember = false;
+        $isRequest = false;
+        $isLeader = false;
+
         if ($this->groupDay) {
             foreach ($this->groupDay as $day) {
                 $days[] = $day->name ?? null;
@@ -70,6 +74,10 @@ class MyPostResource extends JsonResource
 
         if ($this->type == 'hobby') {
 
+            if($isMember == false && $isRequest == false){
+                return null;
+            }
+
             if (count($members) >= $this->hobby->memberMax && $this->hobby->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
@@ -80,9 +88,9 @@ class MyPostResource extends JsonResource
             } else {
                 $role = 'normal';
             };
-    
+            
             return [
-                'hID' => $this->hobby->id,
+                'groupID' => $this->hobby->id,
                 'type' => $this->type,
                 'image' => $this->hobby->imageOrFile->name ?? 'group-default.jpg',
                 'tag' => $tags,
@@ -109,6 +117,11 @@ class MyPostResource extends JsonResource
         }
         
         if ($this->type == 'tutoring') {
+
+            if($isMember == false && $isRequest == false){
+                return null;
+            }
+
             if (count($members) >= $this->tutoring->memberMax && $this->tutoring->memberMax != null && !in_array($uID, $members)) {
                 $status = 'full'; //กลุ่มเต็ม
             }
@@ -121,7 +134,7 @@ class MyPostResource extends JsonResource
             };
 
             return [
-                'tID' => $this->tutoring->id,
+                'groupID' => $this->tutoring->id,
                 'type' => $this->type,
                 'tag' => $tags,
                 'image' => $this->tutoring->imageOrFile->name ?? 'group-default.jpg',
@@ -149,6 +162,7 @@ class MyPostResource extends JsonResource
                 ),
             ];
         }
+
         if ($this->type == 'library') {
 
             if ($this->library->leaderGroup->id == $uID) {
@@ -158,8 +172,12 @@ class MyPostResource extends JsonResource
                 $role = 'normal';
             };
 
+            if($isLeader == false){
+                return null;
+            }
+
             return [
-                'lID' => $this->library->id,
+                'groupID' => $this->library->id,
                 'type' => $this->type,
                 'img' => $this->library->imageOrFile->name ?? 'group-default.jpg',
                 'tag' => $tags,

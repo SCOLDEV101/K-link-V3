@@ -1,14 +1,16 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useLocation } from 'react-router-dom';
+import { useLocation , useNavigate } from 'react-router-dom';
 import config from "../constants/function";
 
 function AcceptFriendRequest() {
   // const data = Array.from({ length: 10 }, (_, i) => i + 1); // ทำ Array ตัวเลขไว้เทสเฉยๆ
   const headersAuth = config.Headers().headers;
+  const navigate = useNavigate();
   const location = useLocation();
-  const hID = location.state.id || {};
+  const groupID = location.state.groupID || {};
   const groupName = location.state.name || {};
+  const groupType  = location.state.groupType  || {};
   const [reQuests, setReQuests] = useState([]);
   const [acceptedItems, setAcceptedItems] = useState([]);
   const [rejectedItems, setRejectedItems] = useState([]);
@@ -17,10 +19,12 @@ function AcceptFriendRequest() {
     const fetchRequest = async (id) => {
       // console.log(acceptedItems, rejectedItems);
       try {
-        const request = await axios.get(config.SERVER_PATH + `/api/hobby/requestMember/${id}`, { headers: headersAuth, withCredentials: true })
+        const request = await axios.get(config.SERVER_PATH + `/api/${groupType}/requestMember/${id}`, { headers: headersAuth, withCredentials: true })
         if (request.data.status === 'ok') {
           // console.log(request.data.data)
           setReQuests(request.data.data)
+          console.log(request.data.data);
+          
         } else {
           console.error("Something went wrong !, please try again.");
         }
@@ -29,25 +33,25 @@ function AcceptFriendRequest() {
       }
     };
     // console.log("hID :",hID)
-    fetchRequest(hID);
+    fetchRequest(groupID);
     // console.log(acceptedItems, rejectedItems); // check useEffect
   }, []);
 
   const accepted = async (uId) => {
     setAcceptedItems((prev) => [...prev, uId]);
-    AcceptedOrRejected(hID, uId, "accept");
+    AcceptedOrRejected(groupID, uId, "accept");
     // console.log("Accepted :", uId);
   };
 
   const rejected = async (uId) => {
     setRejectedItems((prev) => [...prev, uId]);
-    AcceptedOrRejected(hID, uId, "reject");
+    AcceptedOrRejected(groupID, uId, "reject");
     // console.log("Rejected :", uId);
   };
   
-  const AcceptedOrRejected = async (hId, uId, method) => {
+  const AcceptedOrRejected = async (groupID, uId, method) => {
     try {
-      const statusPost = await axios.post(config.SERVER_PATH + `/api/hobby/rejectOrAcceptMember/${hId}`, { method: method, uID: uId } , { headers: headersAuth, withCredentials: true } );
+      const statusPost = await axios.post(config.SERVER_PATH + `/api/hobby/rejectOrAcceptMember/${groupID}`, { method: method, uID: uId } , { headers: headersAuth, withCredentials: true } );
       if (statusPost.data.status === 'ok') {
         setUpateStatus(!updateStatus);
       }
@@ -56,113 +60,158 @@ function AcceptFriendRequest() {
     }
   }
 
+  const handleInfoClick = (uID ,groupID, role , type) => {
+    navigate("/aboutaccount", { state: { uID, groupID, role, type } });
+    console.log(type);
+
+  };
+
+  const formatTimestamp = (timestamp) => {
+    const monthsOfYear = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  
+    const now = new Date();
+    const date = new Date(timestamp);
+  
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+  
+    const isToday = date >= today;
+    const isYesterday = date >= yesterday && date < today;
+  
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+    if (isToday) {
+      return `วันนี้ - ${hours}.${minutes}น.`;
+    } else if (isYesterday) {
+      return `เมื่อวาน - ${hours}.${minutes}น.`;
+    } else {
+      const day = date.getDate();
+      const month = monthsOfYear[date.getMonth()];
+      const year = date.getFullYear() + 543; 
+      return `${day} ${month} ${year} - ${hours}.${minutes}น.`;
+    }
+  }
+  
+  
+
   return (
-    <div className="overflow-hidden">
-      <div
-        className="d-flex align-items-end bg-transparent p-2 pb-0 w-100"
-        style={{ height: "155px" }}
+    <>
+    <div className="container px-3 py-2" style={{ height: "100vh" }}>
+      <ul
+        className="list-unstyled d-grid gap-3 pb-3"
+        style={{ position: "relative", top: "100px"}}
       >
-        <h3 style={{ fontSize: "1.5rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          คำขอเข้าร่วมกลุ่ม : <span className="fw-bold">{groupName}</span>
-        </h3>
-      </div>
-      <div
-        className="mb-0 ps-0 py-3"
-        style={{ maxHeight: "calc(100vh - 155px)", overflowY: "auto" }}
-      >
-        <ul className="mb-0 px-0">
-          {reQuests.length > 0 ? (
+          {reQuests && reQuests.length > 0 ? (
             reQuests.map((request, i) => (
               <li
                 key={request.uID}
-                className="list-unstyled py-2 ps-4 d-flex flex-row align-items-center justify-content-center"
-                style={{ borderBottom: "0.1px solid #000" }}
+                className="d-flex align-items-center flex-row border-none p-3" 
+        style={{
+          borderRadius:"15px",
+          backgroundColor:"#ffffff",
+          boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+          }} 
               >
-                <img
-                  src={false ? 1 : "./Empty-Profile-Image.svg"}
-                  alt=""
-                  className="rounded-circle"
-                  style={{ width: "80px", height: "80px" }}
-                />
-                <div className="d-flex flex-column justify-content-center align-items-center gap-2 ms-3 w-100">
-                  <h5
-                    className="mb-0 fw-bold"
-                    style={{
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      maxWidth: "200px",
-                    }}
-                  >
-                    {
-                      request.username
-                    }
-                  </h5>
+            <img
+             onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}
+            src={
+              request.profileImage
+                ? `http://127.0.0.1:8000/uploaded/profileImage/${request.profileImage}`
+                : "./Empty-Profile-Image.svg"
+            }
+            alt="profile"
+            className="rounded-circle position-relative bg-dark"
+            style={{ width: "50px", height: "50px" }}
+          />
+                <div
+            className="ms-3 d-flex text-break flex-column w-100"
+            style={{ fontSize: ".8rem" }}
+          >
+                <span className="fw-bold my-0"  onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}>{request?.username}</span>
+                <span className="my-0"  onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}>{formatTimestamp(request?.timestamps)}</span>
+
                   {!acceptedItems.includes(request.uID) && !rejectedItems.includes(request.uID) ? ( // เช็คว่าควรจะเป็น สถานะหรือว่าเป็นปุ่ม
-                    <>
-                      <button
-                        onClick={() => accepted(request.uID)}
-                        type="button"
-                        style={{
-                          border: "none",
-                          borderRadius: "5px",
-                          background: "#FFB600",
-                          height: "35px",
-                          width: "160px",
-                        }}
-                      >
-                        ยอมรับคำขอ
-                      </button>
+                    <div className="row row-cols-lg-auto px-2 mt-2">
+                      <div className="col-6 px-1" onClick={() => rejected(request.uID)}>
                       <button
                         onClick={() => rejected(request.uID)}
                         type="button"
+                        className="w-100 px-2 py-1 text-white"
                         style={{
                           border: "none",
                           borderRadius: "5px",
-                          background: "#D9D9D9",
-                          height: "35px",
-                          width: "160px",
+                          background: "#B3261E",
+                          fontSize:"15px",
                         }}
                       >
-                        ปฎิเสธคำขอ
+                        ปฎิเสธ
                       </button>
-                    </>
+                      </div>
+
+                      <div className="col-6 px-1" onClick={() => accepted(request.uID)}>
+                      <button
+                        onClick={() => accepted(request.uID)}
+                        type="button"
+                        className="w-100 px-2 py-1 text-white"
+                        style={{
+                          border: "none",
+                          borderRadius: "5px",
+                          background: "#7CB518",
+                          fontSize:"15px",
+                        }}
+                      >
+                        ยอมรับ
+                      </button>
+                      </div>
+                    </div>
                   ) : acceptedItems.includes(request.uID) ? ( // เช็คว่าอันไหนเป็น acceptedItems บ้าง
                     <div
-                      className="text-center py-1"
+                      className="text-center py-1 w-100"
                       style={{
                         border: "none",
                         borderRadius: "5px",
-                        background: "#7CB518",
-                        height: "35px",
-                        width: "160px",
+                        backgroundColor:"#E7E7E7",
+                        color:"#979797",
+                        fontSize:"15px",
                       }}
                     >
-                      เข้าร่วมกลุ่มแล้ว
+                      ตอบรับการเข้ากลุ่มแล้ว
                     </div>
                   ) : (
                     <div
-                      className="text-center py-1"
-                      style={{
-                        border: "none",
-                        borderRadius: "5px",
-                        background: "#FF0101",
-                        height: "35px",
-                        width: "160px",
-                      }}
+                    className="text-center py-1 w-100"
+                    style={{
+                      border: "none",
+                      borderRadius: "5px",
+                      backgroundColor:"#E7E7E7",
+                      color:"#979797",
+                      fontSize:"15px",
+                    }}
                     >
-                      ปฎิเสธคำขอแล้ว
+                      ปฏิเสธคำขอเข้ากลุ่มแล้ว
                     </div>
                   )}
                 </div>
               </li>
             ))
           ) : (
-            <h3 className="fw-bold">ไม่มีคำขอเข้าร่วมกลุ่ม</h3>
+            <div
+            className="d-flex align-items-center justify-content-center flex-row border-none px-5 py-4 mt-3 mx-1"
+            style={{
+              borderRadius: "15px",
+              backgroundColor: "#ffffff",
+              boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+              color: "#979797",
+            }}
+          >
+            -- ไม่พบคำขอเข้าร่วม --
+          </div>
           )}
         </ul>
       </div>
-    </div>
+    </>
   );
 }
 

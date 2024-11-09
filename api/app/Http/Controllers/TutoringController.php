@@ -19,41 +19,51 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\imageOrFileModel;
 use App\Models\TagModel;
 use App\Models\RequestModel;
+use App\Models\MajorModel;
 
 class TutoringController extends Controller
 {
     function showAllGroup(Request $request)
-    { {
-            $tutoringDb = GroupModel::where([['type', 'tutoring'],['status', 1]])
-                ->orderBy('updated_at', 'DESC')
-                ->with(['tutoring','bookmark','tutoring.imageOrFile','tutoring.leaderGroup','tutoring.faculty','tutoring.major',
-                    'tutoring.department','member','request','groupDay','groupTag'
-                ])
-                ->paginate(8);
+    {
+        $tutoringDb = GroupModel::where([['type', 'tutoring'], ['status', 1]])
+            ->orderBy('updated_at', 'DESC')
+            ->with([
+                'tutoring',
+                'bookmark',
+                'tutoring.imageOrFile',
+                'tutoring.leaderGroup',
+                'tutoring.faculty',
+                'tutoring.major',
+                'tutoring.department',
+                'member',
+                'request',
+                'groupDay',
+                'groupTag'
+            ])
+            ->paginate(8);
 
-            if (!$tutoringDb) {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'group not found.',
-                ], 404);
-            }
-
-            $data = GroupResource::collection($tutoringDb);
-            if (sizeof($data) != 0) {
-                return response()->json([
-                    'prevPageUrl' => $tutoringDb->previousPageUrl(),
-                    'status' => 'ok',
-                    'message' => 'fetch all tutoring group success.',
-                    'listItem' => $data,
-                    'nextPageUrl' => $tutoringDb->nextPageUrl()
-                ], 200);
-            } else {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'failed to fetch tutoring group.',
-                ], 500);
-            };
+        if (sizeof($tutoringDb) <= 0) { //เช็คจำนวนข้อมูลที่เจอ
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'group not found.',
+            ], 404);
         }
+
+        $data = GroupResource::collection($tutoringDb);
+        if (sizeof($data) != 0) {
+            return response()->json([
+                'prevPageUrl' => $tutoringDb->previousPageUrl(),
+                'status' => 'ok',
+                'message' => 'fetch all tutoring group success.',
+                'listItem' => $data,
+                'nextPageUrl' => $tutoringDb->nextPageUrl()
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'failed to fetch tutoring group.',
+            ], 500);
+        };
     }
 
     function createGroup(Request $request)
@@ -98,13 +108,42 @@ class TutoringController extends Controller
             ]);
             //-----------
 
+            //----------------------groupday part
+            if ($request->has('weekDate')) {
+                $days = explode(',', $request->input('weekDate'));
+                //loop through array of days input and save to Db
+                foreach ($days as $day) {
+                    //if array is empty then set day to today of weekday (it will has only one array)
+                    if ($day == '' || $day == null) {
+                        $day = (int)date('w');
+                    }
+                    GroupDayModel::create([
+                        'dayID' => (int)$day,
+                        'groupID' => $groupDb->id,
+                    ]);
+                }
+            }
+            //using today of weekday if days input is empty
+            else {
+                $day = date('w');
+                GroupDayModel::create([
+                    'dayID' => (int)$day,
+                    'groupID' => $groupDb->id,
+                ]);
+            }
+            //----------------------
+
             //-----------tutoring part
+            if(gettype($request->input('majorID'))=="string"){
+                $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
+            }
+            $defaultImage = imageOrFileModel::where('name', 'tutoring-group-default.png')->first();
             $tutoringDb = TutoringModel::create([
                 'id' => $groupID,
                 'facultyID' => (int)$request->input('facultyID'),
-                'majorID' => $request->input('majorID') ?? null,
+                'majorID' => $majorDb->id ?? $request->input('majorID'),
                 'departmentID' => $request->input('departmentID') ?? null,
-                'imageOrFileID' => $imageOrFileDb->id ?? null,
+                'imageOrFileID' => $imageOrFileDb->id ?? $defaultImage->id,
                 'name' => $request->input('activityName'),
                 'memberMax' => $request->input('memberMax') ?? null,
                 'location' =>  $request->input('location'),
@@ -157,7 +196,7 @@ class TutoringController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create tutoring group success.',
-                    'hID' => $groupID
+                    'groupID' => $groupID
                 ], 200);
             }
         } catch (Exception $e) {
@@ -288,9 +327,41 @@ class TutoringController extends Controller
         }
         // -----------------------------
 
+        //-------- แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน
+        if ($request->has('weekDate')) {
+            $deleteOldDay = GroupDayModel::where('groupID', $groupDb->id)->delete();
+            $days = explode(',', $request->input('weekDate'));
+            //loop through array of days input and save to Db
+            foreach ($days as $day) {
+                //if array is empty then set day to today of weekday (it will has only one array)
+                if ($day == '' || $day == null) {
+                    $day = (int)date('w');
+                }
+                if (empty(GroupDayModel::where([['groupID', $groupDb->id], ['dayID', $day]])->first())) {
+                    GroupDayModel::create([
+                        'dayID' => (int)$day,
+                        'groupID' => $groupDb->id,
+                    ]);
+                }
+            }
+        } else {
+            $day = (int)date('w');
+            if (empty(GroupDayModel::where([['groupID', $groupDb->id], ['dayID', $day]])->first())) {
+                GroupDayModel::create([
+                    'dayID' => (int)$day,
+                    'groupID' => $groupDb->id,
+                ]);
+            }
+        }
+        //------------------------------
+
+        //----------------- tutoring data
+        if(gettype($request->input('majorID'))=="string"){
+            $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
+        }
         $data = [
             'facultyID' => $request->input('facultyID') ?? $groupDb->tutoring->facultyID,
-            'majorID' => $request->input('majorID') ?? $groupDb->tutoring->majorID,
+            'majorID' => $majorDb->id ?? $request->input('majorID'),
             'departmentID' => $request->input('departmentID') ?? $groupDb->tutoring->departmentID,
             'imageOrFileID' => $imageOrFileDb->id ?? $groupDb->tutoring->imageOrFile->id,
             'name' => $request->input('activityName') ?? $groupDb->tutoring->activityName,
@@ -303,6 +374,7 @@ class TutoringController extends Controller
             'leader' => $uID,
             'updated_at' => now()
         ];
+        //-----------------------
 
         // อัพเดตข้อมูลทั่วไปของ tutoring และส่งแจ้งเตือนอัพเดต
         if (TutoringModel::where('id', $groupID)->update($data) && GroupModel::where('groupID', $groupID)->update(['updated_at' => now()])) {
@@ -338,22 +410,23 @@ class TutoringController extends Controller
             //-------------------- Prepare members data
             $member = [];
             $leader = [];
+            $leaderDb = UserModel::where([['id', $groupDb->tutoring->leader], ['status', 1]])->first();
 
             foreach ($groupDb->member as $eachMember) {
-                if ($eachMember->id != $groupDb->tutoring->leader) {
-                    $member[] = [
-                        'username' => $eachMember->username,
-                        'uID' => $eachMember->id,
-                        'isMe' => ($eachMember->id == auth()->user()->id)
-                    ];
-                } else {
-                    $leader[] = [
-                        'username' => $eachMember->username,
-                        'uID' => $eachMember->id,
-                        'isMe' => ($eachMember->id == auth()->user()->id)
-                    ];
-                }
+                $member[] = [
+                    'username' => $eachMember->username,
+                    'uID' => $eachMember->id,
+                    'isMe' => boolval($eachMember->id == auth()->user()->id)
+                ];
             }
+
+            $leader[] = [
+                'username' => $leaderDb->username,
+                'uID' => $leaderDb->id,
+                'isMe' => boolval($leaderDb->id == auth()->user()->id)
+            ];
+
+            $members = $leader + $member;
             //--------------------
 
             //-------------------- If user is leader
@@ -368,8 +441,7 @@ class TutoringController extends Controller
                 }
                 $data = [
                     'groupName' => $groupDb->tutoring->name,
-                    'leader' => $leader,
-                    'members' => $member,
+                    'members' => $members,
                     'requestCount' => $requestCount
                 ];
             }
@@ -378,8 +450,7 @@ class TutoringController extends Controller
                 $role = 'normal';
                 $data = [
                     'groupName' => $groupDb->tutoring->name,
-                    'leader' => $leader,
-                    'members' => $member
+                    'members' => $members
                 ];
             }
             //--------------------
@@ -388,7 +459,7 @@ class TutoringController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'fetch member tutoring group success.',
-                    'hID' => $groupID,
+                    'groupID' => $groupID,
                     'data' => $data,
                     'role' => $role,
                     'this' => auth()->user()->id
@@ -465,6 +536,7 @@ class TutoringController extends Controller
                 $requestArray[] = [
                     'username' => $request->username,
                     'uID' => (int)$request->id,
+                    'timestamps' => date($request->created_at)
                 ];
             }
         }
@@ -499,7 +571,7 @@ class TutoringController extends Controller
                 'status' => 'failed',
                 'message' => 'user not found.',
             ], 404);
-        } else $userID = (int)$request->input('uID');
+        } else $userID = strval($request->input('uID'));
 
         if (empty($groupDb->request)) {
             return response()->json([
@@ -671,7 +743,7 @@ class TutoringController extends Controller
         $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'tutoring'], ['status', 1]])
             ->with(['tutoring', 'member'])
             ->first();
-        
+
         if (empty($groupDb)) {
             return response()->json([
                 'status' => 'failed',

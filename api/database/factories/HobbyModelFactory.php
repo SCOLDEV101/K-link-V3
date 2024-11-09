@@ -13,6 +13,7 @@ use App\Models\GroupDayModel;
 use App\Models\MemberModel;
 use App\Models\RequestModel;
 use App\Models\BookmarkModel;
+use App\Models\NotifyModel;
 
 use Illuminate\Support\Facades\Log;
 // use Illuminate\Support\Facades\DB;
@@ -75,11 +76,9 @@ class HobbyModelFactory extends Factory
         $startTime = date('H:i:s', $startTimestamp); // format เวลา
         $endTime = date('H:i:s', $endTimestamp); // format เวลา
 
-        $imageID = 
-
         $hobby = [
             'id' => $this->idGeneration(),
-            'imageOrFileID' => $this->faker->randomElement([1,2,5]),
+            'imageOrFileID' => $this->faker->randomElement([1,4,5,6,7]),
             'name' => $this->faker->randomElement($activityNames),
             'memberMax' => $this->faker->randomElement([$memberMax, null]),
             'location' => $this->faker->randomElement($locations),
@@ -114,6 +113,13 @@ class HobbyModelFactory extends Factory
             RequestModel::create([
                 'groupID' => $createGroup['id'],
                 'userID' => $request,
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $leader,
+                'senderID' => $request,
+                'postID' => $createGroup['groupID'],
+                'type' => 'request',
             ]);
         }
 

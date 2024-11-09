@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\BookmarkModel;
 use App\Models\DayModel;
 use App\Models\GroupDayModel;
+use App\Models\NotifyModel;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TutoringModel>
@@ -92,7 +93,7 @@ class TutoringModelFactory extends Factory
             'facultyID' => $facultyID,
             'majorID' => $majorID,
             'departmentID' => $departmentID,
-            'imageOrFileID' => $this->faker->randomElement([3,4,5]),
+            'imageOrFileID' => $this->faker->randomElement([2,8,9,10,11]),
             'name' => $this->faker->randomElement($activityNames),
             'memberMax' => $this->faker->randomElement([$memberMax, null]),
             'location' => $this->faker->randomElement($locations),
@@ -128,6 +129,13 @@ class TutoringModelFactory extends Factory
             RequestModel::create([
                 'groupID' => $createGroup['id'],
                 'userID' => $request,
+            ]);
+
+            NotifyModel::create([
+                'receiverID' => $leader,
+                'senderID' => $request,
+                'postID' => $createGroup['groupID'],
+                'type' => 'request',
             ]);
         }
 

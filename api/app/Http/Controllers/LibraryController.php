@@ -15,6 +15,7 @@ use App\Models\GroupTagModel;
 use App\Models\TagModel;
 use App\Models\NotifyModel;
 use App\Models\imageOrFileModel;
+use App\Models\MajorModel;
 
 class LibraryController extends Controller
 {
@@ -25,10 +26,10 @@ class LibraryController extends Controller
             ->orderBy('updated_at', 'DESC')
             ->paginate(8);
 
-        if (!$libraryDb) {
+        if (sizeof($libraryDb) <= 0) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'library not found.',
+                'message' => 'group not found.',
             ], 404);
         }
 
@@ -121,11 +122,14 @@ class LibraryController extends Controller
             //-----------------------
 
             //----------- library part
+            if(gettype($request->input('majorID'))=="string"){
+                $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
+            }
             $libraryDb = LibraryModel::create([
                 'id' => $groupID,
                 'imageOrFileID' => $imageOrFile->id,
                 'facultyID' => $request->input('facultyID'),
-                'majorID' => $request->input('majorID') ?? null,
+                'majorID' => $majorDb->id ?? $request->input('majorID'),
                 'departmentID' => $request->input('departmentID') ?? null,
                 'name' => $request->input('activityName'),
                 'detail' => $request->input('detail') ?? null,
@@ -141,7 +145,7 @@ class LibraryController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create library success.',
-                    'hID' => $groupID,
+                    'groupID' => $groupID,
                 ], 200);
             }
             //-----------------------
@@ -220,7 +224,6 @@ class LibraryController extends Controller
             }
         } else {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->first();
-
         }
         //--------------------------
 
@@ -235,7 +238,7 @@ class LibraryController extends Controller
             'detail' => $request->input('detail') ?? null,
             'updated_at' => now()
         ]);
-        $groupDb = GroupModel::where('groupID',$groupID)->update([
+        $groupDb = GroupModel::where('groupID', $groupID)->update([
             'updated_at' => now()
         ]);
         //--------------------------
@@ -301,6 +304,7 @@ class LibraryController extends Controller
             'major' => $groupDb->library->major->nameEN ?? 'none',
             'department' => $groupDb->library->department->name ?? 'none',
             'filename' => $originname,
+            'name' => $groupDb->library->name,
             'owner' => $groupDb->library->leaderGroup->username,
             'uploadDate' => $groupDb->created_at,
             'filesizeInBytes' => $filesize,

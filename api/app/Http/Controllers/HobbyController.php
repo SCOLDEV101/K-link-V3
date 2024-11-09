@@ -37,7 +37,7 @@ class HobbyController extends Controller
         if (sizeof($hobbyDb) <= 0) { //เช็คจำนวนข้อมูลที่เจอ
             return response()->json([
                 'status' => 'failed',
-                'message' => 'hobby not found.',
+                'message' => 'group not found.',
             ], 404);
         }
 
@@ -114,9 +114,10 @@ class HobbyController extends Controller
             //-----------
 
             //-----------hobby part
+            $defaultImage = imageOrFileModel::where('name', 'hobby-group-default.png')->first();
             $hobbyDb = HobbyModel::create([
                 'id' => $groupID,
-                'imageOrFileID' => $imageOrFileDb->id ?? null,
+                'imageOrFileID' => $imageOrFileDb->id ?? $defaultImage->id,
                 'name' => $request->input('activityName'),
                 'memberMax' => $request->input('memberMax') ?? null,
                 'location' =>  $request->input('location'),
@@ -193,7 +194,7 @@ class HobbyController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create hobby group success.',
-                    'hID' => $groupID
+                    'groupID' => $groupID
                 ], 200);
             }
         } catch (Exception $e) {
@@ -391,26 +392,26 @@ class HobbyController extends Controller
             ->first();
 
         if ($groupDb) {
-
             //-------------------- Prepare members data
             $member = [];
             $leader = [];
+            $leaderDb = UserModel::where([['id', $groupDb->hobby->leader], ['status', 1]])->first();
 
             foreach ($groupDb->member as $eachMember) {
-                if ($eachMember->id != $groupDb->hobby->leader) {
-                    $member[] = [
-                        'username' => $eachMember->username,
-                        'uID' => $eachMember->id,
-                        'isMe' => ($eachMember->id == auth()->user()->id)
-                    ];
-                } else {
-                    $leader[] = [
-                        'username' => $eachMember->username,
-                        'uID' => $eachMember->id,
-                        'isMe' => ($eachMember->id == auth()->user()->id)
-                    ];
-                }
+                $member[] = [
+                    'username' => $eachMember->username,
+                    'uID' => $eachMember->id,
+                    'isMe' => boolval($eachMember->id == auth()->user()->id)
+                ];
             }
+
+            $leader[] = [
+                'username' => $leaderDb->username,
+                'uID' => $leaderDb->id,
+                'isMe' => boolval($leaderDb->id == auth()->user()->id)
+            ];
+
+            $members = $leader + $member;
             //--------------------
 
             //-------------------- If user is leader
@@ -425,8 +426,7 @@ class HobbyController extends Controller
                 }
                 $data = [
                     'groupName' => $groupDb->hobby->name,
-                    'leader' => $leader,
-                    'members' => $member,
+                    'members' => $members,
                     'requestCount' => $requestCount
                 ];
             }
@@ -435,8 +435,7 @@ class HobbyController extends Controller
                 $role = 'normal';
                 $data = [
                     'groupName' => $groupDb->hobby->name,
-                    'leader' => $leader,
-                    'members' => $member
+                    'members' => $members
                 ];
             }
             //--------------------
@@ -445,7 +444,7 @@ class HobbyController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'fetch member hobby group success.',
-                    'hID' => $groupID,
+                    'groupID' => $groupID,
                     'data' => $data,
                     'role' => $role,
                     'this' => auth()->user()->id
@@ -522,6 +521,7 @@ class HobbyController extends Controller
                 $requestArray[] = [
                     'username' => $request->username,
                     'uID' => (int)$request->id,
+                    'timestamps' => date($request->created_at)
                 ];
             }
         }
@@ -547,7 +547,7 @@ class HobbyController extends Controller
             ], 400);
         }
 
-        $userID = (int)$request->input('userID');
+        $userID = strval($request->input('uID'));
         $groupDb = GroupModel::where([['groupID', $groupID], ['type', 'hobby'], ['status', 1]])
             ->with(['hobby', 'member', 'request'])
             ->first();
@@ -704,7 +704,7 @@ class HobbyController extends Controller
                     NotifyModel::create([
                         'receiverID' => $member->id,
                         'senderID' => $groupDb->hobby->leader,
-                        'postID' => $groupDb->id,
+                        'postID' => $groupDb->hobby->name,
                         'type' => "delete",
                     ]);
                 }
@@ -752,7 +752,7 @@ class HobbyController extends Controller
                 'message' => 'members not found.',
             ], 404);
         } else {
-                $memberArray = $groupDb->member->pluck('id')->toArray();
+            $memberArray = $groupDb->member->pluck('id')->toArray();
         }
 
         if (!in_array($uID, $memberArray)) {

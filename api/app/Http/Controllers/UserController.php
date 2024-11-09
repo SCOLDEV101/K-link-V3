@@ -18,6 +18,8 @@ use App\Http\Resources\MyPostResource;
 use App\Http\Resources\NotificationResource;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\BookmarkResource;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class UserController extends Controller
 {
@@ -161,16 +163,21 @@ class UserController extends Controller
             'updated_at' => now(),
         ];
 
-        $notifyData = [
-            'receiverID' => $receiver,
-            'senderID' => (int)auth()->user()->id,
-            'postID' => $request->input('id'),
-            'type' => 'report',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
+        $reportCreate = ReportedModel::insert($reportdata);
 
-        if (ReportedModel::insert($reportdata) && NotifyModel::create($notifyData)) {
+        if ($reportCreate) {
+            NotifyModel::create($notifyData);
+
+            $notifyData = [
+                'receiverID' => $receiver,
+                'senderID' => (int)auth()->user()->id,
+                'reportID' => (int)$reportCreate->id,
+                'postID' => $request->input('id'),
+                'type' => 'report',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
             return response()->json([
                 'status' => 'ok',
                 'message' => 'create report success.',
@@ -308,42 +315,49 @@ class UserController extends Controller
             ], 404);
         };
 
-        $memberArray = [];
+        $member = [];
         foreach ($groupDb->member as $eachMember) {
-            $memberArray[] = $eachMember->id;
+            $member[] = $eachMember->id;
         }
 
-        $requestArray = [];
+        $request = [];
         foreach ($groupDb->request as $eachRequest) {
-            $requestArray[] = $eachRequest->id;
+            $request[] = $eachRequest->id;
         }
 
-        if (!in_array($uID, $memberArray)) {
+        if (!in_array($uID, $member)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'unauthorize.',
             ], 401);
         }
 
-        $userDb = UserModel::select('username', 'id')->get();
+        $userDb = UserModel::select('username', 'id', 'fullname', 'email')->get();
         $data = [];
 
         foreach ($userDb as $user) {
-            if (in_array($user->id, $memberArray)) {
+            if (in_array($user->id, $member)) {
+                // $data[] = [
+                //     'username' => $user->username,
+                //     'fullname' => $user->fullname,
+                //     'email' => $user->email,
+                //     'uID' => $user->id,
+                //     'status' => 'member'
+                // ];
+                continue;
+            } else if (in_array($user->id, $request)) {
                 $data[] = [
                     'username' => $user->username,
-                    'uID' => $user->id,
-                    'status' => 'member'
-                ];
-            } else if (in_array($user->id, $requestArray)) {
-                $data[] = [
-                    'username' => $user->username,
+                    'fullname' => $user->fullname,
+                    'email' => $user->email,
                     'uID' => $user->id,
                     'status' => 'request'
                 ];
             } else {
                 $data[] = [
                     'username' => $user->username,
+                    'fullname' => $user->fullname,
+                    'email' => $user->email,
                     'uID' => $user->id,
                     'status' => 'none'
                 ];
@@ -466,7 +480,14 @@ class UserController extends Controller
                 'message' => 'members not found.',
             ], 404);
         } else {
-            $memberArray = $groupDb->member->pluck('id')->toArray();
+            $members = $groupDb->member->pluck('id')->toArray();
+        }
+
+        if (in_array($uID, $members)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'already be a member.',
+            ], 400);
         }
 
         if (empty($groupDb->request)) {
@@ -475,17 +496,10 @@ class UserController extends Controller
                 'message' => 'request not found.',
             ], 404);
         } else {
-            $requestArray = $groupDb->request->pluck('id')->toArray();
+            $requests = $groupDb->request->pluck('id')->toArray();
         }
 
-        if (in_array($uID, $memberArray)) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'already be a member.',
-            ], 400);
-        }
-
-        if (in_array($uID, $requestArray)) {
+        if (in_array($uID, $requests)) {
             $deleteRequest = RequestModel::where('userID', $uID)
                 ->where('groupID', $groupDb->id)
                 ->first();
@@ -501,7 +515,7 @@ class UserController extends Controller
                     'message' => 'failed to cancel request.',
                 ], 500);
             }
-        } else if (!in_array($uID, $requestArray)) {
+        } else if (!in_array($uID, $requests)) {
             $addRequest = RequestModel::create([
                 'userID' => $uID,
                 'groupID' => $groupDb->id,
@@ -548,6 +562,7 @@ class UserController extends Controller
 
         $data = NotificationResource::collection($notifyDb);
         return response()->json([
+            // 'uID' => auth()->user()->id,
             'status' => 'ok',
             'data' => $data
         ], 200);
@@ -557,16 +572,31 @@ class UserController extends Controller
     { // done *check
         $allGroup = GroupModel::with(['member', 'hobby', 'library', 'tutoring'])
             ->orderBy('updated_at', 'DESC')
-            ->paginate(8);
+            ->get();
 
-        $data = MyPostResource::collection($allGroup);
+        $data = MyPostResource::collection($allGroup)->resolve();
+
+        $data = array_filter($data, function($item) {
+            return $item !== null;  
+        });
+
+        $data = array_values($data);
+
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 8;
+        $currentPageItems = array_slice($data, ($currentPage - 1) * $perPage, $perPage);
+
+        // Create a paginator instance
+        $paginatedData = new LengthAwarePaginator($currentPageItems, count($data), $perPage, $currentPage, [
+            'path' => LengthAwarePaginator::resolveCurrentPath(),
+        ]);
 
         return response()->json([
-            'prevPageUrl' => $allGroup->previousPageUrl(),
+            'prevPageUrl' => $paginatedData->previousPageUrl(),
             'status' => 'ok',
             'message' => 'fetch my posts success',
-            'data' => $data,
-            'nextPageUrl' => $allGroup->nextPageUrl()
+            'data' => $paginatedData->items(),
+            'nextPageUrl' => $paginatedData->nextPageUrl()
         ], 200);
     }
 

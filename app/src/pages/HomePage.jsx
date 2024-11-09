@@ -7,10 +7,10 @@ import config from "../constants/function";
 import { useInView } from "react-intersection-observer";
 import { Link } from "react-router-dom";
 import { useSearchList } from "../contextProivder/SearchListProvider";
-
+import { FaPlus } from "react-icons/fa6";
 
 function HomePage() {
-  const { searchListsArray } = useSearchList(); 
+  const { searchListsArray } = useSearchList();
   const [listItem, setListItem] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(null);
@@ -18,9 +18,8 @@ function HomePage() {
   const [hasMore, setHasMore] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [error, setError] = useState(null);
-  const itemsPerPage = 3; 
+  const itemsPerPage = 3;
   const maxRetries = 1;
-
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -89,12 +88,25 @@ function HomePage() {
         overflow: "hidden",
       }}
     >
-      <div className="card p-3 border-0 mx-3 w-100 " style={{borderRadius:"0",borderBottomRightRadius: "15px" ,borderBottomLeftRadius:"15px", boxShadow: "0px 0px px rgba(0, 0, 0, 0.25)", }}>
-      <SearchButton fromFeature={"hobby"} />
+      <div
+        className="card p-3 border-0 mx-3 w-100 "
+        style={{
+          borderRadius: "0",
+          borderBottomRightRadius: "15px",
+          borderBottomLeftRadius: "15px",
+          boxShadow: "0px 0px px rgba(0, 0, 0, 0.25)",
+        }}
+      >
+        <SearchButton fromFeature={"hobby"} />
       </div>
       <div
         className="position-relative"
-        style={{ overflow: "auto", overflowY: "scroll" , maxWidth:"550px" , width:"95vw"}}
+        style={{
+          overflow: "auto",
+          overflowY: "scroll",
+          maxWidth: "550px",
+          width: "95vw",
+        }}
       >
         {searchListsArray.length > 0 ? (
           <List listItem={searchListsArray} fetchData={fetchData} />
@@ -106,7 +118,7 @@ function HomePage() {
             <l-tail-chase
               size="40"
               speed="1.75"
-              color="rgb(255,133,0)" 
+              color="rgb(255,133,0)"
             ></l-tail-chase>
           </div>
         )}
@@ -115,35 +127,28 @@ function HomePage() {
             {error}
           </p>
         )}
-        <div ref={ref} style={{ height: "1px" }} />
+         <div ref={ref} style={{ height: "1px" }} />
       </div>
-      <div style={{ zIndex: 1 }}>
-        <a href="/hobbycreategroup">
-          <div
-            style={{
-              width: "10vw",
-              height: "10vw",
-              position: "fixed",
-              right: "10%",
-              bottom: "22%",
-              borderRadius: "50%",
-              backgroundColor: "#f6f6f6",
-            }}
-          ></div>
-
-          <IoAddCircle
-            style={{
-              color: "#FFB600",
-              width: "20vw",
-              height: "20vw",
-              position: "fixed",
-              right: "5%",
-              bottom: "20%",
-              borderRadius: "50%",
-              padding: "2%",
-            }}
-          />
-        </a>
+      <div
+        className="position-fixed"
+        style={{
+          bottom: "15%",
+          right: "5%",
+          backgroundColor: "#FFB600",
+          borderRadius: "50%",
+        }}
+      >
+        <Link
+          to="/hobbycreategroup"
+          className="btn fw-bold position-relative"
+          style={{
+            boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+            borderRadius: "50%",
+            padding: "0.75rem",
+          }}
+        >
+          <FaPlus className="text-white fs-1" />
+        </Link>
       </div>
     </div>
   );
