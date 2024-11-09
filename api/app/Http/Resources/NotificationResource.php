@@ -17,7 +17,7 @@ class NotificationResource extends JsonResource
     public function toArray($request)
     {
         if ($this->group && $this->group->type == 'hobby') {
-            if ($this->type == "report") {
+            if ($this->type == "report" && $this->report) {
                 return [
                     'notiType' => $this->type,
                     'image' => '/uploaded/hobbyImage/' . $this->group->hobby->imageOrFile->name,
@@ -52,7 +52,7 @@ class NotificationResource extends JsonResource
                 ];
             }
         } else if ($this->group && $this->group->type == 'tutoring') {
-            if ($this->type == "report") {
+            if ($this->type == "report" && $this->report) {
                 return [
                     'notiType' => $this->type,
                     'image' => '/uploaded/hobbyImage/' . $this->group->tutoring->imageOrFile->name,
@@ -87,7 +87,7 @@ class NotificationResource extends JsonResource
                 ];
             }
         } else if ($this->group && $this->group->type == 'library') {
-            if ($this->type == "report") {
+            if ($this->type == "report" && $this->report) {
                 return [
                     'notiType' => $this->type,
                     'image' => '/pdfImage/' . basename($this->group->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
@@ -122,20 +122,33 @@ class NotificationResource extends JsonResource
                 'createdAt' => $this->created_at
             ];
         } else {
-            $image = UserModel::where('imageOrFileID',$this->sender->imageOrFileID)
-                                        ->where('id',$this->sender->id)
-                                        ->with('imageOrFile')
-                                        ->first();
-            return [
-                'notiType' => $this->type,
-                'image' => '/uploaded/profileImage/' . $image->imageOrFile->name,
-                'sender' => $this->sender->username,
-                'group' => null,
-                'groupType' => 'user', 
-                'groupID' => null,
-                'reportID' => $this->report->title,
-                'createdAt' => $this->created_at
-            ];
+            $image = UserModel::where('imageOrFileID', $this->sender->imageOrFileID)
+                ->where('id', $this->sender->id)
+                ->with('imageOrFile')
+                ->first();
+            if ($this->type == "report" && $this->report) {
+                return [
+                    'notiType' => $this->type,
+                    'image' => '/uploaded/profileImage/' . $image->imageOrFile->name,
+                    'sender' => $this->sender->username,
+                    'group' => null,
+                    'groupType' => 'user',
+                    'groupID' => null,
+                    'reportID' => $this->report->title,
+                    'createdAt' => $this->created_at
+                ];
+            } else {
+                return [
+                    'notiType' => $this->type,
+                    'image' => '/uploaded/profileImage/' . $image->imageOrFile->name,
+                    'sender' => $this->sender->username,
+                    'group' => null,
+                    'groupType' => 'user',
+                    'groupID' => null,
+                    'reportID' => null,
+                    'createdAt' => $this->created_at
+                ];
+            }
         }
     }
 }

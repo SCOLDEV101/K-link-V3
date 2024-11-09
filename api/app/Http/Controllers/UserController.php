@@ -166,8 +166,6 @@ class UserController extends Controller
         $reportCreate = ReportedModel::insert($reportdata);
 
         if ($reportCreate) {
-            NotifyModel::create($notifyData);
-
             $notifyData = [
                 'receiverID' => $receiver,
                 'senderID' => (int)auth()->user()->id,
@@ -177,7 +175,8 @@ class UserController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-
+            NotifyModel::create($notifyData);
+            
             return response()->json([
                 'status' => 'ok',
                 'message' => 'create report success.',
@@ -555,7 +554,7 @@ class UserController extends Controller
 
     function notification()
     { // done *check
-        $notifyDb = NotifyModel::where('receiverID', auth()->user()->id)
+        $notifyDb = NotifyModel::where([['receiverID', auth()->user()->id],['type','!=','rejectRequest']])
             ->with(['receiver', 'sender', 'group.hobby.leaderGroup', 'group.tutoring.leaderGroup', 'group.library.leaderGroup'])
             ->latest()
             ->get();
