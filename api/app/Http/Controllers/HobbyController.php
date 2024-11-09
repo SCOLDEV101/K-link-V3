@@ -300,9 +300,9 @@ class HobbyController extends Controller
                     'name' => $filename
                 ]);
             }
-        } else if (empty($request->file('image')) && !$request->has('deleteimage')) {
+        } else if ($request->input('image') == $groupDb->hobby->imageOrFile->name) {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->first();
-        } else if ($request->has('deleteimage')) {
+        } else if (empty($request->file('image')) && $groupDb->hobby->imageOrFile) {
             if (imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->first() && !in_array(strval($groupDb->hobby->imageOrFile->name), $defaultFiles)) {
                 imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
                 if (File::exists($path . $groupDb->hobby->imageOrFile->name)) {

@@ -306,9 +306,9 @@ class TutoringController extends Controller
                     'name' => $filename
                 ]);
             }
-        } else if (empty($request->file('image')) && !$request->has('deleteimage')) {
+        } else if ($request->input('image') === $groupDb->tutoring->imageOrFile->name) {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->first();
-        } else if ($request->has('deleteimage')) {
+        } else if (empty($request->file('image')) && $groupDb->tutoring->imageOrFile) {
             if (imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->first() && !in_array(strval($groupDb->tutoring->imageOrFile->name), $defaultFiles, true)) {
                 imageOrFileModel::where('id', $groupDb->tutoring->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
                 if (File::exists($path . $groupDb->tutoring->imageOrFile->name)) {
