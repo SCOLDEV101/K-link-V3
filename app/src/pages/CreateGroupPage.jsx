@@ -765,17 +765,29 @@ function CreateGroupPage() {
                               {tags.map((tag, i) => (
                                 <div
                                   key={i}
-                                  className="badge rounded-pill text-dark px-3 py-2 text-truncate"
+                                  className="ps-3 d-flex flex-row align-items-center"
                                   style={{
+                                    borderRadius: "12px",
+                                    paddingBottom: "4.5px",
+                                    paddingTop: "4.5px",
+                                    paddingRight: "17px",
                                     background: "#FFB600",
-                                    boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
-                                    maxWidth: "120px",
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
+                                    color: "#fff",
                                   }}
                                 >
-                                  {tag}
+                                  <span
+                                    className="text-truncate m-0"
+                                    style={{
+                                      fontSize: ".75rem",
+                                      fontWeight: "500",
+                                      maxWidth: "120px",
+                                      whiteSpace: "nowrap",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                    }}
+                                  >
+                                    # {tag}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -800,11 +812,12 @@ function CreateGroupPage() {
                                     color: "#FFFF",
                                   }}
                                 >
-                                  เพิ่มแท็ก
+                                  {!tags.length > 0 ? "เพิ่มแท็ก" : "แก้ไขแท็ก"}
                                 </p>
                               </div>
                             }
-                            initialTags={groupData.tag}
+                            initialTags={tags <= 0 ? groupData.tag : tags}
+                            typeOfTags={"hobby"}
                           />
                         </>
                       )}

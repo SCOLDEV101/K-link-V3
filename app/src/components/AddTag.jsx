@@ -1,26 +1,85 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoAdd, IoClose } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
+import axios from "axios";
+import config from "../constants/function";
 
-function AddTag({ FunctionToSave, btnHTML, initialTags }) {
+function AddTag({
+  FunctionToSave,
+  btnHTML,
+  initialTags,
+  typeOfTags,
+}) {
+  const headersAuth = config.Headers().headers;
   const [tags, setTags] = useState([]);
-  const [suggestedTags, setSuggestedTags] = useState([
-    "Tag1",
-    "Tag2",
-    "Tag3",
-    "Tag4",
-    "Tag5",
-  ]);
+  const [suggestedTags, setSuggestedTags] = useState(["Tag1", "Tag2", "Tag3"]);
   const inputRef = useRef(null);
 
   const EditTags = initialTags ? initialTags : "";
+  const [searchParam, setSearchParam] = useState("");
+  const [offcanvasToggle, setOffcanvasToggle] = useState(false)
 
   useEffect(() => {
-    if (EditTags && EditTags.trim() !== "") {
+    if (typeof EditTags !== "string") {
+      setTags(initialTags);
+    } else if (EditTags && EditTags.trim() !== "") {
       const tagsArray = EditTags.split(",").map((tag) => tag.trim());
       setTags(tagsArray);
     }
-  }, [EditTags]);
+  }, [EditTags, offcanvasToggle]);
+
+  useEffect(() => {
+    getSuggestedTags(typeOfTags);
+  }, []);
+
+  useEffect(() => {
+    const timeOutId = setTimeout(
+      () => getSuggestedTags(typeOfTags, searchParam),
+      300
+    );
+    return () => clearTimeout(timeOutId);
+  }, [searchParam]);
+
+  useEffect(() => {
+    const offcanvasElement = document.getElementById("addTagOffcanvas");
+    setOffcanvasToggle(!offcanvasToggle);
+
+    offcanvasElement.addEventListener("show.bs.offcanvas", setOffcanvasToggle);
+    offcanvasElement.addEventListener("hide.bs.offcanvas", setOffcanvasToggle);
+    return () => {
+      offcanvasElement.removeEventListener("show.bs.offcanvas", setOffcanvasToggle);
+      offcanvasElement.removeEventListener("hide.bs.offcanvas", setOffcanvasToggle);
+    };
+  }, []);
+
+  const getSuggestedTags = async (type, search) => {
+    const bodys = new FormData();
+    bodys.append("activityName", "");
+    bodys.append("startTime", "");
+    bodys.append("location", "");
+    bodys.append("search", search || "");
+    bodys.append("type", type);
+
+    for (const [key, value] of bodys.entries()) {
+      console.log(`${key}:`, value);
+    }
+    console.log("searchParam", searchParam);
+
+    try {
+      const tagsArray = await axios.post(
+        config.SERVER_PATH + "/api/tag",
+        bodys,
+        {
+          headers: headersAuth,
+          withCredentials: true,
+        }
+      );
+      if (tagsArray.status === 200) {
+        console.log("tdadawda:", tagsArray.data.data);
+        setSuggestedTags(tagsArray.data.data);
+      }
+    } catch (error) {}
+  };
 
   const handleAddTag = () => {
     if (tags.length < 10) {
@@ -47,6 +106,11 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
     if (tags.length < 10 && !tags.includes(tag)) {
       setTags([...tags, tag]);
     }
+  };
+
+  const handleSearchedTags = (e) => {
+    const searchParam = e.target.value;
+    setSearchParam(searchParam);
   };
 
   return (
@@ -111,16 +175,24 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
                 placeholder={
                   tags.length >= 10 ? "จำนวนแท็กสูงสุดแล้ว" : "พิมพ์ที่นี่"
                 }
+                name="searchTag"
+                onChange={(e) => handleSearchedTags(e)}
+                value={searchParam}
                 style={{
                   border: "1px solid #E7E7E7",
-                  borderRadius: "5px"
+                  borderRadius: "5px",
                 }}
                 ref={inputRef}
                 disabled={tags.length >= 10}
               />
               <button
                 className="btn text-nowrap py-0 border-0 px-1 fw-medium text-center d-flex flex-row justify-content-center align-items-center"
-                style={{ background: "#F89603", height: "35px", color: "#FFFFFF", width: "35%" }}
+                style={{
+                  background: "#F89603",
+                  height: "35px",
+                  color: "#FFFFFF",
+                  width: "35%",
+                }}
                 onClick={handleAddTag}
                 disabled={tags.length >= 10}
                 type="button"
@@ -136,8 +208,8 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
             </span>
           </h6>
           <div
-            className="d-flex flex-row flex-wrap gap-2 "
-            style={{ maxHeight: "100px", overflowY: "auto" }}
+            className="d-flex flex-row flex-wrap gap-2"
+            style={{ maxHeight: "120px", overflowY: "auto" }}
           >
             {tags.map((tag, index) => (
               <div className="position-relative" key={index}>
@@ -183,48 +255,52 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
           </div>
           <div className="mt-3">
             <h6>แท็กแนะนำ</h6>
-            <div className="d-flex flex-wrap gap-2">
-              {suggestedTags.map((tag, index) => (
-                <button
-                  key={index}
-                  className="border-0 ps-3 d-flex flex-row align-items-center"
-                  onClick={() => handleSelectSuggestedTag(tag)}
-                  disabled={tags.length >= 10 || tags.includes(tag)}
-                  style={{
-                    borderRadius: "12px",
-                    paddingBottom: "4.5px",
-                    paddingTop: "4.5px",
-                    paddingRight: "17px",
-                    background: "#E7E7E7",
-                    color: "#949494",
-                  }}
-                >
-                  <span
-                    className="text-truncate m-0"
+            <div
+              className="d-flex flex-wrap gap-2"
+              style={{ maxHeight: "120px", overflowY: "auto" }}
+            >
+              {suggestedTags &&
+                suggestedTags.map((tag, index) => (
+                  <button
+                    key={index}
+                    className="border-0 ps-3 d-flex flex-row align-items-center"
+                    onClick={() => handleSelectSuggestedTag(tag)}
+                    disabled={tags.length >= 10 || tags.includes(tag)}
                     style={{
-                      fontSize: ".75rem",
-                      fontWeight: "500",
-                      maxWidth: "120px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
+                      borderRadius: "12px",
+                      paddingBottom: "4.5px",
+                      paddingTop: "4.5px",
+                      paddingRight: "17px",
+                      background: "#E7E7E7",
+                      color: "#949494",
                     }}
                   >
-                    # {tag}
-                  </span>
-                  <IoAdd
-                    className="position-relative"
-                    style={{
-                      right: "-10px",
-                      color: "#E7E7E7",
-                      background: "#ffff",
-                      borderRadius: "5px",
-                      fontSize: "15px",
-                      cursor: "pointer",
-                    }}
-                  />
-                </button>
-              ))}
+                    <span
+                      className="text-truncate m-0"
+                      style={{
+                        fontSize: ".75rem",
+                        fontWeight: "500",
+                        maxWidth: "120px",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      # {tag}
+                    </span>
+                    <IoAdd
+                      className="position-relative"
+                      style={{
+                        right: "-10px",
+                        color: "#E7E7E7",
+                        background: "#ffff",
+                        borderRadius: "5px",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  </button>
+                ))}
             </div>
           </div>
           <div className="position-absolute bottom-0 start-0 w-100 p-3">
