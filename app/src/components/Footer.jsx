@@ -65,6 +65,7 @@ const Footer = ({FileData}) => {
     "/aboutapp",
     "/librarycreatepost",
     "/AboutReport",
+    "/notification",
   ];
   return (
     <>

@@ -117,8 +117,8 @@ function AcceptFriendRequest() {
             <img
              onClick={() => handleInfoClick(request.uID , groupID , "normal" , groupType )}
             src={
-              request.profileImage
-                ? `http://127.0.0.1:8000/uploaded/profileImage/${request.profileImage}`
+              request.image
+                ? `http://127.0.0.1:8000${request.image}`
                 : "./Empty-Profile-Image.svg"
             }
             alt="profile"

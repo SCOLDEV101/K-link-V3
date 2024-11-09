@@ -162,7 +162,7 @@ export const RouterPathAndName = [
         element: <ProtectedRoute><Layout><AboutApp /></Layout></ProtectedRoute>,
     },
     {
-        path: "/AboutReport",
+        path: "/aboutReport",
         name: "รายงาน",
         element: <ProtectedRoute><Layout><AboutReport /></Layout></ProtectedRoute>,
     },

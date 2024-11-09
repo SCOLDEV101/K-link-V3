@@ -46,7 +46,7 @@ function Header({ groupName, FileData }) {
     "/aboutapp",
   ];
   const noHeader = ["/", "/search"];
-  const noNotifyIcon = ["/notification", "/aboutlibrary", "/AboutReport"];
+  const noNotifyIcon = ["/notification", "/aboutlibrary", "/aboutReport"];
 
   const showBackButton =
     backButton.some((path) => location.pathname.startsWith(path)) ||
