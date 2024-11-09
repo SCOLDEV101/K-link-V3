@@ -893,11 +893,11 @@ function TutoringCreateGroup() {
                               className="my-0 mx-1 py-2"
                               style={{ fontSize: "1.025rem", color: "#FFFF" }}
                             >
-                              เพิ่มแท็ก
+                              {!tags.length > 0 ? "เพิ่มแท็ก" : "แก้ไขแท็ก"}
                             </p>
                           </div>
                         }
-                        initialTags={groupData.tag}
+                        initialTags={tags <= 0 ? groupData.tag : tags}
                         typeOfTags={"tutoring"}
                       />
                     </>
