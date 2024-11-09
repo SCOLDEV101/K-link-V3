@@ -13,6 +13,7 @@ function AboutTutoringGroup() {
   const headersAuth = config.Headers().headers;
   const groupID = location.state?.groupID || {};
   const [aboutGroupData_tutoring, setAboutGroupData_tutoring] = useState({});
+  const [editTutoringData, setEditTutoringData] = useState({})
   const [_Error_, set_Error_] = useState(false);
   useEffect(() => {
     Get_About_Tutoring_Group_Data(groupID);
@@ -28,6 +29,12 @@ function AboutTutoringGroup() {
         if (request.data.status === "ok") {
           set_Error_(false);
           console.log("tutoring/aboutGroup/" + groupID, request.data.data);
+          const transformedData = {
+            ...request.data.data,
+            tag: request.data.data.tag.join(", "),
+            memberMax: request.data.data.memberMax || "ไม่จำกัด",
+          };
+          setEditTutoringData(transformedData);
           setAboutGroupData_tutoring(request.data.data);
         } else {
           console.error("Something went wrong !, please try again.");
@@ -474,9 +481,9 @@ const dayColors = {
                 className="p-2 d-flex flex-row flex-wrap align-items-start gap-2" //card-body
               >
                 {aboutGroupData_tutoring.tag !== undefined &&
-                  aboutGroupData_tutoring.tag.map((tag) => (
+                  aboutGroupData_tutoring.tag.map((tag, i) => (
                     <div
-                      key={tag}
+                      key={i}
                       className="badge text-dark px-3 py-2"
                       style={{
                         background: "#FFB600",
@@ -498,9 +505,9 @@ const dayColors = {
             <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
               <div className="col-10">
                 <Link
-                  to={"/hobbyeditgroup"}
+                  to={"/tutoringeditgroup"}
                   state={{
-                    groupData: aboutGroupData_tutoring,
+                    groupData: editTutoringData,
                     status: "update",
                     groupID: groupID,
                   }}

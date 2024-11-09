@@ -31,6 +31,7 @@ function AboutHobbyGroup() {
         const transformedData = {
           ...request.data.data,
           tag: request.data.data.tag.join(", "),
+          memberMax: request.data.data.memberMax || "ไม่จำกัด"
         };
         setEditAboutGroupData(transformedData);
         setAboutGroupData(request.data.data);

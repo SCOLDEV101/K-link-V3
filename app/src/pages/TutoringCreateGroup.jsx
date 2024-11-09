@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import config from "../constants/function";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import "../index.css";
 function TutoringCreateGroup() {
   const navigate = useNavigate();
   const Location = useLocation();
-  const { groupData = {}, status, hID } = Location?.state || {};
+  const { groupData = {}, status, groupID } = Location?.state || {};
   // const DATA = getFacultyMajorSection();
   // const data = nestDataFacultys(DATA); // with API
   const data = nestDataFacultys(fetchData); // withOut API
@@ -31,11 +31,11 @@ function TutoringCreateGroup() {
       alt: "d-3",
     },
   ];
-  const [image, setImage] = useState(null);
-  const [imageSelected, setImageSelected] = useState(null);
+  const [image, setImage] = useState(groupData.image || null);
+  const [imageSelected, setImageSelected] = useState(groupData.image || null); 
   const [defaultImage, setDefaultImage] = useState(null);
   const [memberMax, setMemberMax] = useState(groupData.memberMax || "");
-  const [disabledMemberMax, setDisabledMemberMax] = useState(false);
+  const [disabledMemberMax, setDisabledMemberMax] = useState(groupData.memberMax === "ไม่จำกัด" || false);
 
   const handleImageChange = (event) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
@@ -145,14 +145,23 @@ function TutoringCreateGroup() {
     departmentID: initialdepartmentID || "",
     date: groupData.date || "",
     memberMax: groupData.memberMax || "",
-    startTime: formatInitialTime(groupData.Starttime),
-    endTime: formatInitialTime(groupData.Endtime),
+    startTime: formatInitialTime(groupData.startTime),
+    endTime: formatInitialTime(groupData.endTime),
     location: groupData.location || "",
     detail: groupData.detail || "",
-    image: null,
+    image: groupData.image || null,
     tag: tags || "",
   };
   const [formData, setFormData] = useState(defaultValue);
+
+  // useEffect(() => {
+  //   if (status === "upadate") {
+  //     setFormData(groupData);
+  //   } else {
+  //     setFormData(defaultValue)
+  //   }
+  // }, [])
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -243,7 +252,7 @@ function TutoringCreateGroup() {
 
         if (result.isConfirmed) {
           const response = await axios.post(
-            `${config.SERVER_PATH}/api/tutoring/update/${hID}`,
+            `${config.SERVER_PATH}/api/tutoring/updateGroup/${groupID}`,
             _newFormData_,
             { headers: headersAuth, withCredentials: true }
           );
@@ -441,6 +450,7 @@ function TutoringCreateGroup() {
                         width: "45px",
                         height: "45px",
                         borderRadius: "5px",
+                        objectFit: "cover",
                         border: "1.5px solid #E7E7E7",
                         boxShadow:
                           imageSelected === image ? "0 0 5px #FFB600" : "",
@@ -472,6 +482,7 @@ function TutoringCreateGroup() {
                         width: "45px",
                         height: "45px",
                         borderRadius: "5px",
+                        objectFit: "cover",
                         border: "1.5px solid #E7E7E7",
                         boxShadow:
                           imageSelected === idx ? "0 0 5px #FFB600" : "",
@@ -634,34 +645,6 @@ function TutoringCreateGroup() {
                 />
               </div>
             </div>
-            {/* <div className="form-group">
-              <label htmlFor="startTime" style={{ fontSize: ".8rem" }}>
-                เวลาเริ่มต้น <span style={{ color: "red" }}>*</span>
-              </label>
-              <input
-                type="time"
-                id="startTime"
-                name="startTime"
-                className="form-control"
-                value={formData.startTime}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="endTime" style={{ fontSize: ".8rem" }}>
-                เวลาจบ <span style={{ color: "red" }}>*</span>
-              </label>
-              <input
-                type="time"
-                id="endTime"
-                name="endTime"
-                className="form-control"
-                value={formData.endTime}
-                onChange={handleChange}
-                required
-              />
-            </div> */}
 
             {/* Time Form */}
             <div className="d-flex flex-row justify-content-center align-items-center mt-2">
@@ -744,18 +727,6 @@ function TutoringCreateGroup() {
                   จำนวนสมาชิก<span className="text-danger">*</span>
                 </p>
               </label>
-              {/* <input
-                type="number"
-                id="memberMax"
-                name="memberMax"
-                className="form-control"
-                value={formData.memberMax}
-                onChange={handleChange}
-                placeholder="ไม่จำกัด"
-                min="0"
-                max="99"
-                step="1"
-              /> */}
               <div className="w-100 d-flex gap-2 flex-row justify-content-center align-items-center">
                 <input
                   type="number"
@@ -867,7 +838,7 @@ function TutoringCreateGroup() {
                                   fontWeight: "500",
                                   maxWidth: "120px",
                                   whiteSpace: "nowrap",
-                                  overflow: "hidden",
+                                  overflow: "groupIDden",
                                   textOverflow: "ellipsis",
                                 }}
                               >
@@ -937,24 +908,6 @@ function TutoringCreateGroup() {
                 {status === "update" ? "บันทึก" : "สร้างกลุ่มติว"}
               </button>
             </div>
-            {/* {status === "update" && (
-              <div className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center">
-                <button
-                  type="button"
-                  className="btn"
-                  style={{
-                    background: "#FF0101",
-                    width: "100%",
-                    color: "white",
-                  }}
-                  onClick={() => {
-                    deleteGroup(hID);
-                  }}
-                >
-                  ลบกลุ่ม
-                </button>
-              </div>
-            )} */}
           </form>
         </div>
       </div>

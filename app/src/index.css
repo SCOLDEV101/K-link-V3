@@ -97,3 +97,27 @@ code {
   .swal2-actions {
     margin: 0;
   }
+
+
+  .was-validated .form-control:valid,
+.was-validated .form-select:valid {
+  border: 1.5px solid green !important
+}
+
+.was-validated .form-control:invalid,
+.was-validated .form-select:invalid {
+  border: 1.5px solid red !important
+}
+
+/* แสดงไอคอนเฉพาะที่ต้องการ (เช่น input ที่มี id="validationDefault01") */
+.was-validated #date:valid,
+.was-validated #startTime:valid,
+.was-validated #endTime:valid {
+  background-image: none !important;
+}
+
+.was-validated #date:invalid,
+.was-validated #startTime:invalid,
+.was-validated #endTime:invalid {
+  background-image: none !important;
+}

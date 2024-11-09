@@ -6,6 +6,7 @@ import { fetchData, nestDataFacultys } from "../constants/constants";
 import AddTag from "../components/AddTag";
 import { FaPlus } from "react-icons/fa6";
 import { FiFileMinus, FiFilePlus } from "react-icons/fi";
+import "../index.css";
 
 function LibraryCreatePost() {
   const navigate = useNavigate();
