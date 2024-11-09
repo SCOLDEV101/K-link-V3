@@ -90,7 +90,7 @@ class NotificationResource extends JsonResource
             if ($this->type == "report") {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->library->imageOrFile->name,
+                    'image' => '/pdfImage/' . basename($this->group->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
                     'sender' => $this->sender->username,
                     'group' => $this->group->library->name ?? null,
                     'groupType' => 'library',
@@ -101,7 +101,7 @@ class NotificationResource extends JsonResource
             } else {
                 return [
                     'notiType' => $this->type,
-                    'image' => $this->group->library->imageOrFile->name,
+                    'image' => '/pdfImage/' . basename($this->group->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
                     'sender' => $this->sender->username,
                     'group' => $this->group->library->name ?? null,
                     'groupType' => 'library',
