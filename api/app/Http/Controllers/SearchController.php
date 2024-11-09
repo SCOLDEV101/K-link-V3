@@ -238,7 +238,7 @@ class SearchController extends Controller
         $tags = TagModel::get();
         $tagsModified = $tags->pluck('name')->toArray();
 
-        if($search){
+        if($search && ($search !== '' || $search !== null)){
             $suggestedTags = $this->suggestSearch($search,$tagsModified);
             $suggestedTags = array_map(function($suggestion) {
                 return $suggestion['keyword'];
