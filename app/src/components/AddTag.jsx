@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import { IoClose } from "react-icons/io5";
+import { IoAdd, IoClose } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 
 function AddTag({ FunctionToSave, btnHTML, initialTags }) {
   const [tags, setTags] = useState([]);
   const [suggestedTags, setSuggestedTags] = useState([
-    "Tag1", "Tag2", "Tag3", "Tag4", "Tag5"
+    "Tag1",
+    "Tag2",
+    "Tag3",
+    "Tag4",
+    "Tag5",
   ]);
   const inputRef = useRef(null);
 
@@ -64,15 +68,15 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
       <div
         className="offcanvas offcanvas-bottom mx-2"
         style={{
-          borderTopLeftRadius: "20px",
-          borderTopRightRadius: "20px",
+          borderTopLeftRadius: "15px",
+          borderTopRightRadius: "15px",
           height: "75%",
         }}
         tabIndex="-1"
         id="addTagOffcanvas"
         aria-labelledby="addTagOffcanvasLabel"
       >
-        <div
+        {/* <div
           className="position-absolute"
           style={{
             background: "#D9D9D9",
@@ -90,106 +94,150 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
             data-bs-dismiss="offcanvas"
             aria-label="Close"
           />
-        </div>
-        <div className="offcanvas-body">
-          <div className="mb-1">
-            <label style={{ fontSize: "0.65rem" }}>
-              <span style={{ color: "red" }}>*</span>คุณสามารถใส่แท็กได้ไม่เกิน
-              10 แท็ก
-            </label>
+        </div> */}
+        <div className="offcanvas-body h-100 pt-4 d-flex flex-column">
+          <div className="mb-1 position-relative">
+            <label style={{ fontSize: "1rem" }}>ค้นหา หรือ สร้างแท็ก</label>
             <div
-              className={`d-flex flex-row gap-2 border border-2 rounded-3 p-1 align-items-center ${
+              className={`d-flex flex-row gap-2 mt-1 align-items-center ${
                 tags.length < 10 ? "border-dark" : "border-secondary"
               }`}
             >
               <input
                 type="text"
-                className={`form-control border-0 ${
+                className={`form-control py-1 px-2 ${
                   tags.length >= 10 ? "text-muted" : ""
                 }`}
                 placeholder={
-                  tags.length >= 10 ? "ไม่สามารถเพิ่มแท็กได้" : "Add tag ..."
+                  tags.length >= 10 ? "จำนวนแท็กสูงสุดแล้ว" : "พิมพ์ที่นี่"
                 }
+                style={{
+                  border: "1px solid #E7E7E7",
+                  borderRadius: "5px"
+                }}
                 ref={inputRef}
                 disabled={tags.length >= 10}
               />
               <button
-                className="btn text-nowrap py-0 px-1 fw-medium text-center d-flex align-items-center"
-                style={{ background: "#FFB600", height: "35px" }}
+                className="btn text-nowrap py-0 border-0 px-1 fw-medium text-center d-flex flex-row justify-content-center align-items-center"
+                style={{ background: "#F89603", height: "35px", color: "#FFFFFF", width: "35%" }}
                 onClick={handleAddTag}
                 disabled={tags.length >= 10}
                 type="button"
               >
-                <FaPlus className="me-1 text-white fs-3" />
-                เพิ่มแท็กนี้
+                เพิ่ม
               </button>
             </div>
           </div>
-          <h6>
-            เลือกแท็กแล้ว{" "}
-            <span
-              className={`${tags.length < 10 ? "text-muted" : "text-danger"}`}
-            >
-              {tags.length}/10 แท็ก
+          <h6 className="mt-2">
+            แท็กทั้งหมด{" "}
+            <span style={{ color: tags.length < 10 ? "#000000" : "#B3261E" }}>
+              ({tags.length}/10)
             </span>
           </h6>
           <div
-            className="d-flex flex-row flex-wrap gap-2 mt-2 pt-2"
-            style={{ maxHeight: "250px", overflowY: "auto" }}
+            className="d-flex flex-row flex-wrap gap-2 "
+            style={{ maxHeight: "100px", overflowY: "auto" }}
           >
             {tags.map((tag, index) => (
               <div className="position-relative" key={index}>
                 <div
-                  className="badge rounded-pill text-dark px-3 py-2 text-truncate"
+                  className="ps-3 d-flex flex-row align-items-center"
                   style={{
+                    borderRadius: "12px",
+                    paddingBottom: "4.5px",
+                    paddingTop: "4.5px",
+                    paddingRight: "17px",
                     background: "#FFB600",
-                    boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
-                    maxWidth: "120px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    color: "#fff",
                   }}
                 >
-                  {tag}
+                  <span
+                    className="text-truncate m-0"
+                    style={{
+                      fontSize: ".75rem",
+                      fontWeight: "500",
+                      maxWidth: "120px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    # {tag}
+                  </span>
+                  <IoClose
+                    className="position-relative"
+                    style={{
+                      right: "-10px",
+                      color: "#FFB600",
+                      background: "#ffff",
+                      borderRadius: "5px",
+                      fontSize: "15px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleRemoveTag(index)}
+                  />
                 </div>
-                <IoClose
-                  className="position-absolute"
-                  style={{
-                    top: "-5px",
-                    right: "-5px",
-                    color: "#FFB600",
-                    background: "#D9D9D9",
-                    borderRadius: "50%",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => handleRemoveTag(index)}
-                />
               </div>
             ))}
           </div>
           <div className="mt-3">
-            <h6>แท็กแนะนำ:</h6>
+            <h6>แท็กแนะนำ</h6>
             <div className="d-flex flex-wrap gap-2">
               {suggestedTags.map((tag, index) => (
                 <button
                   key={index}
-                  className="btn btn-outline-warning rounded-pill px-3 py-1"
+                  className="border-0 ps-3 d-flex flex-row align-items-center"
                   onClick={() => handleSelectSuggestedTag(tag)}
                   disabled={tags.length >= 10 || tags.includes(tag)}
+                  style={{
+                    borderRadius: "12px",
+                    paddingBottom: "4.5px",
+                    paddingTop: "4.5px",
+                    paddingRight: "17px",
+                    background: "#E7E7E7",
+                    color: "#949494",
+                  }}
                 >
-                  {tag}
+                  <span
+                    className="text-truncate m-0"
+                    style={{
+                      fontSize: ".75rem",
+                      fontWeight: "500",
+                      maxWidth: "120px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    # {tag}
+                  </span>
+                  <IoAdd
+                    className="position-relative"
+                    style={{
+                      right: "-10px",
+                      color: "#E7E7E7",
+                      background: "#ffff",
+                      borderRadius: "5px",
+                      fontSize: "15px",
+                      cursor: "pointer",
+                    }}
+                  />
                 </button>
               ))}
             </div>
           </div>
-          <div className="d-flex flex-row justify-content-end align-items-center mt-3">
+          <div className="position-absolute bottom-0 start-0 w-100 p-3">
             <button
-              className="btn rounded-pill px-4 py-1 fw-medium"
+              className="px-4 py-1 fw-medium border-0 w-100"
               data-bs-toggle="offcanvas"
               data-bs-target="#addTagOffcanvas"
               aria-controls="addTagOffcanvas"
-              style={{ background: "#FFFF", border: "3px solid #FFB600" }}
+              style={{
+                background: "#FF8500",
+                borderRadius: "6px",
+                color: "#fff",
+              }}
               onClick={handleSaveTags}
               type="button"
             >

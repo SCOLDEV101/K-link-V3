@@ -201,7 +201,7 @@ function CreateGroupPage() {
               popup: "swal-popup-success",
             },
           });
-          // navigate(-1);
+          navigate(-1);
         } else {
           console.log("failed to create group");
           console.log(response.data);
