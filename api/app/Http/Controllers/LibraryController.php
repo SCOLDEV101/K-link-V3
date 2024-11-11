@@ -16,6 +16,7 @@ use App\Models\TagModel;
 use App\Models\NotifyModel;
 use App\Models\imageOrFileModel;
 use App\Models\MajorModel;
+use Illuminate\Support\Facades\Response;
 
 class LibraryController extends Controller
 {
@@ -122,8 +123,8 @@ class LibraryController extends Controller
             //-----------------------
 
             //----------- library part
-            if(gettype($request->input('majorID'))=="string"){
-                $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
+            if (gettype($request->input('majorID')) == "string") {
+                $majorDb = MajorModel::where('shortName', $request->input('majorID'))->first();
             }
             $libraryDb = LibraryModel::create([
                 'id' => $groupID,
@@ -389,7 +390,7 @@ class LibraryController extends Controller
     function librarydownloaded(Request $request)
     {
         $groupID = $request->input('groupID');
-        $libraryDb = GroupModel::where('groupID', $groupID)->with('library', 'leaderGroup')->first();
+        $libraryDb = GroupModel::where('groupID', $groupID)->with('library', 'library.imageOrFile')->first();
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -401,10 +402,14 @@ class LibraryController extends Controller
             'updated_at' => now(),
         ];
         if (LibraryModel::where('id', $groupID)->update($librarydata)) {
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'downloaded library success.'
-            ], 200);
+            $filePath = public_path("\\uploaded\\Library\\" . $libraryDb->library->imageOrFile->name);
+            if (!File::exists($filePath)) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'failed to download library.'
+                ], 404);;
+            }
+            return Response::download($filePath);
         } else {
             return response()->json([
                 'status' => 'failed',

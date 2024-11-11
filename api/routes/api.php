@@ -70,7 +70,6 @@ Route::group(['middleware' => ['api', 'auth:sanctum']], function () {
             Route::get('showAllGroup','showAllGroup');
             Route::post('createGroup','createGroup');
             Route::get('aboutGroup/{groupID}','aboutGroup');
-            Route::get('librarydownload/{groupID}','libraryurldownload');
             Route::post('downloaded','librarydownloaded');
             Route::group(['middleware' => 'leaderCheck'], function() {
                 Route::post('updateGroup/{groupID}','updateGroup');

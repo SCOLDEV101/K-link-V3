@@ -51,7 +51,7 @@ function AcceptFriendRequest() {
   
   const AcceptedOrRejected = async (groupID, uId, method) => {
     try {
-      const statusPost = await axios.post(config.SERVER_PATH + `/api/hobby/rejectOrAcceptMember/${groupID}`, { method: method, uID: uId } , { headers: headersAuth, withCredentials: true } );
+      const statusPost = await axios.post(config.SERVER_PATH + `/api/${groupType}/rejectOrAcceptMember/${groupID}`, { method: method, uID: uId } , { headers: headersAuth, withCredentials: true } );
       if (statusPost.data.status === 'ok') {
         setUpateStatus(!updateStatus);
       }

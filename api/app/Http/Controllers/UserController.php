@@ -153,7 +153,7 @@ class UserController extends Controller
             }
         }
 
-        $reportdata = [
+        $reportCreate = ReportedModel::create([
             'reportedID' => $request->input('id'),
             'reportedBy' => (int)auth()->user()->id,
             'type' => $request->input('type'),
@@ -161,15 +161,13 @@ class UserController extends Controller
             'detail' => $request->input('detail'),
             'created_at' => now(),
             'updated_at' => now(),
-        ];
-
-        $reportCreate = ReportedModel::insert($reportdata);
+        ]);
 
         if ($reportCreate) {
             $notifyData = [
                 'receiverID' => $receiver,
                 'senderID' => (int)auth()->user()->id,
-                'reportID' => (int)$reportCreate->id,
+                'reportID' => $reportCreate->id,
                 'postID' => $request->input('id'),
                 'type' => 'report',
                 'created_at' => now(),
@@ -314,17 +312,11 @@ class UserController extends Controller
             ], 404);
         };
 
-        $member = [];
-        foreach ($groupDb->member as $eachMember) {
-            $member[] = $eachMember->id;
-        }
+        $memberArray = $groupDb->member->pluck('id')->toArray();
 
-        $request = [];
-        foreach ($groupDb->request as $eachRequest) {
-            $request[] = $eachRequest->id;
-        }
+        $requestArray = $groupDb->request->pluck('id')->toArray();
 
-        if (!in_array($uID, $member)) {
+        if (!in_array($uID, $memberArray)) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'unauthorize.',
@@ -335,7 +327,7 @@ class UserController extends Controller
         $data = [];
 
         foreach ($userDb as $user) {
-            if (in_array($user->id, $member)) {
+            if (in_array($user->id, $memberArray)) {
                 // $data[] = [
                 //     'username' => $user->username,
                 //     'fullname' => $user->fullname,
@@ -344,14 +336,15 @@ class UserController extends Controller
                 //     'status' => 'member'
                 // ];
                 continue;
-            } else if (in_array($user->id, $request)) {
-                $data[] = [
-                    'username' => $user->username,
-                    'fullname' => $user->fullname,
-                    'email' => $user->email,
-                    'uID' => $user->id,
-                    'status' => 'request'
-                ];
+            } else if (in_array($user->id, $requestArray)) {
+                // $data[] = [
+                //     'username' => $user->username,
+                //     'fullname' => $user->fullname,
+                //     'email' => $user->email,
+                //     'uID' => $user->id,
+                //     'status' => 'request'
+                // ];
+                continue;
             } else {
                 $data[] = [
                     'username' => $user->username,
@@ -412,14 +405,9 @@ class UserController extends Controller
             ], 404);
         }
         
-        $memberArray = [];
-        foreach ($groupDb->member as $eachMember) {
-            $memberArray[] = $eachMember->id;
-        }
-        $requestArray = [];
-        foreach ($groupDb->request as $eachRequest) {
-            $requestArray[] = $eachRequest->id;
-        }
+        $memberArray = $groupDb->member->pluck('id')->toArray();
+
+        $requestArray = $groupDb->request->pluck('id')->toArray();
 
         if (in_array($userID, $memberArray)) {
             return response()->json([
@@ -435,6 +423,13 @@ class UserController extends Controller
             ], 400);
         }
 
+        $requestDb = RequestModel::create([
+            'userID' => $userID,
+            'groupID' => $groupDb->groupID,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $notifyDb = NotifyModel::create([
             'type' => 'invite',
             'postID' => $groupDb->groupID,
@@ -444,7 +439,7 @@ class UserController extends Controller
             'updated_at' => now(),
         ]);
 
-        if ($notifyDb) {
+        if ($notifyDb && $requestDb) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'invite friend success.',
