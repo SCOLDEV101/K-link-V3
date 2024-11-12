@@ -77,10 +77,10 @@ function EditMyAccount() {
       title: "ต้องการบันทึกหรือไม่?",
       showCancelButton: true,
       reverseButtons: true,
-      confirmButtonText: "ตกลง",
+      confirmButtonText: "บันทึก",
       cancelButtonText: "ยกเลิก",
       customClass: {
-        container: 'swal-container',
+        // container: 'swal-container',
         title: 'swal-title',
         popup: 'swal-popup',
         confirmButton: 'swal-confirm-button', 
@@ -119,7 +119,7 @@ function EditMyAccount() {
           timer: 2000,
           customClass: {
             title: 'swal-title-success',
-            container: 'swal-container',
+            // container: 'swal-container',
             popup: 'swal-popup-success',
           }
         });
@@ -133,7 +133,7 @@ function EditMyAccount() {
           timer: 2000,
           customClass: {
             title: 'swal-title-error',
-            container: 'swal-container',
+            // container: 'swal-container',
             popup: 'swal-popup-error',
           }
         });

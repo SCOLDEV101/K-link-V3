@@ -7,7 +7,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* background: linear-gradient(0deg, #F85B03, #F86A03, #F89603); */
   font-size: 16px;
-  background-color: #f6f6f6;  
+  background-color: #f6f6f6;
 }
 
 p {
@@ -31,69 +31,100 @@ code {
 }
 
 .swal-popup {
-  width: 95% !important; 
-  border-radius: 15px;  
-  box-shadow: 0 4px 14.8px 0 rgba(0, 0, 0, 0.2);   
+  width: 95% !important;
+  border-radius: 15px;
+  box-shadow: 0 4px 14.8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .swal-popup-success {
-  width: 75% !important; 
-  border-radius: 20px; 
-  background-color: #7CB518 ;    
+  width: 92% !important;
+  height: 35px;
+  border-radius: 5px;
+  background-color: #7CB518;
+  top: -28vh;
 }
 
 .swal-popup-error {
-  width: 75% !important; 
-  border-radius: 20px; 
-  background-color: #FF0101 ;    
+  width: 92% !important;
+  height: 35px;
+  border-radius: 5px;
+  background-color: #FF0101;
+  top: -28vh;
 }
 
 .swal-popup-report {
-  width: 75% !important; 
+  width: 75% !important;
   border-radius: 15px;
   border: 1px solid black;
-  background-color: #FFFFFF ;    
+  background-color: #FFFFFF;
 }
 
 .swal2-container.swal2-backdrop-show {
-  background: rgba(255, 255, 255,0.5);       
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .swal-title {
-  padding: 10px;  
-  border-radius: 20px 20px 0px 0px;               
-  color: rgb(0, 0, 0);   
-  font-size: medium;               
+  padding: 10px;
+  border-radius: 20px 20px 0px 0px;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  font-size: 20px;
+  top: 20%;
 }
 
 .swal-title-success {
-  border-radius: 20px 20px 0px 0px;               
-  color: rgb(0, 0, 0);   
-  font-size: medium;               
+  border-radius: 20px 20px 0px 0px;
+  color: rgb(255, 255, 255);
+  font-size: medium;
+  top: -5px;
+  z-index: 1070;
+  font-weight: 400;
 }
 
+.swal-container {
+  position: fixed !important;
+  top: -25%;
+  left: 17px;
+  right: 0%;
+  width: 90vw;
+}
+
+.swal2-center {
+  text-align: end;
+}
+
+
 .swal-confirm-button,
-  .swal-cancel-button,
-  .swal-confirmRed-button {
-    padding: 0.5rem 2.5rem 0.5rem 2.5rem !important;              
-    font-size: medium; 
-    color: rgb(255, 255, 255);    
-    border-radius: 10px;           
-  }
+.swal-cancel-button,
+.swal-confirmRed-button {
+  width: 45%;
+  height: 100%;
+  padding: 0.2rem 1.5rem !important;
+  
+  font-size: medium;
+  color: rgb(255, 255, 255);
+  border-radius: 10px;
+}
 
-  .swal-confirm-button {
-    background-color: #7CB518 !important;
-  }
+/* ตั้งค่าให้ปุ่ม confirm */
+.swal-confirm-button {
+  background-color: #7CB518 !important;
+}
 
-  .swal-cancel-button {
-    background-color: #D9D9D9 !important;
-    color: rgb(0, 0, 0)!important;
-  }
+/* ตั้งค่าให้ปุ่ม cancel */
+.swal-cancel-button {
+  background-color: #D9D9D9 !important;
+  color: rgb(0, 0, 0) !important;
+  font-size: 19px;
+  font-weight: 400;
+}
 
-  .swal-confirmRed-button {
-    background-color: #B3261E !important;
-  }
+.swal-confirmRed-button {
+  background-color: #B3261E !important;
+  font-size: 19px;
+  font-weight: 400;
+}
 
-  .swal2-actions {
-    margin: 0;
-  }
+.swal2-actions {
+  margin: 0;
+}

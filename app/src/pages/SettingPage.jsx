@@ -66,7 +66,7 @@ function SettingPage() {
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
       customClass: {
-        container: 'swal-container',
+        // container: 'swal-container',
         title: 'swal-title',
         popup: 'swal-popup',
         cancelButton: 'swal-cancel-button' ,
@@ -83,7 +83,7 @@ function SettingPage() {
       timer: 2000,
       customClass: {
         title: 'swal-title-success',
-        container: 'swal-container',
+        // container: 'swal-container',
         popup: 'swal-popup-success',
       }
     });
