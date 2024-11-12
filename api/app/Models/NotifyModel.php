@@ -13,7 +13,7 @@ class NotifyModel extends Model
         'id' => 'string',
     ];
     protected $fillable = [
-        'id' , 'receiverID' , 'senderID' , 'postID' , 'type'
+        'id' , 'receiverID' , 'senderID' , 'postID' , 'type' , 'reportID'
     ];
 
     use HasFactory;
@@ -27,7 +27,11 @@ class NotifyModel extends Model
     }    
 
     public function sender(): BelongsTo {
-        return $this->belongsTo(UserModel::class, 'senderID', 'id')->select('user_models.username', 'user_models.id');
+        return $this->belongsTo(UserModel::class, 'senderID', 'id')->select('user_models.username', 'user_models.id', 'user_models.imageOrFileID');
+    }    
+
+    public function report(): BelongsTo {
+        return $this->belongsTo(ReportedModel::class, 'reportID', 'id')->select('reported_models.title', 'reported_models.id');
     }    
 
     // public function library(): BelongsTo {

@@ -40,7 +40,7 @@ function PageImage({ url, pageNumber, setCurrentPage }) {
 }
 
 function AboutLibrary() {
-  const { id: hID } = useParams();
+  const { id : groupID } = useParams();
   const headersCookie = config.Headers().headers;
   const [fetchdataloading, setFetchdataLoading] = useState(true);
   const [timeoutReached, setTimeoutReached] = useState(false);
@@ -64,15 +64,14 @@ function AboutLibrary() {
   
 
   const fetchData = async () => {
-    console.log(hID);
+    console.log(groupID);
     try {
       const response = await axios.get(
-        `${config.SERVER_PATH}/api/library/aboutLibrary/${hID}`,
+        `${config.SERVER_PATH}/api/library/aboutGroup/${groupID}`,
         {
           headers: headersCookie,
         }
       );
-      console.log(response.data);
       if (response.data.status === "ok") {
         console.log("1");
         setFileData(response.data.data);
@@ -131,7 +130,7 @@ function AboutLibrary() {
                 fontSize:"14px"
               }}
             >
-              {currentPage} จาก {FileData.$totalpages}
+              {currentPage} จาก {FileData.totalpages}
             </div>
           </div>
         ) : (

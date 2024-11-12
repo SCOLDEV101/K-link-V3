@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import { IoGameController } from "react-icons/io5";
 import { FiBookOpen, FiFileText, FiFlag , FiInfo } from "react-icons/fi";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa";
-import { TbEye } from "react-icons/tb";
+import { TbEye , TbTrashFilled} from "react-icons/tb";
 import { LuShare2 } from "react-icons/lu";
 import { MdOutlineDownload } from "react-icons/md";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
@@ -22,36 +22,35 @@ function List({ listItem, fetchData }) {
 
   useEffect(() => {
     setItems(listItem);
-  }, [listItem]); //[items, listItem]
+  }, [listItem]); 
 
   useEffect(() => {
     const initialBookmarks = {};
     items.forEach((item) => {
-      initialBookmarks[item.hID] = item.bookmark;
+      initialBookmarks[item.groupID] = item.bookmark;
     });
     setBookmarks(initialBookmarks);
   }, [items]);
 
-  const sendBookmark = async (hID) => {
+  const sendBookmark = async (groupID) => {
     setBookmarks((prevBookmarks) => ({
       ...prevBookmarks,
-      [hID]: !prevBookmarks[hID],
+      [groupID]: !prevBookmarks[groupID],
     }));
-    if (hID !== "" && hID !== null) {
+    if (groupID !== "" && groupID !== null) {
       try {
         const response = await axios.post(
-          config.SERVER_PATH + `/api/user/addOrDeleteBookmark/${hID}`,
+          config.SERVER_PATH + `/api/user/addOrDeleteBookmark/${groupID}`,
           {},
           { headers: headersAuth, withCredentials: true }
         );
         if (response.data.status === "ok") {
-          // fetchData();
           console.log("bookmark success");
         }
       } catch (error) {
         setBookmarks((prevBookmarks) => ({
           ...prevBookmarks,
-          [hID]: prevBookmarks[hID],
+          [groupID]: prevBookmarks[groupID],
         }));
         console.error("There was an error fetching the members!", error);
       }
@@ -60,7 +59,7 @@ function List({ listItem, fetchData }) {
 
   const handleFeatureClick = (item) => {
     console.log("handleFeatureClick :", item);
-    setSelectedItemId(selectedItemId === null ? item.hID : null);
+    setSelectedItemId(selectedItemId === null ? item.groupID : null);
   };
 
   const handleClose = (event) => {
@@ -70,7 +69,7 @@ function List({ listItem, fetchData }) {
 
   const handleReportList = (item) => {
     navigate("/report", {
-      state: { caseID: "reportList", hID: item.hID, type: item.type },
+      state: { caseID: "reportList", groupID: item.groupID, type: item.type },
     });
   };
 
@@ -98,10 +97,6 @@ function List({ listItem, fetchData }) {
     return `${day} ${month} ${year}`;
   }
 
-  // function formatTime(timeStr) {
-  //   const [hour, minute] = timeStr.split(":");
-  //   return `${hour}.${minute} น.`;
-  // }
 
   const dayColors = {
     "จ.": "#FFB600",
@@ -162,7 +157,6 @@ function List({ listItem, fetchData }) {
         });
 
         console.log(status + " group success");
-        // fetchData();
       }
     } catch (err) {
       console.log(err);
@@ -180,7 +174,7 @@ function List({ listItem, fetchData }) {
     }
   };
 
-  const handleStatusUpdate = async (hID, newStatus) => {
+  const handleStatusUpdate = async (groupID, newStatus) => {
     let swalOptions = {
       showCancelButton: true,
       reverseButtons: true,
@@ -209,12 +203,12 @@ function List({ listItem, fetchData }) {
     if (result.isConfirmed) {
       setItems((prevItems) => {
         const updatedItems = prevItems.map((item) =>
-          item.hID === hID ? { ...item, userstatus: newStatus } : item
+          item.groupID === groupID ? { ...item, userstatus: newStatus } : item
         );
         console.log("Updated items:", updatedItems); 
         return updatedItems;
       });
-      handleButtonClick(hID, newStatus);
+      handleButtonClick(groupID, newStatus);
     }
   };
 
@@ -223,6 +217,80 @@ function List({ listItem, fetchData }) {
   const getDayOfWeek = (dateString) => {
     const date = new Date(dateString);
     return date.getDay(); 
+  };
+
+  const formatTime = (time) => {
+    if (!time) return ; 
+    const [hours, minutes] = time.split(":");
+    return `${hours}.${minutes} น.`;
+  }
+
+  const deleteGroup = async (groupID , feature) => {
+    const result = await Swal.fire({
+      title: "ยืนยันการลบกลุ่มหรือไม่?",
+      showCancelButton: true,
+      confirmButtonText: "ตกลง",
+      cancelButtonText: "ยกเลิก",
+      customClass: {
+        container: 'swal-container',
+        title: 'swal-title',
+        popup: 'swal-popup',
+        confirmButton: 'swal-confirm-button', 
+        cancelButton: 'swal-cancel-button'    
+      }
+    });
+  
+    if (result.isConfirmed) {
+    try {
+      await axios
+        .delete(config.SERVER_PATH + `/api/${feature}/deleteGroup/` + groupID, {
+          headers: config.Headers().headers,
+          withCredentials: true,
+        })
+        .then((res) => {
+          if (res.data.status === "ok") {
+            console.log("Delete success");
+            Swal.fire({
+              position: "center",
+              title: "ลบกลุ่มแล้ว",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: 'swal-title-success',
+                container: 'swal-container',
+                popup: 'swal-popup-error',
+              }
+            });
+            setItems(prevItems => prevItems.filter(item => item.groupID !== groupID));
+          } else {
+            Swal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: 'swal-title-success',
+                container: 'swal-container',
+                popup: 'swal-popup-error',
+              }
+            });
+          }
+        });
+    } catch (error) {
+      console.error("ERROR: ", error);
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
+    }
+  }
   };
 
 
@@ -252,10 +320,11 @@ function List({ listItem, fetchData }) {
           <div
             key={index}
             className={`list-item ${
-              selectedItemId === item.hID ? "highlighted zIndex-9999" : ""
+              selectedItemId === item.groupID ? "highlighted zIndex-9999" : ""
             }`}
           >
-            <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item?.leader}</p>
+            {item.leader && <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item.leader}</p> }
+            {item.teachBy && <p className="mx-4 mb-2" style={{fontSize:"14px"}}>@{item.teachBy}</p> }
             <div className="card p-3 border-0 mx-3" style={{ borderRadius: "15px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", }}>
               <div
                 onClick={(e) => {
@@ -272,13 +341,16 @@ function List({ listItem, fetchData }) {
               >
                 <img
                   src={
-                    item.type==="library" && item.thumbnail != null  ? `${config.SERVER_PATH}${item.thumbnail}`
-                     :item.image != null && item.image === "group-default.jpg"
-                      ? "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
-                    : item.image != null
+                    item.type==="library" &&  item.image  ?`${config.SERVER_PATH}${item.image}`
+                    : item.image
                       ? `${config.SERVER_PATH}/uploaded/hobbyImage/${item.image}`
-                      : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
+                      :  item.type === "hobby"  
+                      ? "../Hobby_Default_Cover.png"
+                      :  item.type === "library"  
+                      ? "../Library_Default_Cover.png"
+                      : "../Tutoring_Default_Cover.png"
                   }
+                  alt="group img"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -367,7 +439,7 @@ function List({ listItem, fetchData }) {
                      right: 0,
                      bottom: 0,
                      background:
-                       item.userstatus === "member"
+                       item.userstatus === "member" || item.role === "leader"
                          ? "linear-gradient(90deg, rgba(129,255,108,0.8) 0%, rgba(185,255,63,0.8) 100%)"
                          : "rgba(255, 255, 255, 0.8)",
                      borderRadius: "5px",
@@ -425,15 +497,15 @@ function List({ listItem, fetchData }) {
                     style={{ fontSize: "20px" }}
                     onClick={() => handleReportList(item)}
                   />
-                  {bookmarks[item.hID] ? (
+                  {bookmarks[item.groupID] ? (
                     <FaBookmark
                       style={{ fontSize: "20px", color: "#FFB600" }}
-                      onClick={() => sendBookmark(item.hID)}
+                      onClick={() => sendBookmark(item.groupID)}
                     />
                   ) : (
                     <FaRegBookmark
                       style={{ fontSize: "20px" }}
-                      onClick={() => sendBookmark(item.hID)}
+                      onClick={() => sendBookmark(item.groupID)}
                     />
                   )}
                 </div>
@@ -453,15 +525,16 @@ function List({ listItem, fetchData }) {
                 <p
                   className="m-0"
                   style={{
-                    color: "#625B71",
+                    color: "#49454F",
                     fontSize: "14px",
                     fontWeight: "bold",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
+                    maxWidth:"70vw",
                   }}
                 >
-                  {item.type === "library" ? item.Major : item.location}
+                  {item.type === "library" ? item.major : item.location}
                 </p>
                 <p
                   className="m-0"
@@ -473,34 +546,50 @@ function List({ listItem, fetchData }) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {item.type === "library" ? (
-                    "PDF | 120 หน้า"
-                  ) : item.type === "hobby" ? (
-                    item.actTime
-                  ) : item.type === "tutoring" ? (
-                    formatDateThai(item.date) +
-                    " | " +
-                    item.Starttime +
-                    " - " +
-                    item.Endtime
-                  ) : (
-                    <></>
-                  )}
+                    {item.type === "library" ? (
+                      item.totalpages ? `PDF | ${item.totalpages} หน้า` : null
+                    ) : item.type === "hobby" ? (
+                      `${formatTime(item.startTime)} - ${formatTime(item.endTime)}`
+                    ) : item.type === "tutoring" ? (
+                      `${formatDateThai(item.date)} | ${formatTime(item.Starttime)} - ${formatTime(item.Endtime)}`
+                    ) : (
+                      <></>
+                    )}
                 </p>
                 {item.detail && (
                   <p
-                    className="m-0"
+                    className="m-0 "
                     style={{
                       color: "#7B7B7B",
                       fontSize: "14px",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
+                      maxWidth:"70vw",
                     }}
                   >
                     {item.detail}
                   </p>
-                )} 
+                )}
+
+                {item.downloaded && (
+                  <p
+                    className="m-0 my-2"
+                    style={{
+                      color: "#949494",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth:"70vw",
+                    }}
+                  >
+                  ดาวน์โหลดแล้ว {item.downloaded.toLocaleString()} ครั้ง
+                  </p>
+                )}
+                
+                  
                 { item.weekDate &&
                 <div className="d-flex gap-2 my-2">
                   {item.weekDate.map((day, index) => (
@@ -571,7 +660,7 @@ function List({ listItem, fetchData }) {
             <div className="mt-3 mb-4 mx-3" style={{ maxWidth: "600px" }}>
               {/* {renderButtons(item)} */}
 
-              {item.hID === selectedItemId && (
+              {item.groupID === selectedItemId && (
                 <div style={{ maxWidth: "600px" }}>
                   {/* ==========[ CHANGE BTN ]=========== */}
                   {item.type === "library" ? (<>
@@ -583,14 +672,6 @@ function List({ listItem, fetchData }) {
                     <TbEye style={{ marginRight: "5px" }} />
                     ดูตัวอย่าง
                   </button>
-                    <button
-                    className="btn bg-white py-1 px-1 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
-                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.encodedfilename}`, "_blank", "noopener noreferrer")}
-                  >
-                    <MdOutlineDownload style={{marginRight:"5px" }}/>
-                    ดาวน์โหลด
-                  </button>
                   <button
                     className="btn bg-white py-1 px-2 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
@@ -599,39 +680,37 @@ function List({ listItem, fetchData }) {
                     <LuShare2 style={{ marginRight: "5px" }} />
                     แชร์
                   </button>
+                    <button
+                    className="btn bg-white py-1 px-2 my-auto mx-1"
+                    style={{ fontSize: "14.5px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
+                    onClick={() => window.open(`${config.SERVER_PATH}/uploaded/Library/${item.encodedfilename}`, "_blank", "noopener noreferrer")}
+                  >
+                    <MdOutlineDownload/>
+                  </button>
+                  {item.role === "leader" && 
+                    <button
+                    className="btn py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "15px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", backgroundColor:"#B3261E" }}
+                    onClick={() => {
+                      deleteGroup(item.groupID , item.type);
+                    }}
+                  >
+                    <TbTrashFilled className="text-white"/>
+                  </button>
+                    }
                   </>) 
                   : item.userstatus === "request" ? ( <>
                     <button
                       className="btn py-1 px-2 my-auto mx-1"
                       style={{ fontSize: "14px", borderRadius: "10px" , backgroundColor:"#B3261E" , color:"#E7E7E7" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
-                        // handleButtonClick(item.hID);
-                        handleStatusUpdate(item.hID, "join");
+                        handleStatusUpdate(item.groupID, "join");
                       }}
                     >
                       ยกเลิกคำขอ
                     </button>
 
                     </>
-                  ) : item.userstatus === "member" ? (
-                    <button
-                      className="btn bg-white py-1 px-2 my-auto mx-1"
-                      style={{ fontSize: "14px", borderRadius: "10px" ,boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
-                      onClick={() => {
-                        if (item.type === "hobby") {
-                          navigate("/abouthobbygroup", {
-                            state: { id: item.hID },
-                          });
-                        } else if (item.type === "tutoring") {
-                          navigate("/abouttutoringgroup", {
-                            state: { id: item.hID },
-                          });
-                        }
-                      }}
-                    >
-                      <FiInfo style={{marginRight:"5px" , marginBottom:"2px"}}/>
-                      เกี่ยวกับกลุ่ม
-                    </button>
                   ) : item.userstatus === "full" ? (
                     <button
                       className="btn bg-white py-1 px-2 my-auto mx-1"
@@ -640,28 +719,39 @@ function List({ listItem, fetchData }) {
                     >
                       กลุ่มเต็ม
                     </button>
-                  ) : (
+                  ) : item.userstatus === "join" ? (
                     <button
                       className="btn bg-white py-1 px-2 my-auto mx-1"
                       style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
                       onClick={() => {
-                        handleStatusUpdate(item.hID, "request");
+                        handleStatusUpdate(item.groupID, "request");
                       }}
                     >
                       เข้าร่วมกลุ่ม
                     </button>
+                  ) : (
+                    <></>
                   )}
                   {item.type !== "library" ? 
                   <>
                   <button
-                    className="btn bg-white py-1 px-2 my-auto mx-1"
-                    style={{ fontSize: "14px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
-                    onClick={() =>
-                      navigate("/members", { state: { id: item.hID } })
-                    }
-                  >
-                    สมาชิกกลุ่ม
-                  </button>
+                      className="btn bg-white py-1 px-2 my-auto mx-1"
+                      style={{ fontSize: "14px", borderRadius: "10px" ,boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)"}}
+                      onClick={() => {
+                        if (item.type === "hobby") {
+                          navigate("/abouthobbygroup", {
+                            state: { groupID: item.groupID },
+                          });
+                        } else if (item.type === "tutoring") {
+                          navigate("/abouttutoringgroup", {
+                            state: { groupID: item.groupID },
+                          });
+                        }
+                      }}
+                    >
+                      <FiInfo style={{marginRight:"5px" , marginBottom:"2px"}}/>
+                      เกี่ยวกับกลุ่ม
+                    </button>
                   <button
                     className="btn bg-white py-1 px-3 my-auto mx-1"
                     style={{ fontSize: "14px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)" }}
@@ -669,6 +759,17 @@ function List({ listItem, fetchData }) {
                   >
                     ปิด
                   </button>
+                  {item.role === "leader" && 
+                    <button
+                    className="btn py-1 px-3 my-auto mx-1"
+                    style={{ fontSize: "15px", borderRadius: "10px" , boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)", backgroundColor:"#B3261E" }}
+                    onClick={() => {
+                      deleteGroup(item.groupID , item.type);
+                    }}
+                  >
+                    <TbTrashFilled className="text-white"/>
+                  </button>
+                    }
                   </>
                       :<></>  }
                 </div>

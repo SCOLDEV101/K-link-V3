@@ -3,60 +3,62 @@ import { FilterTag } from "../components/FilterTag";
 import List from "../components/List";
 import axios from "axios";
 import config from "../constants/function";
+import { useInView } from "react-intersection-observer";
 
 function MyPost() {
-  const [listItem, setlistItem] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [listItem, setListItem] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [selectedCategoryNames, setSelectedCategoryNames] = useState([]);
+  const [selectedCategoryVariables, setSelectedCategoryVariables] = useState([]);
   const headersCookie = config.Headers().headers;
+  const itemsPerPage = 3;
+
+  const { ref, inView } = useInView({
+    threshold: 0,
+  });
 
   useEffect(() => {
-    fetchData();
+    fetchData(currentPage);
+  }, [currentPage]);
 
-    const loadingTimeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 5000);
+  useEffect(() => {
+    if (inView && hasMore && !isLoading) {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  }, [inView, hasMore, isLoading]);
 
-    return () => clearTimeout(loadingTimeout);
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = async (page) => {
     try {
-      await axios
-        .get(config.SERVER_PATH + `/api/user/myPost`, {
-          headers: headersCookie,
-        })
-        .then((res) => {
-          setIsLoading(false);
-          if (res.data.status === "ok") {
-            console.log("myPost res :", res.data.data);
-            setlistItem(res.data.data);
-          } else if (res.data.status === "failed") {
-            console.log("not found");
-            setlistItem([]);
-          }
-        })
-        .catch((err) => {
-          setIsLoading(false);
-          throw err.response.data;
-        });
+      setIsLoading(true);
+      const response = await axios.get(
+        `${config.SERVER_PATH}/api/user/myPost?page=${page}&perPage=${itemsPerPage}`,
+        { headers: headersCookie }
+      );
+      setIsLoading(false);
+      if (response.data.status === "ok") {
+        setListItem((prevList) => [...prevList, ...response.data.data]);
+        console.log(response.data.data);
+        if (response.data.data.length < itemsPerPage) {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
     } catch (error) {
       setIsLoading(false);
       console.error("Error fetching data: ", error);
     }
   };
 
-  const [selectedCategoryNames, setSelectedCategoryNames] = useState([]);
-  const [selectedCategoryVariables, setSelectedCategoryVariables] = useState(
-    []
-  );
-
   const categories = [
-    { name: "Hobby", checkVariable: "isHobby" },
-    { name: "Library", checkVariable: "isLibrary" },
-    { name: "Tutoring", checkVariable: "isTutoring" },
+    // { name: "Hobby", checkVariable: "isHobby" },
+    // { name: "Library", checkVariable: "isLibrary" },
+    // { name: "Tutoring", checkVariable: "isTutoring" },
     { name: "กลุ่มที่เข้าร่วมแล้ว", checkVariable: "isMember" },
     { name: "กลุ่มที่รอการตอบรับ", checkVariable: "isRequest" },
-    { name: "โพสต์ของฉัน", checkVariable: "isCreator" },
+    { name: "โพสต์ของฉัน", checkVariable: "isLeader" },
   ];
 
   const toggleCategoryName = (name, variableCheck) => {
@@ -67,13 +69,9 @@ function MyPost() {
     );
     setSelectedCategoryVariables((prevSelected) =>
       prevSelected.includes(variableCheck)
-        ? prevSelected.filter(
-            (checkVariable) => checkVariable !== variableCheck
-          )
+        ? prevSelected.filter((checkVariable) => checkVariable !== variableCheck)
         : [...prevSelected, variableCheck]
     );
-    console.log("log[" + selectedCategoryNames + "]");
-    console.log("log[" + selectedCategoryVariables + "]");
   };
 
   const filteredLists = selectedCategoryVariables.length
@@ -104,28 +102,13 @@ function MyPost() {
       <div
         className="position-relative"
         style={{
-          overflow: "auto",
+          overflowX:"hidden",
           overflowY: "scroll",
           maxWidth: "550px",
           width: "95vw",
         }}
       >
-        {isLoading ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "50vh",
-            }}
-          >
-            <l-tail-chase
-              size="40"
-              speed="1.75"
-              color="rgb(255,133,0)"
-            ></l-tail-chase>
-          </div>
-        ) : filteredLists.length > 0 ? (
+        {filteredLists.length > 0 ? (
           <List listItem={filteredLists} />
         ) : (
           <div
@@ -140,6 +123,19 @@ function MyPost() {
             ไม่มีโพสต์
           </div>
         )}
+        {isLoading && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "50vh",
+            }}
+          >
+            <l-tail-chase size="40" speed="1.75" color="rgb(255,133,0)"></l-tail-chase>
+          </div>
+        )}
+        <div ref={ref} style={{ height: "1px" }} />
       </div>
     </div>
   );

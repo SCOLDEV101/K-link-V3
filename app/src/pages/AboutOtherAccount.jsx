@@ -10,9 +10,11 @@ import "../index.css";
 const AboutOtherAccount = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const uID = location.state?.uID;
-  const role = location.state?.role;
-  const hID = location.state?.hID;
+  // const uID = location.state?.uID;
+  // const role = location.state?.role;
+  // const hID = location.state?.hID;
+  // const type = location.state || {};
+  const { uID, groupID, role, type } = location.state || {}; 
   const [memberinfo, setMemberInfo] = useState(null);
   const headersAuth = config.Headers().headers;
   const [fetchdataloading, setFetchdataLoading] = useState(true);
@@ -21,7 +23,7 @@ const AboutOtherAccount = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (fetchdataloading) {
-        setTimeoutReached(true);
+        setTimeoutReached(true);        
       }
     }, 10000);
 
@@ -35,7 +37,6 @@ const AboutOtherAccount = () => {
         const response = await axios.get(config.SERVER_PATH + `/api/user/memberInfo/${id}`, { headers: headersAuth, withCredentials: true });
         if (response.data.status === "ok") {
           console.log(response.data.data)
-          console.log(role);  
           setMemberInfo(response.data.data);
           setFetchdataLoading(false);
 
@@ -54,7 +55,7 @@ const AboutOtherAccount = () => {
     });
   };
 
-  const kickmember = async (uID, hID) => {
+  const kickmember = async (uID, groupID) => {
     const result = await Swal.fire({
       title: "ยืนยันลบสมาชิกหรือไม่?",
       showCancelButton: true,
@@ -72,7 +73,8 @@ const AboutOtherAccount = () => {
   
     if (result.isConfirmed) {
       try {
-        const response = await axios.post(`${config.SERVER_PATH}/api/hobby/kickMember/${hID}/${uID}`, {}, {
+        console.log(type);
+        const response = await axios.post(`${config.SERVER_PATH}/api/${type}/kickMember/${groupID}/${uID}`, {}, {
           headers: headersAuth,
           withCredentials: true
         });
@@ -168,13 +170,13 @@ const AboutOtherAccount = () => {
               <button className='border-0 p-2'  onClick={() => handleReportProfile(uID)} style={{borderRadius:"10px" , backgroundColor: "#E7E7E7"}}>
                 รายงาน
               </button>
-              <button className='border-0 p-2 text-white' onClick={() => kickmember(uID , hID)} style={{borderRadius:"10px" , backgroundColor:"#B3261E" , marginTop:"10px"}}>
+              <button className='border-0 p-2 text-white' onClick={() => kickmember(uID , groupID)} style={{borderRadius:"10px" , backgroundColor:"#B3261E" , marginTop:"10px"}}>
               <AiOutlineUsergroupDelete />
                ลบออกจากกลุ่ม
               </button>
               </div>
             </div>
-          ) : role === "user" ? (
+          ) : role === "normal" ? (
             <div
               className="card mx-3 mb-5"
               style={{

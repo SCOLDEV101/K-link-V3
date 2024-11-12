@@ -37,7 +37,7 @@ class GroupModel extends Model
 
     public function request(): BelongsToMany
     {
-        return $this->belongsToMany(UserModel::class, 'request_models', 'groupID', 'userID')->select('user_models.id', 'user_models.username');
+        return $this->belongsToMany(UserModel::class, 'request_models', 'groupID', 'userID')->select('user_models.id', 'user_models.username', 'request_models.created_at');
     }
 
     public function bookmark(): BelongsToMany
@@ -63,7 +63,7 @@ class GroupModel extends Model
     use HasFactory;
 
     public static $searchValidator = [
-        ['keyword' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u']],
+        ['keyword' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\-_.\s]+$/u']],
         ['keyword.regex' => 'keyword can only contain letters, numbers and whitespaces.']
     ];
 }

@@ -28,6 +28,7 @@ import AboutApp from "../pages/AboutApp";
 import LibraryCreatePost from "../pages/LibraryCreatePost";
 import ProtectedRoute from "../components/ProtectRoute";
 import AboutLibrary from "../pages/AboutLibrary";
+import AboutReport from "../pages/AboutReport";
 
 export const RouterPathAndName = [
     {
@@ -159,6 +160,11 @@ export const RouterPathAndName = [
         path: "/aboutapp",
         name: "เกี่ยวกับแอพ",
         element: <ProtectedRoute><Layout><AboutApp /></Layout></ProtectedRoute>,
+    },
+    {
+        path: "/aboutReport",
+        name: "รายงาน",
+        element: <ProtectedRoute><Layout><AboutReport /></Layout></ProtectedRoute>,
     },
 ];
 

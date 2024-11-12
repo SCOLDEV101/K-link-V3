@@ -110,7 +110,7 @@ function SettingPage() {
   const fetchData = async () => {
     try {
       await axios
-        .get(config.SERVER_PATH + `/api/user/aboutMyAccount`, {
+        .get(config.SERVER_PATH + `/api/user/memberInfo/`, {
           headers: headersCookie,
         })
         .then((res) => {
@@ -154,10 +154,10 @@ function SettingPage() {
               style={{ borderRadius: "50%", width: "70px", height: "70px" ,boxShadow: "inset 0px 4px 4px rgba(0, 0, 0, 0.25)"}}
             /> 
 
-            <div className="d-flex flex-column my-2">
+            <div className="d-flex flex-column my-3">
               <p className="m-0 fw-bold" style={{fontSize:"20px"}}>{profileData.username}</p>
               <p className="m-0"  style={{fontSize:"16px"}}>{profileData.fullname}</p>
-              <p className="m-0 fw-bold mb-3" style={{fontSize:"12px"}}>{profileData.telephone}</p>
+              <p className="m-0 fw-bold" style={{fontSize:"12px"}}>{profileData.telephone}</p>
             </div>
 
           </div>

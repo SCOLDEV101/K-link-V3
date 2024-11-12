@@ -1,31 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { MdGroupAdd } from "react-icons/md";
-import { FaSearch } from "react-icons/fa";
+import { IoSearch } from "react-icons/io5";
 import { useLocation } from "react-router-dom";
 import config from "../constants/function";
-
-// const data = {
-//   faculty1: {
-//     department1_1: ["major1_1_1", "major1_1_2", "major1_1_3"],
-//     department1_2: [
-//       "major1_2_1",
-//       "major1_2_2dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-//       "major1_2_3",
-//     ],
-//     department1_3: ["major1_3_1", "major1_3_2", "major1_3_3"],
-//   },
-//   faculty2: {
-//     department2_1: ["major2_1_1", "major2_1_2", "major2_1_3"],
-//     department2_2: ["major2_2_1", "major2_2_2", "major2_2_3"],
-//     department2_3: ["major2_3_1", "major2_3_2", "major2_3_3"],
-//   },
-//   faculty3: {
-//     department3_1: ["major3_1_1", "major3_1_2", "major3_1_3"],
-//     department3_2: ["major3_2_1", "major3_2_2", "major3_2_3"],
-//     department3_3: ["major3_3_1", "major3_3_2", "major3_3_3"],
-//   },
-// };
 
 const ListItem = ({ item, func }) => {
   const [buttonState, setButtonState] = useState(1);
@@ -36,7 +13,7 @@ const ListItem = ({ item, func }) => {
       const id = setTimeout(() => {
         setButtonState(3);
         console.log({ item });
-        func(item.uID); //<--- send data to API here
+        func(item.uID);
       }, 3000);
       setTimeoutId(id);
     }
@@ -53,67 +30,54 @@ const ListItem = ({ item, func }) => {
   };
 
   return (
-    <li
-      className="bg-white py-1 px-2 mx-3 mt-2"
-      style={{ borderRadius: "5px" }}
-    >
-      <div className="d-flex flex-row justify-content-between align-items-center gap-3">
-        <div
-          className="d-flex flex-column"
-          style={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            width: "calc(100% - 80px)",
-          }}
-        >
-          <h5
-            className="m-0"
+      <div className="d-flex flex-row justify-content-between align-items-center gap-3 my-2 flex-row"
+      >
+        <div className="d-flex align-items-center">
+          <img
+            src={
+              item.profileImage
+                ? `http://127.0.0.1:8000/uploaded/profileImage/${item.profileImage}`
+                : "./Empty-Profile-Image.svg"
+            }
+            alt="profile"
+            className="rounded-circle position-relative bg-dark"
+            style={{ width: "50px", height: "50px" }}
+          />
+          <div
+            className="ms-2 d-flex align-items-center text-break"
+            style={{ fontSize: ".8rem" }}
+          >
+                <span>
+                <span className="fw-bold">{item.username}</span>
+                <br />
+                <span>{item.fullname}</span>
+                <br />
+                <span className="fw-bold">{item.email}</span>
+              </span>
+          </div>
+        </div> 
+        <button
+            onClick={handleClick}
+            className="btn d-flex flex-row align-items-center justify-content-center gap-1 text-nowrap border-none"
             style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              background:
+                buttonState === 1
+                  ? "#F89603"
+                  : "#E7E7E7",
+              borderRadius: "10px",
+              width:"70px",
+              color: buttonState === 2 ? "#000000" : "#ffffff",
             }}
           >
-            {item.username}
-          </h5>
-          <small>{item.uID}</small>
-        </div>
-        <button
-          onClick={handleClick}
-          className="btn p-1 px-2 d-flex flex-row align-items-center gap-1 text-nowrap"
-          style={{
-            background:
-              buttonState === 1
-                ? "#FFB600"
-                : buttonState === 2
-                ? "transparent"
-                : "#7CB518",
-            border:
-              buttonState === 1
-                ? "none"
-                : buttonState === 2
-                ? "3px solid #FFB600"
-                : "none",
-            borderRadius: "10px",
-          }}
-        >
-          {/* <MdGroupAdd style={{ transform: "rotateY(180deg)" }} /> */}
-          {/* <span>ชวน</span> */}
-          {buttonState === 1 && (
-            <MdGroupAdd style={{ transform: "rotateY(180deg)" }} />
-          )}
-          {buttonState === 1 && "ชวน"}
-          {buttonState === 2 && "เลิกทำ"}
-          {buttonState === 3 && "ชวนแล้ว"}
-        </button>
+            {buttonState === 1 && "ชวน"}
+            {buttonState === 2 && "เลิกทำ"}
+            {buttonState === 3 && "ชวนแล้ว"}
+          </button>
       </div>
-    </li>
   );
 };
 
 const InviteFriend = () => {
-  // const items = Array.from({ length: 10 }, (_, i) => i + 1);
   const [Users, setUsers] = useState([]);
   const [filter, setFilter] = useState({
     filter_faculty: "",
@@ -121,7 +85,7 @@ const InviteFriend = () => {
     search_Field_Box: "",
   });
   const location = useLocation();
-  const hID = location.state?.id || {};
+  const groupID = location.state?.groupID || {};
   const headersAuth = config.Headers().headers;
 
   const handleChange = (e) => {
@@ -142,7 +106,7 @@ const InviteFriend = () => {
   };
 
   useEffect(() => {
-    getUsers(hID);
+    getUsers(groupID);
   }, []);
 
   useEffect(() => {
@@ -156,29 +120,16 @@ const InviteFriend = () => {
       }, 0);
       return () => clearTimeout(timer);
     } else {
-      getUsers(hID);
+      getUsers(groupID);
     }
   }, [filter.search_Field_Box]);
 
-  // useEffect(() => {
-  //   if (filter.filter_faculty) {
-  //     sendFilterToApi({ filter_faculty: filter.filter_faculty });
-  //   }
-  // }, [filter.filter_faculty]);
-
-  // useEffect(() => {
-  //   if (filter.filter_major) {
-  //     sendFilterToApi({ filter_major: filter.filter_major });
-  //   }
-  // }, [filter.filter_major]);
-
-  // const getMajors = (faculty) => Object.values(data[faculty]).flat();
 
   const sendFilterToApi = async (filter) => {
     try {
       console.log("Filter:", JSON.stringify(filter));
       const response = await axios.post(
-        config.SERVER_PATH + `/api/searching/searchInvite/${hID}`,
+        config.SERVER_PATH + `/api/searching/searchInvite/${groupID}`,
         { keyword: filter.search_Field_Box },
         { headers: headersAuth, withCredentials: true }
       );
@@ -192,10 +143,10 @@ const InviteFriend = () => {
     }
   };
 
-  const getUsers = async (hID) => {
+  const getUsers = async (groupID) => {
     try {
       const Users = await axios.get(
-        config.SERVER_PATH + `/api/user/invitePage/${hID}`,
+        config.SERVER_PATH + `/api/user/invitePage/${groupID}`,
         { headers: headersAuth, withCredentials: true }
       );
       if (Users.data.status === "ok") {
@@ -211,7 +162,7 @@ const InviteFriend = () => {
     try {
       await axios
         .post(
-          config.SERVER_PATH + `/api/user/inviteFriend/${hID}`,
+          config.SERVER_PATH + `/api/user/inviteFriend/${groupID}`,
           { receiver: uId },
           { headers: headersAuth, withCredentials: true }
         )
@@ -228,36 +179,45 @@ const InviteFriend = () => {
         height: "100vh",
         overflow: "hidden",
         paddingTop: "95px",
-        background: "linear-gradient(0deg, #F85B03, #F86A03, #F89603)",
+        background: "#F6F6F6",
       }}
     >
-      <form className="px-1" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group mt-3">
           <div
-            className="d-flex flex-row align-items-center gap-2 rounded-pill px-3 py-1 w-100"
+            className="bg-white py-4 px-3 my-3 mx-3 border-none"
             style={{
-              background: "#D9D9D9",
-              boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
-            }}
+              borderRadius:"10px",
+              boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+              }} 
           >
+          <p className="my-0">ค้นหา</p>
+          <div className="row row-cols-lg-auto g-3 align-items-center px-2">
+            <div className="col-10" style={{paddingLeft:"0"}}>
             <input
               type="text"
-              className="form-control"
-              placeholder="Search..."
+              className="form-control py-2 px-3 "
+              placeholder="ค้นหาชื่อเพื่อนหรือรหัสนักศึกษา"
               name="search_Field_Box"
               value={filter.search_Field_Box}
               onChange={handleChange}
               style={{
-                outline: "none",
                 background: "transparent",
-                border: "none",
                 boxShadow: "none",
+                borderRadius:"5px",
               }}
             />
-            <FaSearch style={{ fontWeight: "bold", fontSize: "24px" }} />
+            </div>
+            <div className="col-2 py-2 text-center" style={{
+              backgroundColor:"#F89603",
+              borderRadius:"5px",
+            }}
+            onClick={(e) => e.preventDefault()}
+            >
+            <IoSearch className="text-white" style={{ fontWeight: "bold", fontSize: "24px" }} />
+            </div>
           </div>
         </div>
-      </form>
+        </div>
       <div
         className="mt-3" // bg-secondary
         style={{
@@ -267,14 +227,25 @@ const InviteFriend = () => {
           overflowX: "hidden",
         }}
       >
+    <div
+      className="bg-white py-2 px-2 mx-3 my-3 border-none"
+      style={{
+        borderRadius:"10px",
+        boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+        }} 
+    >
         <ul className="list-unstyled m-0 p-0">
-          {Users.length > 0 &&
+          {Users.length ? (
             Users.map((item, i) => (
               <ListItem key={i} item={item} func={InviteFriend} />
-            ))}
+            ))
+          ) : (
+            <p className="py-4 my-0 text-center" style={{ color: "#979797" }}>-- ไม่พบผู้ใช้ --</p>
+          )}
         </ul>
       </div>
     </div>
+  </div>
   );
 };
 

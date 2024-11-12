@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { IoIosNotifications } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RouterPathAndName } from "../constants/routes";
-import { FaArrowLeft } from "react-icons/fa";
 import { MdInfoOutline } from "react-icons/md";
+import { IoIosArrowBack } from "react-icons/io";
+
 
 
 function Header({ groupName, FileData }) {
@@ -36,6 +37,7 @@ function Header({ groupName, FileData }) {
     "/aboutapp",
     "/librarycreatepost",
     "/aboutlibrary",
+    "/aboutReport",
   ];
   const bigHeader = [
     "/aboutaccount",
@@ -44,7 +46,7 @@ function Header({ groupName, FileData }) {
     "/aboutapp",
   ];
   const noHeader = ["/", "/search"];
-  const noNotifyIcon = ["/notification", "/aboutlibrary"];
+  const noNotifyIcon = ["/notification", "/aboutlibrary", "/aboutReport"];
 
   const showBackButton =
     backButton.some((path) => location.pathname.startsWith(path)) ||
@@ -70,7 +72,7 @@ function Header({ groupName, FileData }) {
           className="container-fluid d-flex flex-row justify-content-between align-items-center mx-3"
         >
           {showBackButton ? (
-            <FaArrowLeft
+            <IoIosArrowBack
               onClick={() => {
                 if (location.pathname === "/aboutmyaccount") {
                   navigate("/setting");
@@ -78,10 +80,11 @@ function Header({ groupName, FileData }) {
                   navigate(-1);
                 }
               }}
+              className="fw-bold"
               style={{
-                color: "#fff",
-                width: "23px",
-                height: "23px",
+                color: "#ffffff",
+                width: "24px",
+                height: "24px",
               }}
             />
           ) : (
@@ -193,10 +196,10 @@ const Modal = ({ isOpen, onClose, FileData }) => {
       >
         <p className="fw-bold text-center" style={{color:"#FF8500" , fontSize:"20px"}}>{FileData?.filename}.pdf</p>
         <div className="p-4" style={{backgroundColor:"#F6F6F6", border:"1px solid #E7E7E7", borderRadius:"5px"}}>
-        <p style={{fontSize:"16px" , marginBottom:"10px"}}>วิชา : {FileData?.subject}</p>
-        <p style={{fontSize:"16px", marginBottom:"10px"}}>คณะ : {FileData?.filename}</p>
+        <p style={{fontSize:"16px" , marginBottom:"10px"}}>วิชา : {FileData?.name}</p>
+        <p style={{fontSize:"16px", marginBottom:"10px"}}>คณะ : {FileData?.faculty}</p>
         <p style={{fontSize:"16px", marginBottom:"10px"}}>ขนาดไฟล์ : {formatFileSize(FileData?.filesizeInBytes)}</p>
-        <p style={{fontSize:"16px", marginBottom:"10px"}}>จำนวนหน้า : {FileData?.$totalpages} หน้า</p>
+        <p style={{fontSize:"16px", marginBottom:"10px"}}>จำนวนหน้า : {FileData?.totalpages} หน้า</p>
         <p style={{fontSize:"16px", marginBottom:"10px"}}>เจ้าของ : {FileData?.owner}</p>
         <p style={{fontSize:"16px", marginBottom:"10px"}}>อัปโหลดเมื่อ : {formatDate(FileData?.uploadDate)}</p>
       </div>

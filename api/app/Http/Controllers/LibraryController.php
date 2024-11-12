@@ -15,6 +15,8 @@ use App\Models\GroupTagModel;
 use App\Models\TagModel;
 use App\Models\NotifyModel;
 use App\Models\imageOrFileModel;
+use App\Models\MajorModel;
+use Illuminate\Support\Facades\Response;
 
 class LibraryController extends Controller
 {
@@ -25,10 +27,10 @@ class LibraryController extends Controller
             ->orderBy('updated_at', 'DESC')
             ->paginate(8);
 
-        if (!$libraryDb) {
+        if (sizeof($libraryDb) <= 0) {
             return response()->json([
                 'status' => 'failed',
-                'message' => 'library not found.',
+                'message' => 'group not found.',
             ], 404);
         }
 
@@ -121,11 +123,14 @@ class LibraryController extends Controller
             //-----------------------
 
             //----------- library part
+            if (gettype($request->input('majorID')) == "string") {
+                $majorDb = MajorModel::where('shortName', $request->input('majorID'))->first();
+            }
             $libraryDb = LibraryModel::create([
                 'id' => $groupID,
                 'imageOrFileID' => $imageOrFile->id,
                 'facultyID' => $request->input('facultyID'),
-                'majorID' => $request->input('majorID') ?? null,
+                'majorID' => $majorDb->id ?? $request->input('majorID'),
                 'departmentID' => $request->input('departmentID') ?? null,
                 'name' => $request->input('activityName'),
                 'detail' => $request->input('detail') ?? null,
@@ -141,7 +146,7 @@ class LibraryController extends Controller
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'create library success.',
-                    'hID' => $groupID,
+                    'groupID' => $groupID,
                 ], 200);
             }
             //-----------------------
@@ -220,7 +225,6 @@ class LibraryController extends Controller
             }
         } else {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->first();
-
         }
         //--------------------------
 
@@ -235,7 +239,7 @@ class LibraryController extends Controller
             'detail' => $request->input('detail') ?? null,
             'updated_at' => now()
         ]);
-        $groupDb = GroupModel::where('groupID',$groupID)->update([
+        $groupDb = GroupModel::where('groupID', $groupID)->update([
             'updated_at' => now()
         ]);
         //--------------------------
@@ -301,6 +305,7 @@ class LibraryController extends Controller
             'major' => $groupDb->library->major->nameEN ?? 'none',
             'department' => $groupDb->library->department->name ?? 'none',
             'filename' => $originname,
+            'name' => $groupDb->library->name,
             'owner' => $groupDb->library->leaderGroup->username,
             'uploadDate' => $groupDb->created_at,
             'filesizeInBytes' => $filesize,
@@ -385,7 +390,7 @@ class LibraryController extends Controller
     function librarydownloaded(Request $request)
     {
         $groupID = $request->input('groupID');
-        $libraryDb = GroupModel::where('groupID', $groupID)->with('library', 'leaderGroup')->first();
+        $libraryDb = GroupModel::where('groupID', $groupID)->with('library', 'library.imageOrFile')->first();
         if (!$libraryDb) {
             return response()->json([
                 'status' => 'failed',
@@ -397,10 +402,14 @@ class LibraryController extends Controller
             'updated_at' => now(),
         ];
         if (LibraryModel::where('id', $groupID)->update($librarydata)) {
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'downloaded library success.'
-            ], 200);
+            $filePath = public_path("\\uploaded\\Library\\" . $libraryDb->library->imageOrFile->name);
+            if (!File::exists($filePath)) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'failed to download library.'
+                ], 404);;
+            }
+            return Response::download($filePath);
         } else {
             return response()->json([
                 'status' => 'failed',

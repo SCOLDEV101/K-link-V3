@@ -32,7 +32,7 @@ class SearchController extends Controller
         } else {
             $groupDb = GroupModel::SELECT('group_models.*')->where([['group_models.status', 1]]);
         }
-        if (!empty($keyword)) {
+        if (!empty($keyword) && boolval($type == "hobby" || $type == "tutoring")) {
             $groupDb = $groupDb
                 ->LeftJoin($type.'_models', 'group_models.groupID', '=', $type."_models.id")
                 ->LeftJoin('group_tag_models', 'group_models.id', '=', 'group_tag_models.groupID')
@@ -47,12 +47,32 @@ class SearchController extends Controller
                         ->orwhere('user_models.username', 'like', "%$keyword%")
                     ;
                 })->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'member', 'request', 'groupDay', 'groupTag', 'bookmark','tutoring','tutoring.imageOrFile','tutoring.leaderGroup','tutoring.faculty','tutoring.major',
-                    'tutoring.department','library', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department'])
+                    'tutoring.department'])
                 ->orderBy('group_models.updated_at', 'DESC')
                 ->paginate(8);
-        } else {
+        }
+        else if(!empty($keyword) && $type == "library"){
             $groupDb = $groupDb
-                ->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'member', 'request', 'groupDay', 'groupTag', 'bookmark',])
+                ->LeftJoin($type.'_models', 'group_models.groupID', '=', $type."_models.id")
+                ->LeftJoin('group_tag_models', 'group_models.id', '=', 'group_tag_models.groupID')
+                ->LeftJoin('tag_models', 'group_tag_models.tagID', '=', 'tag_models.id')
+                ->LeftJoin('user_models', $type.'_models.createdBy', '=', 'user_models.id')
+                ->where(function ($groupDb) use ($keyword,$type) {
+                    return $groupDb
+                        ->where("$type".'_models.name', 'like', "%$keyword%")
+                        ->orwhere('tag_models.name', 'like', "%$keyword%")
+                        ->orwhere('user_models.id', 'like', "%$keyword%")
+                        ->orwhere('user_models.username', 'like', "%$keyword%")
+                    ;
+                })->with(['member', 'request', 'groupDay', 'groupTag', 'bookmark',
+                    'library', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department'])
+                ->orderBy('group_models.updated_at', 'DESC')
+                ->paginate(8);
+        }
+        else {
+            $groupDb = $groupDb
+                ->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'member', 'request', 'groupDay', 'groupTag', 'bookmark','tutoring','tutoring.imageOrFile','tutoring.leaderGroup','tutoring.faculty','tutoring.major',
+                    'tutoring.department','library', 'library.imageOrFile', 'library.faculty', 'library.major', 'library.department'])
                 ->orderBy('group_models.updated_at', 'DESC')
                 ->paginate(8);
         }

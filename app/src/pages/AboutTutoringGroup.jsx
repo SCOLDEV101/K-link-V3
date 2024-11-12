@@ -1,31 +1,33 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { HiSearch } from "react-icons/hi";
-import { IoMdSettings } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FiLogOut , FiEdit3 } from "react-icons/fi";
+import { IoMdPersonAdd } from "react-icons/io";
 import config from "../constants/function";
-import { MdGroupAdd } from "react-icons/md";
+import Swal from "sweetalert2";
+
 
 function AboutTutoringGroup() {
   const navigate = useNavigate();
   const location = useLocation();
-  const hID = location.state?.id || {};
+  const headersAuth = config.Headers().headers;
+  const groupID = location.state?.groupID || {};
   const [aboutGroupData_tutoring, setAboutGroupData_tutoring] = useState({});
   const [_Error_, set_Error_] = useState(false);
   useEffect(() => {
-    Get_About_Tutoring_Group_Data(hID);
+    Get_About_Tutoring_Group_Data(groupID);
   }, []);
 
-  async function Get_About_Tutoring_Group_Data(hID) {
-    if (hID !== null || hID !== undefined) {
+  async function Get_About_Tutoring_Group_Data(groupID) {
+    if (groupID !== null || groupID !== undefined) {
       try {
         const request = await axios.get(
-          config.SERVER_PATH + `/api/tutoring/aboutGroup/${hID}`,
+          config.SERVER_PATH + `/api/tutoring/aboutGroup/${groupID}`,
           { headers: config.Headers().headers, withCredentials: true }
         );
         if (request.data.status === "ok") {
           set_Error_(false);
-          console.log("tutoring/aboutGroup/" + hID, request.data.data);
+          console.log("tutoring/aboutGroup/" + groupID, request.data.data);
           setAboutGroupData_tutoring(request.data.data);
         } else {
           console.error("Something went wrong !, please try again.");
@@ -38,6 +40,17 @@ function AboutTutoringGroup() {
     }
   }
 
+  const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+
+const dayColors = {
+  "จ.": "#FFB600",
+  "อ.": "#EFB8C8",
+  "พ.": "#7CB518",
+  "พฤ.": "#F96E20",
+  "ศ.": "#729BC0",
+  "ส.": "#A970C4",
+  "อา.": "#B3261E",
+};
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -67,12 +80,120 @@ function AboutTutoringGroup() {
     return `${hours}:${minutes}`;
   };
 
+  const getDayOfWeek = (dateString) => {
+    const date = new Date(dateString);
+    return date.getDay(); 
+  };
+
+  const leaveGroup = async (groupID) => {
+    const userConfirmed = window.confirm("Do you want to leave this group?");
+    if (!userConfirmed) {
+      return;
+    }
+    try {
+      const response = await axios.post(
+        config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
+        {
+          headers: headersAuth,
+          withCredentials: true,
+        }
+      );
+      if (response.data.status === "ok") {
+        console.log("leave group success");
+        navigate("/hobby")
+      }
+    } catch (error) {
+      console.error("There was an error leaving the group!", error);
+    }
+  };
+
+  const handleButtonClick = async (id, status) => {
+    try {
+      const res = await axios.post(
+        config.SERVER_PATH + `/api/user/joinGroup/${id}`,
+        {},
+        { headers: headersAuth, withCredentials: true }
+      );
+
+      if (res.data.status === "ok") {
+        let successMessage = "ส่งคำขอเข้าร่วมกลุ่มแล้ว";
+
+        if (status === "join") {
+          successMessage = "ยกเลิกคำขอเข้าร่วมกลุ่มแล้ว";
+        }
+
+        Swal.fire({
+          position: "center",
+          title: successMessage,
+          showConfirmButton: false,
+          timer: 2000,
+          customClass: {
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-success",
+          },
+        });
+
+        console.log(status + " group success");
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-error",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
+    }
+  };
+
+  const handleStatusUpdate = async (groupID, newStatus) => {
+    let swalOptions = {
+      showCancelButton: true,
+      reverseButtons: true,
+      cancelButtonText: "ยกเลิก",
+      customClass: {
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        cancelButton: "swal-cancel-button",
+      },
+    };
+
+    if (newStatus === "request") {
+      swalOptions.title = "ต้องการขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText = "ตกลง";
+      swalOptions.customClass.confirmButton = "swal-confirm-button";
+    } else if (newStatus === "join") {
+      swalOptions.title = "ยกเลิกคำขอเข้าร่วมกลุ่มหรือไม่?";
+      swalOptions.confirmButtonText = "ยกเลิกคำขอ";
+      swalOptions.customClass.confirmButton = "swal-confirmRed-button";
+    }
+
+    const result = await Swal.fire(swalOptions);
+
+    if (result.isConfirmed) {
+      setAboutGroupData_tutoring((prevData) => ({
+        ...prevData,
+        userstatus: newStatus,
+      }));
+      handleButtonClick(groupID, newStatus);
+    }
+  };
+
+  
+
   return (
     <div
       className="container-fluid d-flex justify-content-center m-0 px-0"
       style={{
-        background: "linear-gradient(0deg, #FB6204, #F68302)",
-        height: "100vh",
+        background: "#F6F6F6",
+        height: "auto",
         overflow: "hidden",
       }}
     >
@@ -82,217 +203,444 @@ function AboutTutoringGroup() {
           : Page not found !!!
         </div>
       ) : (
+        <div className="container-fluid d-flex justify-content-center my-5">
         <div
-          className="w-100"
+          className="card mt-5 border-0"
           style={{
-            overflowY: "auto",
-            padding: "60px 10px",
-            scrollbarWidth: "none",
+            minWidth: "15rem",
+            width: "100%",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
           }}
         >
           <div
-            className="card mt-5 border-0"
-            style={{
-              minWidth: "15rem",
-              width: "100%",
-              borderRadius: "20px",
-              boxShadow: "5px 5px 0px rgba(0, 0, 0, .25)",
-            }}
+            className="position-absolute me-2 cursor-pointer"
+            style={{ fontSize: "40px", right: "0px", color: "#949494" }}
           >
-            {aboutGroupData_tutoring.role && (
-              <div
-                className="position-absolute me-2 cursor-pointer"
-                style={{ fontSize: "40px", right: "0px", color: "#949494" }}
-              >
-                <IoMdSettings
-                  onClick={() => {
-                    navigate("/tutoringeditgroup", {
-                      state: {
-                        groupData: aboutGroupData_tutoring,
-                        status: "update",
-                        hID: hID,
-                      },
-                    });
+          </div>
+          <div className="card-body">
+          <p
+              className="text-start my-0 mt-3"
+            >
+              ชื่อกลุ่ม
+            </p>
+            <p
+              className="text-start p-2 text-wrap"
+              style={{color: "#979797" ,borderRadius:"5px",border: "1px solid #E7E7E7"}}
+            >
+              {aboutGroupData_tutoring.activityName}
+            </p>
+            <div className="position-relative mx-auto my-1"
+                  style={{
+                    width: "100%",
+                    height: "25vw",
+                    maxHeight: "200px",
+                    maxWidth: "450px",
                   }}
-                />
-              </div>
-            )}
-            <div className="card-body mt-5">
-              <h1 className="fw-bolder mb-3" style={{ fontSize: "50px" }}>
-                {aboutGroupData_tutoring.activityName || ""}
-              </h1>
-              <div className="ps-2 mb-4">
-                <h5 className="mb-0">
-                  ผู้สอน: {aboutGroupData_tutoring.teachBy || ""}
-                </h5>
-                {aboutGroupData_tutoring.subjectName && (
-                  <small className="fw-medium">
-                    วิชา: {aboutGroupData_tutoring.subjectName}
-                  </small>
-                )}
-                <small className="fw-bold">
-                  {aboutGroupData_tutoring.faculty || ""}
-                </small>
-              </div>
-
-              <h4 className="card-subtitle mt-2 mb-1">วันที่</h4>
-              <div
-                className="card"
-                style={{ minHeight: "50px", background: "#D9D9D9" }}
-              >
-                <div className="card-body p-2">
-                  <h2 className="text-center mb-0">
-                    {aboutGroupData_tutoring.date
-                      ? formatDate(aboutGroupData_tutoring.date)
-                      : "วัน เดือน ปี"}
-                  </h2>
-                </div>
-              </div>
-              <h4 className="card-subtitle mt-2 mb-1">เวลา</h4>
-              <div
-                className="card"
-                style={{ minHeight: "30px", background: "#D9D9D9" }}
-              >
-                <div className="card-body p-2">
-                  <h6 className="text-center mb-0">
-                    {formatTime(aboutGroupData_tutoring.Starttime) + " น." ||
-                      "-- : -- น."}{" "}
-                    -{" "}
-                    {formatTime(aboutGroupData_tutoring.Endtime) + " น." ||
-                      "-- : -- น."}
-                  </h6>
-                </div>
-              </div>
-              <h4 className="card-subtitle mt-2 mb-1">สถานที่</h4>
-              <div
-                className="card"
-                style={{ minHeight: "50px", background: "#D9D9D9" }}
-              >
-                <div className="card-body p-2">
-                  <h5 className="text-center mb-0">
-                    {aboutGroupData_tutoring.location || ""}
-                  </h5>
-                </div>
-              </div>
-              <Link
-                to={"/members"}
-                state={{
-                  id: aboutGroupData_tutoring.hID,
-                  name: aboutGroupData_tutoring.activityName,
-                }}
-                className="card text-decoration-none mt-3 px-2"
+                >
+              <img
+                src={
+                    aboutGroupData_tutoring.image != null && aboutGroupData_tutoring.image !== null 
+                    ? `${config.SERVER_PATH}/uploaded/hobbyImage/${aboutGroupData_tutoring.image}`
+                    : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
+                }
+                alt="image"
                 style={{
-                  background: "#D9D9D9",
-                  minHeight: "30px",
-                  width: "fit-content",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "5px",
+                  border: "1px solid #E7E7E7",
+                  boxShadow: "inset 0px 0px 5.6px 0px rgba(0, 0, 0, 0.25)",
                 }}
-              >
-                {aboutGroupData_tutoring.role !== null &&
-                  aboutGroupData_tutoring.request !== undefined &&
-                  aboutGroupData_tutoring.request > 0 && (
-                    <span
-                      className="position-absolute text-center text-white"
+              />
+            </div>
+            <div className="d-flex justify-content-around my-3">
+                  {daysThai.map((day, index) => {
+                    const currentDayIndex = getDayOfWeek(aboutGroupData_tutoring.date); 
+                    return(
+                    <p
+                      key={index}
+                      className="m-0"
                       style={{
-                        background: "#FF0101",
-                        width: "25px",
-                        height: "25px",
-                        right: "-10px",
-                        top: "-15px",
-                        borderRadius: "50%",
+                        paddingLeft:".35rem",
+                        paddingRight:".35rem", 
+                        color: index === currentDayIndex ? "#000000" : "#E7E7E7",
+                        fontSize: "18.95px",
+                        border:index === currentDayIndex ? `1.35px solid ${dayColors[day]}` : "1.35px solid #E7E7E7" ,
+                        borderRadius:
+                          day === "อา." || day === "พฤ." ? "15px" : "50%",
                       }}
                     >
-                      {aboutGroupData_tutoring.request &&
-                      aboutGroupData_tutoring.request <= 9
-                        ? aboutGroupData_tutoring.request
-                        : "9+"}{" "}
-                    </span>
-                  )}
-                <div className="d-flex flex-row justify-content-between align-items-center gap-2 mx-auto">
-                  <p className="m-0 text-dark">
-                    สมาชิก:
-                    <span className="m-0" style={{ color: "#7CB518" }}>
-                      &nbsp;
-                      {aboutGroupData_tutoring.member
-                        ? aboutGroupData_tutoring.member
-                        : 0}{" "}
-                      &nbsp;
-                    </span>
-                    /&nbsp;
-                    {aboutGroupData_tutoring.memberMax
-                      ? aboutGroupData_tutoring.memberMax
-                      : "ไม่จำกัด"}
-                  </p>
-                  <span>
-                    <HiSearch style={{ color: "#FF8500" }} />
+                      {day}
+                    </p>
+                      )})}
+                </div>
+                <div>
+            <p
+              className="text-start my-1"
+            >
+              คณะ
+            </p>
+            <p
+              className="text-center px-2 py-1 my-1"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #625B71"}}
+            >
+            {aboutGroupData_tutoring.faculty ? aboutGroupData_tutoring.faculty : "-"}
+              </p>
+            </div>
+                <div>
+            <p
+              className="text-start my-1"
+            >
+              ภาควิชา
+            </p>
+            <p
+              className="text-center px-2 py-1 my-1"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #625B71"}}
+            >
+            {aboutGroupData_tutoring.major ? aboutGroupData_tutoring.major : "-"}
+              </p>
+            </div>
+                <div>
+            <p
+              className="text-start my-1"
+            >
+              สาขา
+            </p>
+            <p
+              className="text-center px-2 py-1"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #625B71"}}
+            >
+            {aboutGroupData_tutoring.section ? aboutGroupData_tutoring.section : "-"}
+              </p>
+            </div>
+
+            <div>
+            <p
+              className="text-start my-0"
+            >
+             วันที่ 
+            </p>
+            <p
+              className="text-start p-2"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+            >
+             {aboutGroupData_tutoring.date ? `${formatDate(aboutGroupData_tutoring.date)}` :"-"}
+              </p>
+            </div>
+
+            <div className="row row-cols-lg-auto g-3 align-items-center">
+              <div className="col-5">
+                <div>
+                <p
+              className="text-start my-0"
+            >
+              ตั้งแต่
+            </p>
+            <p
+              className="text-start border px-2 py-1"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+            >
+              {aboutGroupData_tutoring.startTime
+                      ? aboutGroupData_tutoring.startTime.slice(0, 5)
+                      : "-:-"}
+            </p>
+  
+                </div>
+              </div>
+              <div className="col-2 p-auto px-0"> 
+                <p className="text-center my-auto fw-bold"
+                style={{fontSize:"20px"}}
+                >-</p>
+              </div>
+              <div className="col-5">
+              <div>
+                <p
+              className="text-start my-0 "
+            >
+              จนถึง
+            </p>
+            <p
+              className="text-start border px-2 py-1"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+            >
+              {aboutGroupData_tutoring.endTime
+                      ? aboutGroupData_tutoring.endTime.slice(0, 5)
+                      : "-:-"}
+            </p>
+                </div>
+              </div>
+            </div>
+            <p
+              className="text-start my-0 "
+            >
+              จำนวนสมาชิก
+            </p>
+            <div className="row row-cols-lg-auto g-3 align-items-center">
+                <div className="col-8">
+            <p
+              className="text-start border px-2 py-1"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+            >
+              &nbsp;{aboutGroupData_tutoring.member ? aboutGroupData_tutoring.member : 0}
+                        &nbsp;
+                      /&nbsp;
+                      {aboutGroupData_tutoring.memberMax
+                        ? aboutGroupData_tutoring.memberMax || aboutGroupData_tutoring.memberMax === 0
+                        : "ไม่จำกัด"}
+            </p>
+                </div>
+                <div className="col-4">
+                <Link
+                    to={"/members"}
+                    state={{
+                      groupID: aboutGroupData_tutoring.groupID,
+                      name: aboutGroupData_tutoring.activityName,
+                      type: aboutGroupData_tutoring.type,
+                    }}
+                    className="text-decoration-none position-relative"
+                  >
+                    {aboutGroupData_tutoring.role === "leader" &&
+                      aboutGroupData_tutoring.request !== undefined &&
+                      aboutGroupData_tutoring.request > 0 && (
+                        <span
+                          className="position-absolute text-center text-white"
+                          style={{
+                            background: "#FF4800",
+                            width: "25px",
+                            height: "25px",
+                            borderRadius: "50%",
+                            top: "-5px", 
+                            right: "-5px",
+                          }}
+                        >
+                          {aboutGroupData_tutoring.request && aboutGroupData_tutoring.request <= 9
+                            ? aboutGroupData_tutoring.request
+                            : "9+"}
+                        </span>
+                      )}
+                    <p
+                      className="text-center border px-2 py-1"
+                      style={{
+                        color: "#000000",
+                        borderRadius: "5px",
+                        backgroundColor: "#E7E7E7",
+                      }}
+                    >
+                      ดูสมาชิก
+                    </p>
+                  </Link>
+                </div>
+            </div>
+            <div>
+            <p
+              className="text-start my-0"
+            >
+              สถานที่
+            </p>
+            <p
+              className="text-start p-2"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+            >
+            {aboutGroupData_tutoring.location ? aboutGroupData_tutoring.location : "-"}
+              </p>
+            </div>
+            <div>
+            <p
+              className="text-start my-0"
+            >
+              รายละเอียด
+            </p>
+            <p
+              className="text-start p-2"
+              style={{color: "#979797" ,borderRadius:"5px" ,border: "1px solid #E7E7E7"}}
+            >
+            {aboutGroupData_tutoring.detail ? aboutGroupData_tutoring.detail : "-"}
+              </p>
+            </div>
+            <div>
+            <p
+              className="text-start my-0"
+            >
+              Tag
+            </p>
+  
+            <div
+              className="card mb-3"
+              style={{ minHeight: "130px", background: "#ffffff",borderRadius:"5px" ,border: "1px solid #E7E7E7" }}
+            >
+              <div
+                className="p-2 d-flex flex-row flex-wrap align-items-start gap-2" //card-body
+              >
+                {aboutGroupData_tutoring.tag !== undefined &&
+                  aboutGroupData_tutoring.tag.map((tag) => (
+                    <div
+                      key={tag}
+                      className="badge text-dark px-3 py-2"
+                      style={{
+                        background: "#FFB600",
+                        boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
+                        flex: "0 1 calc(25% - 0.5rem)", // Adjust this to fit 4 items per row
+                        marginBottom: "0.5rem",
+                        borderRadius:"2.5px",
+                      }}
+                    >
+                      {tag}
+                    </div>
+                  ))}
+              </div>
+            </div>
+            </div>
+  
+            {aboutGroupData_tutoring.role === "leader" &&
+          aboutGroupData_tutoring.userstatus === "member" ? (
+            <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
+              <div className="col-10">
+                <Link
+                  to={"/hobbyeditgroup"}
+                  state={{
+                    groupData: aboutGroupData_tutoring,
+                    status: "update",
+                    groupID: groupID,
+                  }}
+                  className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
+                  style={{
+                    background: "#FFB600",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <span
+                    className="text-dark text-decoration-none mt-1"
+                    style={{ fontSize: "20px" }}
+                  >
+                    แก้ไขกลุ่ม
                   </span>
-                </div>
-              </Link>
-              <h4 className="card-subtitle mt-2 mb-1">รายละเอียด</h4>
-              <div
-                className="card"
-                style={{ minHeight: "130px", background: "#D9D9D9" }}
-              >
-                <div className="card-body p-2">
-                  <h5 className="ps-2 mb-0">
-                    {aboutGroupData_tutoring.detail || ""}
-                  </h5>
-                </div>
+                  <FiEdit3
+                    className="mx-2"
+                    style={{
+                      fontSize: "20px",
+                      color: "#000000",
+                    }}
+                  />
+                </Link>
               </div>
-              <h4 className="card-subtitle my-2">Tag</h4>
-              <div
-                className="card mb-3"
-                style={{ minHeight: "130px", background: "#D9D9D9" }}
-              >
-                <div className="p-2 d-flex flex-row flex-wrap align-items-start gap-2">
-                  {aboutGroupData_tutoring.tag !== undefined &&
-                    aboutGroupData_tutoring.tag.split(",").map((tag) => (
-                      <div
-                        key={tag}
-                        className="badge rounded-pill text-dark px-3 py-2"
-                        style={{
-                          background: "#FFB600",
-                          boxShadow: "3px 3px 2px rgba(0, 0, 0, .25)",
-                          flex: "0 1 calc(25% - 0.5rem)",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        {tag}
-                      </div>
-                    ))}
-                </div>
+              <div className="col-2">
+                <p
+                  onClick={() =>
+                    navigate("/invitefriend", {
+                      state: {
+                        groupID: aboutGroupData_tutoring.groupID,
+                        name: aboutGroupData_tutoring.activityName,
+                      },
+                    })
+                  }
+                  className="text-white text-center border-none my-0 px-1 py-2 "
+                  style={{
+                    backgroundColor: "#7CB518",
+                    borderRadius: "10px",
+                    fontSize: "22.67px",
+                  }}
+                >
+                  <IoMdPersonAdd style={{ transform: "scaleX(-1)" }} />
+                </p>
               </div>
-              <div className="d-flex justify-content-center align-items-center">
+            </div>
+          ) : aboutGroupData_tutoring.userstatus === "member" ? (
+            <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
+              <div className="col-10">
                 <Link
                   to={"/invitefriend"}
                   state={{
-                    id: aboutGroupData_tutoring.hID,
+                    groupID: aboutGroupData_tutoring.groupID,
                     name: aboutGroupData_tutoring.activityName,
                   }}
-                  className="text-decoration-none px-3 py-2 rounded-pill d-flex flex-row align-items-center"
+                  className="text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
                   style={{
-                    background: "#7CB518",
-                    boxShadow: "4px 4px 0px rgba(0, 0, 0, .25)",
+                    background: "#FFB600",
+                    borderRadius: "10px",
                   }}
                 >
-                  <MdGroupAdd
-                    className=""
+                  <span
+                    className="text-dark text-decoration-none mt-1"
+                    style={{ fontSize: "20px" }}
+                  >
+                    เพิ่มเพื่อน
+                  </span>
+                  <IoMdPersonAdd
+                    className="mx-2"
                     style={{
-                      fontSize: "30px",
-                      color: "white",
+                      fontSize: "20px",
+                      color: "#000000",
                       transform: "scaleX(-1)",
                     }}
                   />
-                  <span className="text-dark ms-2 fw-bold text-decoration-none">
-                    เชิญเพื่อนเข้ากลุ่ม
-                  </span>
                 </Link>
               </div>
+              <div className="col-2">
+                <p
+                  onClick={() => leaveGroup(aboutGroupData_tutoring.groupID)}
+                  className="text-white text-center border-none my-0 px-1 py-2 "
+                  style={{
+                    backgroundColor: "#B3261E",
+                    borderRadius: "10px",
+                    fontSize: "22.67px",
+                  }}
+                >
+                  <FiLogOut />
+                </p>
+              </div>
             </div>
+          ) : aboutGroupData_tutoring.userstatus !== "member" &&
+            aboutGroupData_tutoring.role !== "leader" ? (
+            <>
+              <div>
+                <button
+                  className="w-100 text-decoration-none px-3 py-2 d-flex align-items-center justify-content-center"
+                  style={{
+                    background:
+                      aboutGroupData_tutoring.userstatus === "join"
+                        ? "#7CB518"
+                        : aboutGroupData_tutoring.userstatus === "request"
+                        ? "#B3261E"
+                        : aboutGroupData_tutoring.userstatus === "full"
+                        ? "#E7E7E7"
+                        : "transparent",
+                    borderRadius: "10px",
+                    border: "none",
+                  }}
+                  disabled={aboutGroupData_tutoring.userstatus === "full"}
+                  onClick={() => {
+                    if (aboutGroupData_tutoring.userstatus === "join") {
+                      handleStatusUpdate(aboutGroupData_tutoring.groupID, "request");
+                    } else if (aboutGroupData_tutoring.userstatus === "request") {
+                      handleStatusUpdate(aboutGroupData_tutoring.groupID, "join");
+                    } else if (aboutGroupData_tutoring.userstatus === "full") {
+                      return;
+                    }
+                  }}
+                >
+                  <span
+                    className="text-white text-decoration-none mt-1"
+                    style={{ fontSize: "20px" }}
+                  >
+                    {aboutGroupData_tutoring.userstatus === "join" && "ขอเข้าร่วมกลุ่ม"}
+                    {aboutGroupData_tutoring.userstatus === "request" && "ยกเลิกคำขอเข้าร่วมกลุ่ม"}
+                    {aboutGroupData_tutoring.userstatus === "full" && "กลุ่มเต็ม"}
+                  </span>
+                </button>
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
           </div>
         </div>
+      </div>
       )}
     </div>
   );
 }
 
 export default AboutTutoringGroup;
+

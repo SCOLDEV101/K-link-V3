@@ -361,7 +361,7 @@ function FilterTagList() {
       {/* =====================================[ List form filter ]===================================== */}
       <div className="">
         {filteredLists.map((list) => (
-          <div key={list.hID}>{list.activityName}</div>
+          <div key={list.groupID}>{list.activityName}</div>
         ))}
       </div>
     </div>

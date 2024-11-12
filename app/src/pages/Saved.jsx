@@ -46,7 +46,7 @@ function Saved() {
     { name: "Tutoring", checkVariable: "isTutoring" },
     { name: "กลุ่มที่เข้าร่วมแล้ว", checkVariable: "isMember" },
     { name: "กลุ่มที่รอการตอบรับ", checkVariable: "isRequest" },
-    { name: "โพสต์ของฉัน", checkVariable: "isCreator" },
+    { name: "โพสต์ของฉัน", checkVariable: "isLeader" },
   ];
 
   const toggleCategoryName = (name, variableCheck) => {
