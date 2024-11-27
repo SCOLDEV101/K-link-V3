@@ -185,7 +185,7 @@ class HobbyModelFactory extends Factory
 
         $hobby = [
             'id' => $this->idGeneration(),
-            'imageOrFileID' => $this->faker->randomElement([1,4,5,6,7]),
+            'imageOrFileID' => $this->faker->randomElement([1]),
             'name' => $this->faker->randomElement($activityNames),
             'memberMax' => $this->faker->randomElement([$memberMax, null]),
             'location' => $this->faker->randomElement($locations),
