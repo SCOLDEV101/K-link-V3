@@ -79,7 +79,7 @@ class LibraryModelFactory extends Factory
             'facultyID' => $facultyID,
             'majorID' => $majorID,
             'departmentID' => $departmentID,
-            'imageOrFileID' => $this->faker->randomElement([15,16]),
+            'imageOrFileID' => $this->faker->randomElement([3]),
             'name' => $this->faker->randomElement($activityNames),
             'detail' => $this->faker->randomElement($details),
             'createdBy' => $createdBy,
