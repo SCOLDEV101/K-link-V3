@@ -60,10 +60,16 @@ code {
 }
 
 .swal-title {
-  padding: 10px;  
+  padding: 10px; 
+  padding-top: 1.25em; 
   border-radius: 20px 20px 0px 0px;               
   color: rgb(0, 0, 0);   
   font-size: medium;               
+}
+
+.swal2-html-container {
+  padding: 5px !important;  
+  font-size: small !important;            
 }
 
 .swal-title-success {
@@ -75,7 +81,7 @@ code {
 .swal-confirm-button,
   .swal-cancel-button,
   .swal-confirmRed-button {
-    padding: 0.5rem 2.5rem 0.5rem 2.5rem !important;              
+    padding: 0.5rem 3.5rem 0.5rem 3.5em !important;              
     font-size: medium; 
     color: rgb(255, 255, 255);    
     border-radius: 10px;           
