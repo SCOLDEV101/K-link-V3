@@ -179,7 +179,7 @@ class MyPostResource extends JsonResource
             return [
                 'groupID' => $this->library->id,
                 'type' => $this->type,
-                'image' => '/pdfImage/' . basename($this->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg' ?? "/uploaded/hobbyImage/library-group-default.png",
+                'image' => '/uploaded/hobbyImage/library-group-default.png',//'/uploaded/hobbyImage/'.$this->library->imageOrFile->name,
                 'tag' => $tags,
                 'activityName' => $this->library->name,
                 'faculty' => $this->library->faculty->nameTH ?? $this->library->major->nameEN ?? 'Unknown',

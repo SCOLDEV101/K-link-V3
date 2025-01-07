@@ -161,7 +161,7 @@ class BookmarkResource extends JsonResource
             return [
                 'groupID' => $this->group->library->id,
                 'type' => $this->group->type,
-                'image' => '/pdfImage/' . basename($this->group->library->imageOrFile->name, '.pdf') . '/output_page_1.jpg',
+                'image' => '/uploaded/hobbyImage/library-group-default.png',//'/uploaded/hobbyImage/'.$this->library->imageOrFile->name,
                 'tag' => $tags,
                 'activityName' => $this->group->library->name,
                 'faculty' => $this->group->library->faculty->nameTH ?? $this->group->library->major->nameEN ?? 'Unknown',
