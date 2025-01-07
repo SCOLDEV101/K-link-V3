@@ -4,7 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RouterPathAndName } from "../constants/routes";
 import { MdInfoOutline } from "react-icons/md";
 import { IoIosArrowBack } from "react-icons/io";
-
+import Swal from 'sweetalert2'
+import "../index.css";
 
 
 function Header({ groupName, FileData }) {
@@ -47,10 +48,33 @@ function Header({ groupName, FileData }) {
   ];
   const noHeader = ["/", "/search"];
   const noNotifyIcon = ["/notification", "/aboutlibrary", "/aboutReport"];
+  const pathsToDiscard = ["/tutoringcreategroup", "/tutoringeditgroup" , "/hobbycreategroup", "/hobbyeditgroup","/librarycreatepost",];
 
   const showBackButton =
     backButton.some((path) => location.pathname.startsWith(path)) ||
     [...backButton, ...bigHeader].includes(location.pathname);
+
+
+  const DiscardChange = async () => {
+      const result = await Swal.fire({
+        title: "ออกจากหน้านี้?",
+        showCancelButton: true,
+        reverseButtons: true, 
+        html: "ข้อมูลจะไม่ถูกบันทึก ต้องการออกหรือไม่",
+        confirmButtonText: "ออก",
+        cancelButtonText: "ยกเลิก",
+        customClass: {
+          container: 'swal-container',
+          title: 'swal-title swal-titlediscard',
+          popup: 'swal-popup',
+          cancelButton: 'swal-cancel-button' ,
+          confirmButton: 'swal-confirmRed-button', 
+        }
+      });
+    if (result.isConfirmed) {
+      navigate(-1);
+    }
+    };
 
   return (
     <>
@@ -76,7 +100,11 @@ function Header({ groupName, FileData }) {
               onClick={() => {
                 if (location.pathname === "/aboutmyaccount") {
                   navigate("/setting");
-                } else {
+                } 
+                else if (pathsToDiscard.includes(location.pathname)) {
+                  DiscardChange();
+                }
+                else {
                   navigate(-1);
                 }
               }}
