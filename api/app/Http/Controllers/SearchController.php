@@ -48,6 +48,7 @@ class SearchController extends Controller
                     ;
                 })->with(['hobby', 'hobby.imageOrFile', 'hobby.leaderGroup', 'member', 'request', 'groupDay', 'groupTag', 'bookmark','tutoring','tutoring.imageOrFile','tutoring.leaderGroup','tutoring.faculty','tutoring.major',
                     'tutoring.department'])
+                ->distinct()
                 ->orderBy('group_models.updated_at', 'DESC')
                 ->paginate(8);
         }

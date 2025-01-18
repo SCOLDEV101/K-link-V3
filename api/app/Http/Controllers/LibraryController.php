@@ -271,18 +271,32 @@ class LibraryController extends Controller
         }
 
         //--- get original filename
-        $encodedname = $groupDb->library->imageOrFile->name;
-        $arrayname = preg_split('/-|[.s]/', $encodedname, -1, PREG_SPLIT_NO_EMPTY);
-        $intersect = array_search('-', $arrayname) + 1;
-        $fileoriginname = $arrayname[$intersect];
-        $filePath = public_path('uploaded\\Library\\' . $groupDb->library->imageOrFile->name);
-
-        if (file_exists($filePath)) {
-            $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
-            $filesize = filesize($filePath);
-        } else {
+        if (!isset($groupDb->library->imageOrFile->name)) {
             $originname = 'not found';
             $filesize = 0;
+        } else {
+            //--- รับชื่อไฟล์ที่เข้ารหัส
+            $encodedname = $groupDb->library->imageOrFile->name;
+        
+            //--- แยกชื่อไฟล์โดยใช้ '-', '.', และ ' ' เป็นตัวแบ่ง
+            $arrayname = preg_split('/[-. ]/', $encodedname, -1, PREG_SPLIT_NO_EMPTY);
+        
+            //--- ค้นหาตำแหน่งของ '-' ถ้าพบ ให้ดึงค่าหลังจากนั้น 1 ตำแหน่ง
+            $intersect = array_search('-', $arrayname);
+            $fileoriginname = ($intersect !== false && isset($arrayname[$intersect + 1])) ? $arrayname[$intersect + 1] : $encodedname;
+        
+            //--- ระบุพาธของไฟล์
+            $filePath = public_path('uploaded/Library/' . $encodedname);
+        
+            //--- ตรวจสอบว่าไฟล์มีอยู่จริง
+            if (file_exists($filePath)) {
+                //--- ลบตัวเลข ช่องว่าง จุด และขีดกลางที่ขึ้นต้นชื่อไฟล์ออก
+                $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
+                $filesize = filesize($filePath);
+            } else {
+                $originname = 'not found';
+                $filesize = 0;
+            }
         }
         //-------------------------
 
