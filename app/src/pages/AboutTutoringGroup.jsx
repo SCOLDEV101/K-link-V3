@@ -86,10 +86,21 @@ const dayColors = {
   };
 
   const leaveGroup = async (groupID) => {
-    const userConfirmed = window.confirm("Do you want to leave this group?");
-    if (!userConfirmed) {
-      return;
-    }
+    const result = await Swal.fire({
+            title: "ออกจากกลุ่มนี้?",
+            showCancelButton: true,
+            reverseButtons: true, 
+            confirmButtonText: "ยืนยัน",
+            cancelButtonText: "ยกเลิก",
+            customClass: {
+              container: 'swal-container',
+              title: 'swal-title swal-titlediscard',
+              popup: 'swal-popup',
+              cancelButton: 'swal-cancel-button' ,
+              confirmButton: 'swal-confirmRed-button', 
+            }
+          });
+        if (result.isConfirmed) {
     try {
       const response = await axios.post(
         config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
@@ -105,6 +116,7 @@ const dayColors = {
     } catch (error) {
       console.error("There was an error leaving the group!", error);
     }
+  }
   };
 
   const handleButtonClick = async (id, status) => {
@@ -498,7 +510,7 @@ const dayColors = {
             <div className="row row-cols-lg-auto g-3 align-items-center justify-content-center">
               <div className="col-10">
                 <Link
-                  to={"/hobbyeditgroup"}
+                  to={"/tutoringeditgroup"}
                   state={{
                     groupData: aboutGroupData_tutoring,
                     status: "update",

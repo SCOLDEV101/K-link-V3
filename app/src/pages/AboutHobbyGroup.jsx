@@ -32,7 +32,6 @@ function AboutHobbyGroup() {
       }
 
       const activeDaysArray = request.data.data.weekDate // <-- edit here too
-        .split(",")
         .map((day) => day.trim().replace(".", ""));
       setActiveDays(activeDaysArray);
     } catch (error) {
@@ -53,10 +52,21 @@ function AboutHobbyGroup() {
   };
 
   const leaveGroup = async (groupID) => {
-    const userConfirmed = window.confirm("Do you want to leave this group?");
-    if (!userConfirmed) {
-      return;
-    }
+       const result = await Swal.fire({
+               title: "ออกจากกลุ่มนี้?",
+               showCancelButton: true,
+               reverseButtons: true, 
+               confirmButtonText: "ยืนยัน",
+               cancelButtonText: "ยกเลิก",
+               customClass: {
+                 container: 'swal-container',
+                 title: 'swal-title swal-titlediscard',
+                 popup: 'swal-popup',
+                 cancelButton: 'swal-cancel-button' ,
+                 confirmButton: 'swal-confirmRed-button', 
+               }
+             });
+           if (result.isConfirmed) {
     try {
       const response = await axios.post(
         config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
@@ -72,6 +82,7 @@ function AboutHobbyGroup() {
     } catch (error) {
       console.error("There was an error leaving the group!", error);
     }
+  }
   };
 
   const handleButtonClick = async (id, status) => {
