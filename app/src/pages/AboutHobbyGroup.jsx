@@ -204,7 +204,7 @@ function AboutHobbyGroup() {
               src={
                 aboutGroupData.image != null && aboutGroupData.image !== null
                   ? `${config.SERVER_PATH}/uploaded/hobbyImage/${aboutGroupData.image}`
-                  : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
+                  : "../Default_Cover.png"
               }
               alt="image"
               style={{

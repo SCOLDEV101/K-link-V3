@@ -254,8 +254,8 @@ const dayColors = {
                 src={
                     aboutGroupData_tutoring.image != null && aboutGroupData_tutoring.image !== null 
                     ? `${config.SERVER_PATH}/uploaded/hobbyImage/${aboutGroupData_tutoring.image}`
-                    : "https://imagedelivery.net/LBWXYQ-XnKSYxbZ-NuYGqQ/c36022d2-4b7a-4d42-b64a-6f70fb40d400/avatarhd"
-                }
+                    : "../Default_Cover.png"
+                  }
                 alt="image"
                 style={{
                   width: "100%",

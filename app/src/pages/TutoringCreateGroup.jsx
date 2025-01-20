@@ -64,8 +64,8 @@ function TutoringCreateGroup() {
     sectionID: initialSectionID || "",
     date: groupData.date || "",
     memberMax: groupData.memberMax || "",
-    startTime: formatInitialTime(groupData.Starttime),
-    endTime: formatInitialTime(groupData.Endtime),
+    startTime: formatInitialTime(groupData.startTime),
+    endTime: formatInitialTime(groupData.endTime),
     location: groupData.location || "",
     detail: groupData.detail || "",
     tag: tags || "",
@@ -131,7 +131,17 @@ function TutoringCreateGroup() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (e.target.checkValidity() === false) {
-      alert("โปรดกรอกข้อมูลให้ครบถ้วน");
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
       e.stopPropagation();
     } else {
       console.log("Form data:", formData);
@@ -164,7 +174,7 @@ function TutoringCreateGroup() {
       
         if (result.isConfirmed) {
         const response = await axios.post(
-          config.SERVER_PATH + "/api/tutoring/update/" + groupID,
+          config.SERVER_PATH + "/api/tutoring/updateGroup/" + groupID,
           _newFormData_,
           { headers: headersAuth, withCredentials: true }
         );

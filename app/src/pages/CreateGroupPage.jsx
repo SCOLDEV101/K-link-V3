@@ -58,7 +58,17 @@ function CreateGroupPage() {
       setImage(selectedFile);
       event.target.value = "";
     } else {
-      alert("ไฟล์ที่คุณเลือกไม่รองรับ กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)");
+      Swal.fire({
+        position: "center",
+        title: "กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
       event.target.value = "";
     }
   };
@@ -261,7 +271,17 @@ function CreateGroupPage() {
       return;
     }
     if (!startTime || !endTime) {
-      alert("กรุณากรอกเวลา");
+      Swal.fire({
+        position: "center",
+        title: "กรุณากรอกเวลา",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
       Swal.fire({
         position: "center",
         title: "กรุณากรอกเวลา",

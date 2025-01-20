@@ -348,7 +348,9 @@ function List({ listItem, fetchData }) {
                       ? "../Hobby_Default_Cover.png"
                       :  item.type === "library"  
                       ? "../Library_Default_Cover.png"
-                      : "../Tutoring_Default_Cover.png"
+                      :  item.type === "tutoring"
+                      ? "../Tutoring_Default_Cover.png"
+                      : "../Default_Cover.png"
                   }
                   alt="group img"
                   style={{
@@ -534,7 +536,10 @@ function List({ listItem, fetchData }) {
                     maxWidth:"70vw",
                   }}
                 >
-                  {item.type === "library" ? item.major : item.location}
+                  {item.type === "library" ? 
+                  (item.major !== "Unknown" ? item.major : 
+                    (item.department !== "Unknown" ? item.department : item.faculty)) 
+                  : item.location}
                 </p>
                 <p
                   className="m-0"

@@ -69,7 +69,17 @@ function LibraryCreatePost() {
         console.log(file);
         setFile(file);
       } else {
-        alert("กรุณาอัปโหลดไฟล์ PDF เท่านั้น");
+        Swal.fire({
+                    position: "center",
+                    title: "กรุณาอัปโหลดไฟล์ PDF เท่านั้น",
+                    showConfirmButton: false,
+                    timer: 2000,
+                    customClass: {
+                      title: 'swal-title-success',
+                      container: 'swal-container',
+                      popup: 'swal-popup-error',
+                    }
+                  });
         e.target.value = null;
       }
     }
@@ -99,7 +109,17 @@ function LibraryCreatePost() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (e.target.checkValidity() === false) {
-      alert("โปรดกรอกข้อมูลให้ครบถ้วน");
+      Swal.fire({
+                  position: "center",
+                  title: "เกิดข้อผิดพลาด",
+                  showConfirmButton: false,
+                  timer: 2000,
+                  customClass: {
+                    title: 'swal-title-success',
+                    container: 'swal-container',
+                    popup: 'swal-popup-error',
+                  }
+                });
       e.stopPropagation();
     } else {
       console.log("Form data:", formData);
@@ -205,7 +225,20 @@ function LibraryCreatePost() {
   };
 
   const deleteGroup = async (hID) => {
-    alert("Are you sure you want to delete");
+              const result = await Swal.fire({
+                title: "ยืนยันการลบกลุ่มหรือไม่?",
+                showCancelButton: true,
+                confirmButtonText: "ตกลง",
+                cancelButtonText: "ยกเลิก",
+                customClass: {
+                  container: 'swal-container',
+                  title: 'swal-title',
+                  popup: 'swal-popup',
+                  confirmButton: 'swal-confirm-button', 
+                  cancelButton: 'swal-cancel-button'    
+                }
+              });
+    if (result.isConfirmed) {
     try {
       await axios
         .delete(config.SERVER_PATH + "/api/library/delete/" + hID, {
@@ -217,13 +250,34 @@ function LibraryCreatePost() {
             console.log("Delete tutoring group success");
             navigate("/tutoring");
           } else {
-            alert("Something went wrong: โปรดลองอีกครั้ง");
+            Swal.fire({
+                        position: "center",
+                        title: "เกิดข้อผิดพลาด",
+                        showConfirmButton: false,
+                        timer: 2000,
+                        customClass: {
+                          title: 'swal-title-success',
+                          container: 'swal-container',
+                          popup: 'swal-popup-error',
+                        }
+                      });
           }
         });
     } catch (error) {
       console.error("ERROR: ", error);
-      alert("error 500: SERVER ERROR");
+       Swal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                title: 'swal-title-success',
+                container: 'swal-container',
+                popup: 'swal-popup-error',
+              }
+            });
     }
+  }
   };
 
   return (
