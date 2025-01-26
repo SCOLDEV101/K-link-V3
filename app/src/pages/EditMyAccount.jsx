@@ -101,9 +101,9 @@ function EditMyAccount() {
         formData.append("aboutMe", EditprofileData.aboutMe);
   
         if (selectedImage) {
-          formData.append("profileImage", selectedImage); 
+          formData.append("image", selectedImage); 
         } else {
-          formData.append("profileImage", originalProfileImage); 
+          formData.append("image", originalProfileImage); 
         }
         console.log("formData :",formData)
         const responseUpdateProfile = await axios.post(

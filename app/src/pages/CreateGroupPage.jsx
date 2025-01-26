@@ -12,10 +12,10 @@ import "../index.css";
 function CreateGroupPage() {
   const navigate = useNavigate();
   const Location = useLocation();
-  const { groupData = {}, status, hID } = Location.state || {};
+  const { groupData = {}, status, groupID } = Location.state || {};
 
   const initialWeekDate = groupData.weekDate
-    ? groupData.weekDate.split(",").map((day) => day.trim())
+    ? groupData.weekDate.map((day) => day.trim())
     : [];
 
   const [activityName, setActivityName] = useState(
@@ -30,11 +30,9 @@ function CreateGroupPage() {
   const [detail, setDetail] = useState(groupData.detail || "");
   const [image, setImage] = useState(groupData.image || null);
   const [tags, setTags] = useState(() => {
-    if (groupData.tag && groupData.tag.trim() !== "") {
-      return groupData.tag.split(",").map((tag) => tag.trim());
-    }
-    return [];
+    return groupData?.tag?.map((tag) => tag.trim()) || [];
   });
+  
   const [tag, setTag] = useState(groupData.tag || "");
 
   const [imageSelected, setImageSelected] = useState(null);
@@ -42,11 +40,11 @@ function CreateGroupPage() {
 
   const headersAuth = config.Headers().headers;
 
-  const toggleDay = (indexOfDay) => {
-    if (weekDate.includes(indexOfDay)) {
-      setWeekDate(weekDate.filter((d) => d !== indexOfDay));
+  const toggleDay = (day) => {
+    if (weekDate.includes(day)) {
+      setWeekDate(weekDate.filter((d) => d !== day));
     } else {
-      setWeekDate([...weekDate, indexOfDay]);
+      setWeekDate([...weekDate, day]);
     }
   };
 
@@ -60,7 +58,17 @@ function CreateGroupPage() {
       setImage(selectedFile);
       event.target.value = "";
     } else {
-      alert("ไฟล์ที่คุณเลือกไม่รองรับ กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)");
+      Swal.fire({
+        position: "center",
+        title: "กรุณาเลือกไฟล์ภาพ (jpeg, png, gif)",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
       event.target.value = "";
     }
   };
@@ -263,7 +271,17 @@ function CreateGroupPage() {
       return;
     }
     if (!startTime || !endTime) {
-      alert("กรุณากรอกเวลา");
+      Swal.fire({
+        position: "center",
+        title: "กรุณากรอกเวลา",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
       Swal.fire({
         position: "center",
         title: "กรุณากรอกเวลา",
@@ -326,18 +344,20 @@ function CreateGroupPage() {
       }
       formData.append("tag", tags);
 
-      if (hID) {
-        console.log("HID : " + hID);
+      if (groupID) {
+        console.log("1");
+        console.log("groupID : " + groupID);
         for (const [key, value] of formData.entries()) {
           if (value instanceof File) {
             console.log(`${key}:`, value.name);
           } else {
+            console.log(weekDate);
             console.log(`${key}:`, value);
           }
         }
         try {
           const response = await axios.post(
-            config.SERVER_PATH + `/api/hobby/updateGroup/${hID}`,
+            config.SERVER_PATH + `/api/hobby/updateGroup/${groupID}`,
             formData,
             {
               headers: headersAuth,
@@ -390,16 +410,16 @@ function CreateGroupPage() {
     }
   };
 
-  const dayColors = {
-    "จ.": "#FFB600",
-    "อ.": "#EFB8C8",
-    "พ.": "#7CB518",
-    "พฤ.": "#F96E20",
-    "ศ.": "#729BC0",
-    "ส.": "#A970C4",
-    "อา.": "#B3261E",
-  };
-  const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+const dayColors = {
+  "จ.": "#FFB600",
+  "อ.": "#EFB8C8",
+  "พ.": "#7CB518",
+  "พฤ.": "#F96E20",
+  "ศ.": "#729BC0",
+  "ส.": "#A970C4",
+  "อา.": "#B3261E",
+};
+const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
 
   const DefaultImageUrl = [
     {
@@ -548,27 +568,26 @@ function CreateGroupPage() {
                   </p>
                 </label>
                 <div className="d-flex gap-2 my-2">
-                  {daysThai.map((day, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      className="m-0"
-                      style={{
-                        paddingLeft: ".40rem",
-                        paddingRight: ".40rem",
-                        color: "#000000",
-                        fontSize: "14px",
-                        border: `1.5px solid ${dayColors[day]}`,
-                        background: weekDate.includes(index) && `${dayColors[day]}`,
-                        borderRadius:
-                          day === "อา." || day === "พฤ." ? "15px" : "50%",
-                      }}
-                      onClick={() => toggleDay(index)}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
+                {daysThai.map((day, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className="m-0"
+                    style={{
+                      paddingLeft: ".40rem",
+                      paddingRight: ".40rem",
+                      color: "#000000",
+                      fontSize: "14px",
+                      border: `1.5px solid ${dayColors[day]}`,
+                      background: weekDate.includes(day) && `${dayColors[day]}`,
+                      borderRadius: day === "อา." || day === "พฤ." ? "15px" : "50%",
+                    }}
+                    onClick={() => toggleDay(day)} 
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
               </div>
               <div className="row my-2">
                 <div className="d-flex flex-row justify-content-center align-items-center">

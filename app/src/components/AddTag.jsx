@@ -12,8 +12,8 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
   const EditTags = initialTags ? initialTags : "";
 
   useEffect(() => {
-    if (EditTags && EditTags.trim() !== "") {
-      const tagsArray = EditTags.split(",").map((tag) => tag.trim());
+    if (EditTags !== "") {
+      const tagsArray = EditTags.map((tag) => tag.trim());
       setTags(tagsArray);
     }
   }, [EditTags]);
