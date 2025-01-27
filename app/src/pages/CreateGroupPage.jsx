@@ -159,9 +159,10 @@ function CreateGroupPage() {
     });
 
     if (result.isConfirmed) {
+      console.log(weekDate.join(","));
       const formData = new FormData();
       formData.append("activityName", activityName);
-      formData.append("weekDate", weekDate); //JSON.stringify(weekDate)
+      formData.append("weekDate", weekDate.join(","));
       formData.append("startTime", startTime);
       formData.append("endTime", endTime);
       formData.append("memberMax", memberMax);
@@ -172,19 +173,19 @@ function CreateGroupPage() {
         formData.append("image", defaultImage)
       } else if (image && (defaultImage === null)) {
         formData.append("image", image)
-        console.log(image);
+        // console.log(image);
       }
-      const tagsString = tags.join(", ");
-      console.log("Save tags:", tagsString);
+      const tagsString = tags.join(",");
+      // console.log("Save tags:", tagsString);
       if (tagsString) formData.append("tag", tagsString);
 
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`${key}:`, value.name); // แสดงชื่อไฟล์
-        } else {
-          console.log(`${key}:`, value);
-        }
-      }
+      // for (const [key, value] of formData.entries()) {
+      //   if (value instanceof File) {
+      //     console.log(`${key}:`, value.name); // แสดงชื่อไฟล์
+      //   } else {
+      //     console.log(`${key}:`, value);
+      //   }
+      // }
 
       try {
         const response = await axios.post(
@@ -329,7 +330,7 @@ function CreateGroupPage() {
     if (result.isConfirmed) {
       const formData = new FormData();
       formData.append("activityName", activityName);
-      formData.append("weekDate", weekDate); //JSON.stringify(weekDate)
+      formData.append("weekDate", weekDate.join(",")); //JSON.stringify(weekDate)
       formData.append("startTime", startTime);
       formData.append("endTime", endTime);
       formData.append("memberMax", memberMax);
@@ -337,22 +338,21 @@ function CreateGroupPage() {
       formData.append("detail", detail);
       if (image instanceof File) {
         formData.append("image", image);
-      } else if (image === null) {
+      }
+      else if (image && (image !== defaultImage && defaultImage)) {
+        formData.append("image", defaultImage)
+      } 
+      else {
         formData.append("image", null);
-      } else {
-        formData.append("image", groupData.image);
       }
       formData.append("tag", tags);
 
       if (groupID) {
-        console.log("1");
-        console.log("groupID : " + groupID);
         for (const [key, value] of formData.entries()) {
           if (value instanceof File) {
             console.log(`${key}:`, value.name);
           } else {
-            console.log(weekDate);
-            console.log(`${key}:`, value);
+console.log(`${key}:`, value, `Type: ${typeof value} ${value instanceof File ? '(File)' : ''}`);
           }
         }
         try {
@@ -527,7 +527,7 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                         height: "45px",
                         borderRadius: "5px",
                         border: "1.5px solid #E7E7E7",
-                        boxShadow: imageSelected === image ? "0 0 5px #FFB600" : "",
+                        boxShadow: imageSelected === image || (image !== null && imageSelected === null) ? "0 0 5px #FFB600" : "",
                       }}
                     />
                     :
@@ -550,6 +550,7 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                     src={item.src}
                     alt={item.alt}
                     style={{
+
                       width: "45px",
                       height: "45px",
                       borderRadius: "5px",
