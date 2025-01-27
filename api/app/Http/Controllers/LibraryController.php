@@ -73,15 +73,24 @@ class LibraryController extends Controller
             $path = public_path('uploaded/Library/');
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                $extension = $file->getClientOriginalExtension();
-                $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
-                $filename = $name . '.' . $extension;
-                $file->move($path, $filename);
+                $extension = strtolower($file->getClientOriginalExtension());
+                $allowedExtensions = ['pdf'];
 
-                $imageOrFile = imageOrFileModel::create([
-                    'name' => $filename
-                ]);
-                dispatch(new PdfToImage($filename));
+                if (in_array($extension, $allowedExtensions)) {
+                    $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
+                    $filename = $name . '.' . $extension;
+                    $file->move($path, $filename);
+
+                    $imageOrFile = imageOrFileModel::create([
+                        'name' => $filename
+                    ]);
+                    dispatch(new PdfToImage($filename));
+                } else {
+                    // Handle the error for unsupported file types
+                    return response()->json([
+                        'error' => 'Invalid file type. Only pdf is allowed.'
+                    ], 400);
+                }
             }
             //-----------------------
 
@@ -206,7 +215,15 @@ class LibraryController extends Controller
             //delete old file
 
             $file = $request->file('file');
-            $extension = $file->getClientOriginalExtension();
+            $extension = strtolower($file->getClientOriginalExtension());
+            $allowedExtensions = ['pdf'];
+
+            if (!in_array($extension, $allowedExtensions)) {
+                return response()->json([
+                    'error' => 'Invalid file type. Only pdf is allowed.'
+                ], 400);
+            }
+
             if ($groupDb->library->imageOrFile !== $request->input('file')) {
                 if (!empty($groupDb->library->imageOrFile) && File::exists($path . $groupDb->library->imageOrFile->name)) {
                     imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->delete(); // ลบ data on dby
