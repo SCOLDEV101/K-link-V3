@@ -134,12 +134,23 @@ class HobbyController extends Controller
             //----------------------groupday part
             if ($request->has('weekDate')) {
                 $days = explode(',', $request->input('weekDate'));
+                $dayMap = [
+                    'จ.' => 1,
+                    'อ.' => 2,
+                    'พ.' => 3,
+                    'พฤ.' => 4,
+                    'ศ.' => 5,
+                    'ส.' => 6,
+                    'อา.' => 7,
+                ];
                 //loop through array of days input and save to Db
                 foreach ($days as $day) {
                     //if array is empty then set day to today of weekday (it will has only one array)
                     if ($day == '' || $day == null) {
                         $day = (int)date('w');
                     }
+
+                    $day = $dayMap[$day];
                     GroupDayModel::create([
                         'dayID' => (int)$day,
                         'groupID' => $groupDb->id,
@@ -321,10 +332,20 @@ class HobbyController extends Controller
         }
         // -----------------------------
 
-        //-------- แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน
+        //-------- แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน รับเป็น จ.,อ.
         if ($request->has('weekDate')) {
             $deleteOldDay = GroupDayModel::where('groupID', $groupDb->id)->delete();
             $days = explode(',', $request->input('weekDate'));
+            $dayMap = [
+                'จ.' => 1,
+                'อ.' => 2,
+                'พ.' => 3,
+                'พฤ.' => 4,
+                'ศ.' => 5,
+                'ส.' => 6,
+                'อา.' => 7,
+            ];
+
             //loop through array of days input and save to Db
             foreach ($days as $day) {
                 //if array is empty then set day to today of weekday (it will has only one array)
@@ -332,6 +353,7 @@ class HobbyController extends Controller
                     $day = (int)date('w');
                 }
                 if (empty(GroupDayModel::where([['groupID', $groupDb->id], ['dayID', $day]])->first())) {
+                    $day = $dayMap[$day];
                     GroupDayModel::create([
                         'dayID' => (int)$day,
                         'groupID' => $groupDb->id,

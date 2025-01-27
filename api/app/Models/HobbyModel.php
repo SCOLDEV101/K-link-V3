@@ -75,7 +75,7 @@ class HobbyModel extends Model
             'deleteimage'=> ['sometimes','nullable'],
             'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
             'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
-            'weekDate' => ['nullable', 'regex:/^[0-9,]+$/u'],
+            'weekDate' => ['nullable', 'regex:/^[ก-๙.,]+$/u'],
             'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
         ],
         [
