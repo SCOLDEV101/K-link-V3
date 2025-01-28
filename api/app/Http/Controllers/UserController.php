@@ -323,7 +323,7 @@ class UserController extends Controller
             ], 401);
         }
 
-        $userDb = UserModel::select('username', 'id', 'fullname', 'email')->get();
+        $userDb = UserModel::with('imageOrFile')->get();
         $data = [];
 
         foreach ($userDb as $user) {
@@ -349,6 +349,7 @@ class UserController extends Controller
                 $data[] = [
                     'username' => $user->username,
                     'fullname' => $user->fullname,
+                    'profileImage' => $user->imageOrFile->name,
                     'email' => $user->email,
                     'uID' => $user->id,
                     'status' => 'none'
@@ -423,12 +424,12 @@ class UserController extends Controller
             ], 400);
         }
 
-        $requestDb = RequestModel::create([
-            'userID' => $userID,
-            'groupID' => $groupDb->groupID,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // $requestDb = RequestModel::create([
+        //     'userID' => $userID,
+        //     'groupID' => $groupDb->id,
+        //     'created_at' => now(),
+        //     'updated_at' => now(),
+        // ]);
 
         $notifyDb = NotifyModel::create([
             'type' => 'invite',
@@ -439,7 +440,7 @@ class UserController extends Controller
             'updated_at' => now(),
         ]);
 
-        if ($notifyDb && $requestDb) {
+        if ($notifyDb) { // && $requestDb) {
             return response()->json([
                 'status' => 'ok',
                 'message' => 'invite friend success.',
@@ -597,7 +598,8 @@ class UserController extends Controller
     function leaveGroup($groupID)
     { //done *check
         $uID = auth()->user()->id;
-        $groupDb = GroupModel::where(['groupID', $groupID])
+
+        $groupDb = GroupModel::where('groupID', $groupID)
             ->with(['hobby.leaderGroup', 'tutoring.leaderGroup'])
             ->first();
 

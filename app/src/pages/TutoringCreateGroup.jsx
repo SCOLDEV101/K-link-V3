@@ -15,7 +15,7 @@ import "../index.css";
 function TutoringCreateGroup() {
   const navigate = useNavigate();
   const Location = useLocation();
-  const { groupData = {}, status, hID } = Location?.state || {};
+  const { groupData = {}, status, groupID } = Location?.state || {};
   // const DATA = getFacultyMajorSection();
   // const data = nestDataFacultys(DATA); // with API
   const data = nestDataFacultys(fetchData); // withOut API
@@ -53,11 +53,9 @@ function TutoringCreateGroup() {
     return "";
   };
   const [tags, setTags] = useState(() => {
-    if (groupData.tag && groupData.tag.trim() !== "") {
-      return groupData.tag.split(",").map((tag) => tag.trim());
-    }
-    return [];
+    return groupData?.tag?.map((tag) => tag.trim()) || [];
   });
+  
   const defaultValue = {
     activityName: groupData.activityName || "",
     // subjectName: groupData.subjectName || "",
@@ -66,8 +64,8 @@ function TutoringCreateGroup() {
     sectionID: initialSectionID || "",
     date: groupData.date || "",
     memberMax: groupData.memberMax || "",
-    startTime: formatInitialTime(groupData.Starttime),
-    endTime: formatInitialTime(groupData.Endtime),
+    startTime: formatInitialTime(groupData.startTime),
+    endTime: formatInitialTime(groupData.endTime),
     location: groupData.location || "",
     detail: groupData.detail || "",
     tag: tags || "",
@@ -133,7 +131,17 @@ function TutoringCreateGroup() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (e.target.checkValidity() === false) {
-      alert("โปรดกรอกข้อมูลให้ครบถ้วน");
+      Swal.fire({
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
       e.stopPropagation();
     } else {
       console.log("Form data:", formData);
@@ -143,6 +151,7 @@ function TutoringCreateGroup() {
   };
 
   const sendForm = async (_FormData_) => {
+    console.log(groupID);
     const _newFormData_ = { ..._FormData_, tag: tags.join(", ") };
     const headersAuth = config.Headers().headers;
     console.log({ _newFormData_ });
@@ -165,7 +174,7 @@ function TutoringCreateGroup() {
       
         if (result.isConfirmed) {
         const response = await axios.post(
-          config.SERVER_PATH + "/api/tutoring/update/" + hID,
+          config.SERVER_PATH + "/api/tutoring/updateGroup/" + groupID,
           _newFormData_,
           { headers: headersAuth, withCredentials: true }
         );
@@ -215,7 +224,7 @@ function TutoringCreateGroup() {
       
       if (result.isConfirmed) {
         const response = await axios.post(
-          config.SERVER_PATH + "/api/tutoring/create",
+          config.SERVER_PATH + "/api/tutoring/createGroup",
           _newFormData_,
           { headers: headersAuth, withCredentials: true }
         );
@@ -265,7 +274,7 @@ function TutoringCreateGroup() {
     }
   };
 
-  const deleteGroup = async (hID) => {
+  const deleteGroup = async (groupID) => {
     const result = await Swal.fire({
       title: "ยืนยันการลบกลุ่มหรือไม่?",
       showCancelButton: true,
@@ -282,7 +291,7 @@ function TutoringCreateGroup() {
   
     if (result.isConfirmed) {
     try {
-      await axios.delete(config.SERVER_PATH + "/api/tutoring/delete/" + hID, { headers: config.Headers().headers, withCredentials: true}).then((res) => {
+      await axios.delete(config.SERVER_PATH + "/api/tutoring/delete/" + groupID, { headers: config.Headers().headers, withCredentials: true}).then((res) => {
         if (res.data.status === "ok") {
           console.log("Delete tutoring group success");
           Swal.fire({
@@ -680,7 +689,7 @@ function TutoringCreateGroup() {
                   type="button"
                   className="btn"
                   style={{ background: "#FF0101", width: "100%", color: "white" }}
-                  onClick={() => {deleteGroup(hID);}}
+                  onClick={() => {deleteGroup(groupID);}}
                 >
                   ลบกลุ่ม
                 </button>

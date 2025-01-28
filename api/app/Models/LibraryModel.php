@@ -46,7 +46,7 @@ class LibraryModel extends Model
 
     public static $validator = [
         [
-            'file' => ['required','mimes:pdf'],
+            'file' => ['required'],//,'mimes:pdf'],
             'activityName' => ['required', 'string'],
             'detail' => ['nullable', 'string'],
             'facultyID' => ['required'],
@@ -54,7 +54,7 @@ class LibraryModel extends Model
         [
             'facultyID.required' => 'faculty is required',
             'files.required' => 'file is required',
-            'files.mimes' => 'file type is invalid',
+            // 'files.mimes' => 'file type is invalid',
             'activityName.required' => 'hobby name required',
             'activityName.string' => 'hobby name string invalid',
             'detail.string' => 'detail string invalid',
@@ -63,12 +63,12 @@ class LibraryModel extends Model
 
     public static $updatevalidator = [
         [
-            'file' => ['sometimes','mimes:pdf'],
+            //'file' => ['sometimes','mimes:pdf'],
             'detail' => ['nullable', 'string'],
             'facultyID' => ['required', 'integer'],
         ],
         [
-            'file.mimes' => 'file type is invalid',
+            //'file.mimes' => 'file type is invalid',
             'detail.string' => 'detail string invalid',
             'facultyID.required' => 'facultyID is required',
             'facultyID.integer' => 'facultyID is invalid',

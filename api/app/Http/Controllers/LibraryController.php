@@ -73,15 +73,24 @@ class LibraryController extends Controller
             $path = public_path('uploaded/Library/');
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                $extension = $file->getClientOriginalExtension();
-                $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
-                $filename = $name . '.' . $extension;
-                $file->move($path, $filename);
+                $extension = strtolower($file->getClientOriginalExtension());
+                $allowedExtensions = ['pdf'];
 
-                $imageOrFile = imageOrFileModel::create([
-                    'name' => $filename
-                ]);
-                dispatch(new PdfToImage($filename));
+                if (in_array($extension, $allowedExtensions)) {
+                    $name =  'library-' . now()->format('YmdHis') . str_replace(' ', '', basename($file->getClientOriginalName(), ".pdf"));
+                    $filename = $name . '.' . $extension;
+                    $file->move($path, $filename);
+
+                    $imageOrFile = imageOrFileModel::create([
+                        'name' => $filename
+                    ]);
+                    dispatch(new PdfToImage($filename));
+                } else {
+                    // Handle the error for unsupported file types
+                    return response()->json([
+                        'error' => 'Invalid file type. Only pdf is allowed.'
+                    ], 400);
+                }
             }
             //-----------------------
 
@@ -206,7 +215,15 @@ class LibraryController extends Controller
             //delete old file
 
             $file = $request->file('file');
-            $extension = $file->getClientOriginalExtension();
+            $extension = strtolower($file->getClientOriginalExtension());
+            $allowedExtensions = ['pdf'];
+
+            if (!in_array($extension, $allowedExtensions)) {
+                return response()->json([
+                    'error' => 'Invalid file type. Only pdf is allowed.'
+                ], 400);
+            }
+
             if ($groupDb->library->imageOrFile !== $request->input('file')) {
                 if (!empty($groupDb->library->imageOrFile) && File::exists($path . $groupDb->library->imageOrFile->name)) {
                     imageOrFileModel::where('id', $groupDb->library->imageOrFile->id)->delete(); // ลบ data on dby
@@ -271,18 +288,32 @@ class LibraryController extends Controller
         }
 
         //--- get original filename
-        $encodedname = $groupDb->library->imageOrFile->name;
-        $arrayname = preg_split('/-|[.s]/', $encodedname, -1, PREG_SPLIT_NO_EMPTY);
-        $intersect = array_search('-', $arrayname) + 1;
-        $fileoriginname = $arrayname[$intersect];
-        $filePath = public_path('uploaded\\Library\\' . $groupDb->library->imageOrFile->name);
-
-        if (file_exists($filePath)) {
-            $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
-            $filesize = filesize($filePath);
-        } else {
+        if (!isset($groupDb->library->imageOrFile->name)) {
             $originname = 'not found';
             $filesize = 0;
+        } else {
+            //--- รับชื่อไฟล์ที่เข้ารหัส
+            $encodedname = $groupDb->library->imageOrFile->name;
+        
+            //--- แยกชื่อไฟล์โดยใช้ '-', '.', และ ' ' เป็นตัวแบ่ง
+            $arrayname = preg_split('/[-. ]/', $encodedname, -1, PREG_SPLIT_NO_EMPTY);
+        
+            //--- ค้นหาตำแหน่งของ '-' ถ้าพบ ให้ดึงค่าหลังจากนั้น 1 ตำแหน่ง
+            $intersect = array_search('-', $arrayname);
+            $fileoriginname = ($intersect !== false && isset($arrayname[$intersect + 1])) ? $arrayname[$intersect + 1] : $encodedname;
+        
+            //--- ระบุพาธของไฟล์
+            $filePath = public_path('uploaded/Library/' . $encodedname);
+        
+            //--- ตรวจสอบว่าไฟล์มีอยู่จริง
+            if (file_exists($filePath)) {
+                //--- ลบตัวเลข ช่องว่าง จุด และขีดกลางที่ขึ้นต้นชื่อไฟล์ออก
+                $originname = preg_replace('/^[\d .-]+/', '', basename($fileoriginname));
+                $filesize = filesize($filePath);
+            } else {
+                $originname = 'not found';
+                $filesize = 0;
+            }
         }
         //-------------------------
 

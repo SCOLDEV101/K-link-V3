@@ -92,12 +92,27 @@ class HobbyController extends Controller
             $path = public_path('uploaded\\hobbyImage\\');
             if ($request->file('image') != null) {
                 $file = $request->file('image');
-                $extension = $file->getClientOriginalExtension();
-                $filename = 'hobby-' . date('YmdHi') . '.' . $extension;
-                $file->move($path, $filename);
-                $imageOrFileDb = imageOrFileModel::create([
-                    'name' => $filename
-                ]);
+                $extension = strtolower($file->getClientOriginalExtension());
+            
+                // Define allowed extensions
+                $allowedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+            
+                if (in_array($extension, $allowedExtensions)) {
+                    $filename = 'hobby-' . date('YmdHi') . '.' . $extension;
+            
+                    // Define the path where the file should be stored
+                    $file->move($path, $filename);
+            
+                    // Save the file details in the database
+                    $imageOrFileDb = imageOrFileModel::create([
+                        'name' => $filename
+                    ]);
+                } else {
+                    // Handle the error for unsupported file types
+                    return response()->json([
+                        'error' => 'Invalid file type. Only png, jpg, jpeg, and gif are allowed.'
+                    ], 400);
+                }
             }
 
             $hobbyModel = new HobbyModel;
@@ -134,12 +149,23 @@ class HobbyController extends Controller
             //----------------------groupday part
             if ($request->has('weekDate')) {
                 $days = explode(',', $request->input('weekDate'));
+                $dayMap = [
+                    'จ.' => 1,
+                    'อ.' => 2,
+                    'พ.' => 3,
+                    'พฤ.' => 4,
+                    'ศ.' => 5,
+                    'ส.' => 6,
+                    'อา.' => 7,
+                ];
                 //loop through array of days input and save to Db
                 foreach ($days as $day) {
                     //if array is empty then set day to today of weekday (it will has only one array)
                     if ($day == '' || $day == null) {
                         $day = (int)date('w');
                     }
+
+                    $day = $dayMap[$day];
                     GroupDayModel::create([
                         'dayID' => (int)$day,
                         'groupID' => $groupDb->id,
@@ -268,19 +294,36 @@ class HobbyController extends Controller
                 }
                 imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->delete(); // ลบชื่อไฟล์บน database
             }
-            $extension = $file->getClientOriginalExtension();
-            $filename = 'hobby-' . now()->format('YmdHis') . '.' . $extension;
-            $move = $file->move($path, $filename);
-            if (!$move) {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'Can not upload image.'
-                ], 500);
-            } else {
-                $imageOrFileDb = imageOrFileModel::create([
-                    'name' => $filename
-                ]);
+            // 
+            if ($request->file('image') != null) {
+                $extension = strtolower($file->getClientOriginalExtension());
+                $allowedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+            
+                if (in_array($extension, $allowedExtensions)) {
+                    $filename = 'hobby-' . date('YmdHi') . '.' . $extension;
+            
+                    // Define the path where the file should be stored
+                    $move = $file->move($path, $filename);
+            
+                    // Save the file details in the database
+                    if (!$move) {
+                        return response()->json([
+                            'status' => 'failed',
+                            'message' => 'Can not upload image.'
+                        ], 500);
+                    } else {
+                        $imageOrFileDb = imageOrFileModel::create([
+                            'name' => $filename
+                        ]);
+                    }
+                } else {
+                    // Handle the error for unsupported file types
+                    return response()->json([
+                        'error' => 'Invalid file type. Only png, jpg, jpeg, and gif are allowed.'
+                    ], 400);
+                }
             }
+            
         } else if (empty($request->file('image')) && !$request->has('deleteimage')) {
             $imageOrFileDb = imageOrFileModel::where('id', $groupDb->hobby->imageOrFile->id)->first();
         } else if ($request->has('deleteimage')) {
@@ -321,10 +364,20 @@ class HobbyController extends Controller
         }
         // -----------------------------
 
-        //-------- แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน
+        //-------- แตก array เหมือน tag และลบอันเก่าทิ้งเพื่อสร้างใหม่ เผื่อกรณีเพิ่มวัน รับเป็น จ.,อ.
         if ($request->has('weekDate')) {
             $deleteOldDay = GroupDayModel::where('groupID', $groupDb->id)->delete();
             $days = explode(',', $request->input('weekDate'));
+            $dayMap = [
+                'จ.' => 1,
+                'อ.' => 2,
+                'พ.' => 3,
+                'พฤ.' => 4,
+                'ศ.' => 5,
+                'ส.' => 6,
+                'อา.' => 7,
+            ];
+
             //loop through array of days input and save to Db
             foreach ($days as $day) {
                 //if array is empty then set day to today of weekday (it will has only one array)
@@ -332,6 +385,7 @@ class HobbyController extends Controller
                     $day = (int)date('w');
                 }
                 if (empty(GroupDayModel::where([['groupID', $groupDb->id], ['dayID', $day]])->first())) {
+                    $day = $dayMap[$day];
                     GroupDayModel::create([
                         'dayID' => (int)$day,
                         'groupID' => $groupDb->id,
