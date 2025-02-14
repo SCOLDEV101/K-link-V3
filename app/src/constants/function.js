@@ -1,6 +1,6 @@
 const config = {
 // <<<<<<< Updated upstream
-    SERVER_PATH: "http://localhost:8000",
+    SERVER_PATH: "https://k-link-production.up.railway.app",
     // API_PATH: "http://192.168.30.195:8000/api/",
     // IMAGE_PATH: "http://192.168.30.195:8000/uploaded",
     // tokenName: "token",
