@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'OPTIONS', 'DELETE'],
 
-    'allowed_origins' => ['https://k-link-v3.vercel.app:3001/'],
+    'allowed_origins' => ['https://k-link-v3.vercel.app:3001/','https://k-link-v3.vercel.app'],
 
     'allowed_origins_patterns' => [],
 
