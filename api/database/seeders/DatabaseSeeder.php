@@ -25,12 +25,12 @@ class DatabaseSeeder extends Seeder
             DaySeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
-            // HobbySeeder::class,
-            // TutoringSeeder::class,
-            // LibrarySeeder::class,
-            // BookmarkSeeder::class,
+            HobbySeeder::class,
+            TutoringSeeder::class,
+            LibrarySeeder::class,
+            BookmarkSeeder::class,
             ImageOrFileModelSeeder::class,
-            // ReportedSeeder::class,
+            ReportedSeeder::class,
         ]);
     }
 }

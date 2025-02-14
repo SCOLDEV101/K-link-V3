@@ -13,6 +13,6 @@ class BookmarkSeeder extends Seeder
      */
     public function run(): void
     {
-        BookmarkModel::factory(30)->create();
+        BookmarkModel::factory(15)->create();
     }
 }

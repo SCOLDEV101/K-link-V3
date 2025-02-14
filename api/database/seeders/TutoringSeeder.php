@@ -13,6 +13,6 @@ class TutoringSeeder extends Seeder
      */
     public function run(): void
     {
-        TutoringModel::factory(5)->create();
+        TutoringModel::factory(3)->create();
     }
 }

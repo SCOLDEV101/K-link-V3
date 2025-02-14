@@ -13,6 +13,6 @@ class LibrarySeeder extends Seeder
      */
     public function run(): void
     {
-        LibraryModel::factory(5)->create();
+        LibraryModel::factory(3)->create();
     }
 }
