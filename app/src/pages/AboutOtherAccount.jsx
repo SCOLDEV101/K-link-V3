@@ -134,7 +134,7 @@ const AboutOtherAccount = () => {
           <div className="d-flex flex-column align-items-center">
             <img
               src={memberinfo.profileImage != null 
-                ? (`http://127.0.0.1:8000/uploaded/profileImage/${memberinfo.profileImage}`)
+                ? (config.SERVER_PATH + `/uploaded/profileImage/${memberinfo.profileImage}`)
                 : "./Empty-Profile-Image.svg"
               }
               alt=""

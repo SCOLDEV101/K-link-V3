@@ -36,7 +36,7 @@ const ListItem = ({ item, func }) => {
           <img
             src={
               item.profileImage
-                ? `http://127.0.0.1:8000/uploaded/profileImage/${item.profileImage}`
+                ? config.SERVER_PATH + `/uploaded/profileImage/${item.profileImage}`
                 : "./Empty-Profile-Image.svg"
             }
             alt="profile"
