@@ -130,7 +130,7 @@ class HobbyController extends Controller
 
             //-----------hobby part
 
-            if($request->input('memberMax') < 2) {
+            if($request->input('memberMax') && $request->input('memberMax') != null && $request->input('memberMax') < 2 ) {
                 return response()->json([
                     'status' => 'failed',
                     'message' => 'Member Max must be at least 2.',
@@ -350,7 +350,7 @@ class HobbyController extends Controller
             $newTags = explode(',', $request->input('tag'));
 
             foreach ($newTags as $tag) {
-                if ($tag != '' || $tag != null) {
+                if ($tag == '' || $tag == null) {
                     $tag = ['hobby'];
                 }
                 $querytag = TagModel::where('name', $tag)->first();
@@ -411,7 +411,7 @@ class HobbyController extends Controller
         }
         //------------------------------
 
-        if($request->input('memberMax') < 2) {
+        if($request->input('memberMax') && $request->input('memberMax') != null && $request->input('memberMax') < 2 ) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'Member Max must be at least 2.',
