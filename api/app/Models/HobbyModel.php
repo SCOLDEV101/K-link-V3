@@ -67,7 +67,8 @@ class HobbyModel extends Model
 
     public static $validator = [
         [
-            'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            // 'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%&*()_+\-=\[\]{}|<>?~:,\.\/]+$/u'],
             'tag' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙,\s]+$/u'],
             'startTime' => ['required', 'regex:/^[0-9:]+$/u'],
             'endTime' => ['required', 'regex:/^[0-9:]+$/u'],
@@ -80,7 +81,7 @@ class HobbyModel extends Model
         ],
         [
             'activityName.required' => 'hobby name required',
-            'activityName.regex' => 'hobby name can only contain letters, numbers and whitespaces',
+            'activityName.regex' => 'hobby name can only contain letters, numbers, whitespaces and some special',
             // 'image.mimes'=>"group image only allow png,jpg,jpeg,gif",
             'tag.regex' => 'tag have invalid characters',
             'startTime.required' => 'activity start time is required',

@@ -134,7 +134,7 @@ class UserModel extends Model
 
     public static $validator = [
         [
-            'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
+            // 'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
             'username' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙-_.\s]+$/u', 'max:50'],
             'fullname' => ['sometimes', 'regex:/^[a-zA-Zก-๙\s]+$/u', 'max:100'],
             'aboutMe' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u', 'max:1000'],
