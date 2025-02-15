@@ -411,6 +411,13 @@ class HobbyController extends Controller
         }
         //------------------------------
 
+        if($request->input('memberMax') < 2) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Member Max must be at least 2.',
+            ], 400);
+        }
+
         //---------- hobby data
         $data = [
             'imageOrFileID' => $imageOrFileDb->id ??  imageOrFileModel::where('name', 'group-default.jpg')->first()->id,

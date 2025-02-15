@@ -382,6 +382,13 @@ class TutoringController extends Controller
         }
         //------------------------------
 
+        if($request->input('memberMax') < 2) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Member Max must be at least 2.',
+            ], 400);
+        }
+
         //----------------- tutoring data
         if(gettype($request->input('majorID'))=="string"){
             $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
