@@ -129,6 +129,14 @@ class HobbyController extends Controller
             //-----------
 
             //-----------hobby part
+
+            if($request->input('memberMax') < 2) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Member Max must be at least 2.',
+                ], 400);
+            }
+
             $defaultImage = imageOrFileModel::where('name', 'hobby-group-default.png')->first();
             $hobbyDb = HobbyModel::create([
                 'id' => $groupID,
