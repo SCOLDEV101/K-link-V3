@@ -35,7 +35,9 @@ class GroupResource extends JsonResource
         $members = [];
         if ($this->member) {
             foreach ($this->member as $eachMember) {
-                $members[] = $eachMember->id;
+                if($eachMember != '' || $eachMember != null || $eachMember != ' '){
+                    $members[] = $eachMember->id;
+                }
             }
         }
 

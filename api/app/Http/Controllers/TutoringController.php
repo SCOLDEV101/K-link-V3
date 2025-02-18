@@ -148,6 +148,13 @@ class TutoringController extends Controller
             }
             //----------------------
 
+            if($request->input('memberMax') && $request->input('memberMax') != null && $request->input('memberMax') < 2 ) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Member Max must be at least 2.',
+                ], 400);
+            }
+
             //-----------tutoring part
             if(gettype($request->input('majorID'))=="string"){
                 $majorDb = MajorModel::where('shortName',$request->input('majorID'))->first();
@@ -325,7 +332,7 @@ class TutoringController extends Controller
             $newTags = explode(',', $request->input('tag'));
 
             foreach ($newTags as $tag) {
-                if ($tag != '' || $tag != null) {
+                if ($tag == '' || $tag == null) {
                     $tag = ['tutoring'];
                 }
                 $querytag = TagModel::where('name', $tag)->first();
@@ -374,6 +381,13 @@ class TutoringController extends Controller
             }
         }
         //------------------------------
+
+        if($request->input('memberMax') && $request->input('memberMax') != null && $request->input('memberMax') < 2 ) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Member Max must be at least 2.',
+            ], 400);
+        }
 
         //----------------- tutoring data
         if(gettype($request->input('majorID'))=="string"){

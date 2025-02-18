@@ -260,6 +260,14 @@ class UserController extends Controller
             }
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
+            $allowedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+
+            if (!in_array($extension, $allowedExtensions)) {
+                return response()->json([
+                    'error' => 'Invalid file type. Only png, jpg, jpeg, and gif are allowed.'
+                ], 400);
+            }
+
             $filename = 'profile-' . date('YmdHi') . rand(0, 99) . '.' . $extension;
             $file->move($path, $filename);
             $imageOrFileDb = imageOrFileModel::create([

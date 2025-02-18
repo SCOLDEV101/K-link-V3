@@ -73,6 +73,8 @@ function CreateGroupPage() {
     }
   };
 
+  
+
   const handleSelectedDefaultImageFile = async (src) => {
     try {
       const response = await fetch(src);
@@ -456,7 +458,7 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
       >
         <div className="card m-3 mt-5" style={{ borderRadius: "10px", boxShadow: "0 4px 13px rgba(0, 0, 0, .2)" }}>
           <div className="row p-3 my-2">
-            <form action="">
+            <div>
               <label htmlFor="">
                 <p className="m-0">
                   ชื่อกลุ่ม<span className="text-danger">*</span>
@@ -470,7 +472,7 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                 className="p-1 px-2 fs-6 w-100 form-control"
                 style={{ border: "1.5px solid #E7E7E7", borderRadius: "5px" }}
               />
-            </form>
+            </div>
             <div className="my-2">
               <label htmlFor="">
                 <p className="m-0">
@@ -648,11 +650,15 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                   <input
                     type="number"
                     value={memberMax === null ? "" : memberMax}
+                    onInput={(e) => {
+                      e.target.value = e.target.value.replace(/[^0-9]/g, ""); 
+                    }}
                     onChange={(e) => {
+                      const rawValue = e.target.value;
                       const value =
-                        e.target.value === ""
-                          ? null //null
-                          : Math.max(0, Math.min(99, Number(e.target.value)));
+                        rawValue === ""
+                          ? null
+                          : Math.max(2, Math.min(99, Number(rawValue)));
                       setMemberMax(value);
                     }}
                     className="p-1 px-2 form-control"
@@ -672,7 +678,7 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
               </div>
 
               <div className="row my-2">
-                <form action="">
+                <div action="">
                   <label htmlFor="">
                     <p className="m-0">
                       สถานที่<span className="text-danger">*</span>
@@ -691,10 +697,10 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                       borderRadius: "5px",
                     }}
                   />
-                </form>
+                </div>
               </div>
               <div className="row my-2">
-                <form action="">
+                <div action="">
                   <label htmlFor="">
                     <p className="m-0">รายละเอียด</p>
                   </label>
@@ -711,10 +717,10 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                     }}
                     rows="3"
                   ></textarea>
-                </form>
+                </div>
               </div>
               <div className="row my-2">
-                <form action="">
+                <div action="">
                   <label htmlFor="">
                     <p className="m-0">แท็ก</p>
                   </label>
@@ -783,14 +789,35 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                       )}
                     </label>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
             <div className="d-flex justify-content-center align-items-center mt-2 gap-2">
               <button
                 className="btn py-2 px-4 text-dark"
                 style={{ fontSize: "1rem", borderRadius: "10px", background: "#E7E7E7", width: "40%" }}
-                onClick={() => window.history.back()}
+                onClick={ () => {
+                  Swal.fire({
+                        title: "ออกจากหน้านี้?",
+                        showCancelButton: true,
+                        reverseButtons: true, 
+                        html: "ข้อมูลจะไม่ถูกบันทึก ต้องการออกหรือไม่",
+                        confirmButtonText: "ออก",
+                        cancelButtonText: "ยกเลิก",
+                        customClass: {
+                          container: 'swal-container',
+                          title: 'swal-title swal-titlediscard',
+                          popup: 'swal-popup',
+                          cancelButton: 'swal-cancel-button' ,
+                          confirmButton: 'swal-confirmRed-button', 
+                        }
+                      })
+                      .then((result) => {
+                        if (result.isConfirmed) {
+                          window.history.back(); 
+                        }
+                      });
+                    }}
               >
                 ยกเลิก
               </button>

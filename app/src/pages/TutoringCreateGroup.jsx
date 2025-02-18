@@ -76,7 +76,7 @@ function TutoringCreateGroup() {
     const { name, value } = e.target;
     if (name === "memberMax") {
       const updatedValue =
-        value === null ? null : Math.max(0, Math.min(99, Number(value)));
+        value === null ? null : Math.max(2, Math.min(99, Number(value)));
 
       setFormData({
         ...formData,
@@ -84,27 +84,6 @@ function TutoringCreateGroup() {
         memberMax: updatedValue,
       });
     }
-    // if (name === "startTime" && formData.endTime && formData.endTime <= value) {
-    //   setFormData({
-    //     ...formData,
-    //     [name]: value,
-    //     endTime: value,
-    //   });
-    // } else if (
-    //   name === "endTime" &&
-    //   formData.startTime &&
-    //   value <= formData.startTime
-    // ) {
-    //   setFormData({
-    //     ...formData,
-    //     [name]: formData.startTime,
-    //   });
-    // } else {
-    //   setFormData({
-    //     ...formData,
-    //     [name]: value,
-    //   });
-    // }
     setFormData({
       ...formData,
       [name]: value,
@@ -129,8 +108,173 @@ function TutoringCreateGroup() {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (e.target.checkValidity() === false) {
+    e.preventDefault();    
+    if (!groupData.activityName && !formData.activityName ) {
+          Swal.fire({
+            position: "center",
+            title: "กรุณากรอกชื่อกลุ่ม",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+              title: 'swal-title-success',
+              container: 'swal-container',
+              popup: 'swal-popup-error',
+            }
+          });
+          return;
+        }
+    if (!initialFacultyID && !formData.facultyID) {
+          Swal.fire({
+            position: "center",
+            title: "กรุณาเลือกคณะ",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+              title: 'swal-title-success',
+              container: 'swal-container',
+              popup: 'swal-popup-error',
+            }
+          });
+          return;
+        }
+        if (!groupData.date && !formData.date) {
+          Swal.fire({
+            position: "center",
+            title: "กรุณาเลือกวันที่",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+              title: 'swal-title-success',
+              container: 'swal-container',
+              popup: 'swal-popup-error',
+            }
+          });
+          return;
+        }
+        if ((!groupData.startTime || !groupData.endTime) && (!formData.startTime && !formData.endTime )) {
+          Swal.fire({
+            position: "center",
+            title: "กรุณากรอกเวลา",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+              title: 'swal-title-success',
+              container: 'swal-container',
+              popup: 'swal-popup-error',
+            }
+          });
+          return;
+        }
+        if (!groupData.location && !formData.location ) {
+          Swal.fire({
+            position: "center",
+            title: "กรุณากรอกสถานที่",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+              title: 'swal-title-success',
+              container: 'swal-container',
+              popup: 'swal-popup-error',
+            }
+          });
+          return;
+        }
+
+        
+if (status && status === "update") {
+  if (groupData.activityName === formData.activityName) {
+    return; 
+  }
+
+  if (!formData.activityName) {
+    Swal.fire({
+      position: "center",
+      title: "กรุณากรอกชื่อกลุ่ม",
+      showConfirmButton: false,
+      timer: 2000,
+      customClass: {
+        title: 'swal-title-success',
+        container: 'swal-container',
+        popup: 'swal-popup-error',
+      }
+    });
+    return;
+  }
+
+  if (groupData.facultyID === formData.facultyID) {
+    return; 
+  }
+  if (!formData.facultyID) {
+    Swal.fire({
+      position: "center",
+      title: "กรุณาเลือกคณะ",
+      showConfirmButton: false,
+      timer: 2000,
+      customClass: {
+        title: 'swal-title-success',
+        container: 'swal-container',
+        popup: 'swal-popup-error',
+      }
+    });
+    return;
+  }
+
+  if (groupData.date === formData.date) {
+    return;
+  }
+  if (!formData.date) {
+    Swal.fire({
+      position: "center",
+      title: "กรุณาเลือกวันที่",
+      showConfirmButton: false,
+      timer: 2000,
+      customClass: {
+        title: 'swal-title-success',
+        container: 'swal-container',
+        popup: 'swal-popup-error',
+      }
+    });
+    return;
+  }
+
+  if (groupData.startTime === formData.startTime && groupData.endTime === formData.endTime) {
+    return;
+  }
+  if (!formData.startTime || !formData.endTime) {
+    Swal.fire({
+      position: "center",
+      title: "กรุณาระบุเวลาเริ่มต้นและเวลาสิ้นสุด",
+      showConfirmButton: false,
+      timer: 2000,
+      customClass: {
+        title: 'swal-title-success',
+        container: 'swal-container',
+        popup: 'swal-popup-error',
+      }
+    });
+    return;
+  }
+
+  if (groupData.location === formData.location) {
+    return;
+  }
+  if (!formData.location) {
+    Swal.fire({
+      position: "center",
+      title: "กรุณาระบุสถานที่",
+      showConfirmButton: false,
+      timer: 2000,
+      customClass: {
+        title: 'swal-title-success',
+        container: 'swal-container',
+        popup: 'swal-popup-error',
+      }
+    });
+    return;
+  }
+}
+
+    if (e.target.checkValidity() === false) {      
       Swal.fire({
         position: "center",
         title: "เกิดข้อผิดพลาด",
@@ -672,10 +816,29 @@ function TutoringCreateGroup() {
               <button
                 type="button"
                 className="btn"
-                onClick={() => {
-                  setFormData(defaultValue);
-                  navigate(-1);
-                }}
+                onClick={ () => {
+                                  Swal.fire({
+                                        title: "ออกจากหน้านี้?",
+                                        showCancelButton: true,
+                                        reverseButtons: true, 
+                                        html: "ข้อมูลจะไม่ถูกบันทึก ต้องการออกหรือไม่",
+                                        confirmButtonText: "ออก",
+                                        cancelButtonText: "ยกเลิก",
+                                        customClass: {
+                                          container: 'swal-container',
+                                          title: 'swal-title swal-titlediscard',
+                                          popup: 'swal-popup',
+                                          cancelButton: 'swal-cancel-button' ,
+                                          confirmButton: 'swal-confirmRed-button', 
+                                        }
+                                      })
+                                      .then((result) => {
+                                        if (result.isConfirmed) {
+                                          setFormData(defaultValue);
+                                          navigate(-1);
+                                        }
+                                      });
+                                    }}
                 style={{ background: "#D9D9D9", width: "100%" }}
               >
                 ยกเลิก
