@@ -9,7 +9,7 @@ import {
 } from "../constants/constants";
 import AddTag from "../components/AddTag";
 import { FaPlus } from "react-icons/fa6";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 import "../index.css";
 
 function LibraryCreatePost() {
@@ -70,16 +70,16 @@ function LibraryCreatePost() {
         setFile(file);
       } else {
         Swal.fire({
-                    position: "center",
-                    title: "กรุณาอัปโหลดไฟล์ PDF เท่านั้น",
-                    showConfirmButton: false,
-                    timer: 2000,
-                    customClass: {
-                      title: 'swal-title-success',
-                      container: 'swal-container',
-                      popup: 'swal-popup-error',
-                    }
-                  });
+          position: "center",
+          title: "กรุณาอัปโหลดไฟล์ PDF เท่านั้น",
+          showConfirmButton: false,
+          timer: 2000,
+          customClass: {
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-error",
+          },
+        });
         e.target.value = null;
       }
     }
@@ -107,19 +107,62 @@ function LibraryCreatePost() {
   };
 
   const handleSubmit = (e) => {
+    console.log(formData);
     e.preventDefault();
+    if (!postData.activityName && !formData.activityName) {
+      Swal.fire({
+        position: "center",
+        title: "กรุณากรอกชื่อกลุ่ม",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
+      return;
+    }
+    if (!formData.file) {
+      Swal.fire({
+        position: "center",
+        title: "กรุณาอัพโหลดไฟล์",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
+      return;
+    }
+    if (!initialFacultyID && !formData.facultyID) {
+      Swal.fire({
+        position: "center",
+        title: "กรุณาเลือกคณะ",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
+      return;
+    }
     if (e.target.checkValidity() === false) {
       Swal.fire({
-                  position: "center",
-                  title: "เกิดข้อผิดพลาด",
-                  showConfirmButton: false,
-                  timer: 2000,
-                  customClass: {
-                    title: 'swal-title-success',
-                    container: 'swal-container',
-                    popup: 'swal-popup-error',
-                  }
-                });
+        position: "center",
+        title: "เกิดข้อผิดพลาด",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: "swal-title-success",
+          container: "swal-container",
+          popup: "swal-popup-error",
+        },
+      });
       e.stopPropagation();
     } else {
       console.log("Form data:", formData);
@@ -166,28 +209,28 @@ function LibraryCreatePost() {
           confirmButtonText: "ตกลง",
           cancelButtonText: "ยกเลิก",
           customClass: {
-            container: 'swal-container',
-            title: 'swal-title',
-            popup: 'swal-popup',
-            confirmButton: 'swal-confirm-button', 
-            cancelButton: 'swal-cancel-button'    
-          }
+            container: "swal-container",
+            title: "swal-title",
+            popup: "swal-popup",
+            confirmButton: "swal-confirm-button",
+            cancelButton: "swal-cancel-button",
+          },
         });
-      if (result.isConfirmed) {
-        const response = await axios.post(
-          config.SERVER_PATH + "/api/library/updateLibrary/" + hID,
-          _newFormData_,
-          {
-            headers: headersAuth,
-            withCredentials: true,
+        if (result.isConfirmed) {
+          const response = await axios.post(
+            config.SERVER_PATH + "/api/library/updateLibrary/" + hID,
+            _newFormData_,
+            {
+              headers: headersAuth,
+              withCredentials: true,
+            }
+          );
+          if (response.data.status === "ok") {
+            console.log("Update post success");
+            navigate(-1);
           }
-        );
-        if (response.data.status === "ok") {
-          console.log("Update tutoring group success");
-          navigate(-1);
+          console.log("Response:", response);
         }
-        console.log("Response:", response);
-      }
       } else {
         console.log("11");
         const result = await Swal.fire({
@@ -196,28 +239,28 @@ function LibraryCreatePost() {
           confirmButtonText: "ตกลง",
           cancelButtonText: "ยกเลิก",
           customClass: {
-            container: 'swal-container',
-            title: 'swal-title',
-            popup: 'swal-popup',
-            confirmButton: 'swal-confirm-button', 
-            cancelButton: 'swal-cancel-button'    
-          }
+            container: "swal-container",
+            title: "swal-title",
+            popup: "swal-popup",
+            confirmButton: "swal-confirm-button",
+            cancelButton: "swal-cancel-button",
+          },
         });
-      if (result.isConfirmed) {
-        const response = await axios.post(
-          config.SERVER_PATH + "/api/library/createGroup",
-          _newFormData_,
-          {
-            headers: headersAuth,
-            withCredentials: true,
+        if (result.isConfirmed) {
+          const response = await axios.post(
+            config.SERVER_PATH + "/api/library/createGroup",
+            _newFormData_,
+            {
+              headers: headersAuth,
+              withCredentials: true,
+            }
+          );
+          if (response.data.status === "ok") {
+            console.log("Create post success");
+            navigate(-1);
           }
-        );
-        if (response.data.status === "ok") {
-          console.log("Create tutoring group success");
-          navigate(-1);
+          console.log("Response:", response);
         }
-        console.log("Response:", response);
-      }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -225,59 +268,59 @@ function LibraryCreatePost() {
   };
 
   const deleteGroup = async (hID) => {
-              const result = await Swal.fire({
-                title: "ยืนยันการลบกลุ่มหรือไม่?",
-                showCancelButton: true,
-                confirmButtonText: "ตกลง",
-                cancelButtonText: "ยกเลิก",
-                customClass: {
-                  container: 'swal-container',
-                  title: 'swal-title',
-                  popup: 'swal-popup',
-                  confirmButton: 'swal-confirm-button', 
-                  cancelButton: 'swal-cancel-button'    
-                }
-              });
+    const result = await Swal.fire({
+      title: "ยืนยันการลบกลุ่มหรือไม่?",
+      showCancelButton: true,
+      confirmButtonText: "ตกลง",
+      cancelButtonText: "ยกเลิก",
+      customClass: {
+        container: "swal-container",
+        title: "swal-title",
+        popup: "swal-popup",
+        confirmButton: "swal-confirm-button",
+        cancelButton: "swal-cancel-button",
+      },
+    });
     if (result.isConfirmed) {
-    try {
-      await axios
-        .delete(config.SERVER_PATH + "/api/library/delete/" + hID, {
-          headers: config.Headers().headers,
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (res.data.status === "ok") {
-            console.log("Delete tutoring group success");
-            navigate("/tutoring");
-          } else {
-            Swal.fire({
-                        position: "center",
-                        title: "เกิดข้อผิดพลาด",
-                        showConfirmButton: false,
-                        timer: 2000,
-                        customClass: {
-                          title: 'swal-title-success',
-                          container: 'swal-container',
-                          popup: 'swal-popup-error',
-                        }
-                      });
-          }
+      try {
+        await axios
+          .delete(config.SERVER_PATH + "/api/library/delete/" + hID, {
+            headers: config.Headers().headers,
+            withCredentials: true,
+          })
+          .then((res) => {
+            if (res.data.status === "ok") {
+              console.log("Delete post success");
+              navigate("/library");
+            } else {
+              Swal.fire({
+                position: "center",
+                title: "เกิดข้อผิดพลาด",
+                showConfirmButton: false,
+                timer: 2000,
+                customClass: {
+                  title: "swal-title-success",
+                  container: "swal-container",
+                  popup: "swal-popup-error",
+                },
+              });
+            }
+          });
+      } catch (error) {
+        console.error("ERROR: ", error);
+        Swal.fire({
+          position: "center",
+          title: "เกิดข้อผิดพลาด",
+          showConfirmButton: false,
+          timer: 2000,
+          customClass: {
+            title: "swal-title-success",
+            container: "swal-container",
+            popup: "swal-popup-error",
+          },
         });
-    } catch (error) {
-      console.error("ERROR: ", error);
-       Swal.fire({
-              position: "center",
-              title: "เกิดข้อผิดพลาด",
-              showConfirmButton: false,
-              timer: 2000,
-              customClass: {
-                title: 'swal-title-success',
-                container: 'swal-container',
-                popup: 'swal-popup-error',
-              }
-            });
+      }
     }
-  }
   };
 
   return (

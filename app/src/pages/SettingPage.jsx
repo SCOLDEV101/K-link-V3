@@ -128,14 +128,17 @@ function SettingPage() {
   };
 
   return (
-    <>
+    <div className="d-flex flex-column"
+    style={{
+      height: "calc(100vh - 105px)",
+      overflowY: "auto",
+    }}>
     {profileData && 
           <div
         className="card m-3 mb-3"
         style={{
           top: "100px",
-          height:"70%",
-          background: "#FFFFFF",
+         background: "#FFFFFF",
           borderRadius: "15px",
           boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
           zIndex: 1,
@@ -167,7 +170,6 @@ function SettingPage() {
         className="card pt-3 m-3 mb-3"
         style={{
           top: "100px",
-          height:"70%",
           background: "#FFFFFF",
           borderRadius: "15px",
           boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
@@ -213,7 +215,6 @@ function SettingPage() {
         className="card pt-3 m-3 mb-3"
         style={{
           top: "100px",
-          height:"70%",
           background: "#FFFFFF",
           borderRadius: "15px",
           boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
@@ -244,7 +245,6 @@ function SettingPage() {
         className="card m-3 mb-4"
         style={{
           top: "100px",
-          height:"70%",
           background: "#FFFFFF",
           borderRadius: "15px",
           boxShadow: "0px 4px 13px rgba(0, 0, 0, .20)",
@@ -262,7 +262,7 @@ function SettingPage() {
           </Link> 
           </button>
           </div>
-    </>
+    </div>
   );
 }
 

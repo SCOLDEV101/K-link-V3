@@ -79,6 +79,7 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
             borderRadius: "50%",
             right: "-5px",
             top: "-15px",
+            zIndex:"1"
           }}
         >
           <IoClose
@@ -91,7 +92,11 @@ function AddTag({ FunctionToSave, btnHTML, initialTags }) {
             aria-label="Close"
           />
         </div>
-        <div className="offcanvas-body">
+        <div className="offcanvas-body" style={{
+          scrollbarWidth: "50px",
+          scrollbarColor: "#FFA500 #F0F0F0", 
+          overflowY: "auto",
+          }}>
           <div className="mb-1">
             <label style={{ fontSize: "0.65rem" }}>
               <span style={{ color: "red" }}>*</span>คุณสามารถใส่แท็กได้ไม่เกิน
