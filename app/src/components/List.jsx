@@ -111,7 +111,7 @@ function List({ listItem, fetchData }) {
 
 
   const handleShare = (selectedItemId) => {
-    const shareUrl = `http://localhost:3001/aboutlibrary/${selectedItemId}`; 
+    const shareUrl = `https://k-link-v3.vercel.app/aboutlibrary/${selectedItemId}`; 
     const shareText = `ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK\n${shareUrl}\nร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK`;
     navigator.clipboard.writeText(shareText)
   
