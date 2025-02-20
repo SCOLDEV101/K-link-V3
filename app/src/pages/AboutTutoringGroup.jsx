@@ -104,6 +104,7 @@ const dayColors = {
     try {
       const response = await axios.post(
         config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
+        {}, 
         {
           headers: headersAuth,
           withCredentials: true,
