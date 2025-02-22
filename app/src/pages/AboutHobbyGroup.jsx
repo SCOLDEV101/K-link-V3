@@ -67,21 +67,22 @@ function AboutHobbyGroup() {
                }
              });
            if (result.isConfirmed) {
-    try {
-      const response = await axios.post(
-        config.SERVER_PATH + `/api/user/leaveGroup/${groupID}`,
-        {
-          headers: headersAuth,
-          withCredentials: true,
-        }
-      );
-      if (response.data.status === "ok") {
-        console.log("leave group success");
-        navigate("/hobby");
-      }
-    } catch (error) {
-      console.error("There was an error leaving the group!", error);
-    }
+            try {
+              const response = await axios.post(
+                `${config.SERVER_PATH}/api/user/leaveGroup/${groupID}`,
+                {}, 
+                {
+                  headers: headersAuth, 
+                  withCredentials: true, 
+                }
+              );
+              if (response.data.status === "ok") {
+                console.log("leave group success");
+                navigate("/hobby");
+              }
+            } catch (error) {
+              console.error("There was an error leaving the group!", error.response?.data || error);
+            }
   }
   };
 

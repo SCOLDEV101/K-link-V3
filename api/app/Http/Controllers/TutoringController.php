@@ -382,6 +382,13 @@ class TutoringController extends Controller
         }
         //------------------------------
 
+        if($request->input('memberMax') && $request->input('memberMax') != null && $request->input('memberMax') < count($groupDb->member)){
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Member Max can not be less than current member.',
+            ], 400);
+        }
+
         if($request->input('memberMax') && $request->input('memberMax') != null && $request->input('memberMax') < 2 ) {
             return response()->json([
                 'status' => 'failed',

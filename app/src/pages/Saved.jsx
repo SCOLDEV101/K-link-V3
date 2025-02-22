@@ -115,7 +115,7 @@ function Saved() {
               color="rgb(255,133,0)"
             ></l-tail-chase>
           </div>
-        ) : bookmark_List.length > 0 ?  (
+        ) : filteredLists.length > 0 ?  (
         <List listItem={filteredLists} fetchData={null} /> 
       ) : (
         <div
