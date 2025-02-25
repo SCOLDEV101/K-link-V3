@@ -17,9 +17,11 @@ return [
 
     'paths' => ['api/*'],
 
-    'allowed_methods' => ['GET', 'POST', 'OPTIONS', 'DELETE'],
+    'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://k-link-v3.vercel.app:3001/','https://k-link-v3.vercel.app'],
+    'allowed_origins' => ['https://k-link-v3.vercel.app'],
+
+    // 'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
