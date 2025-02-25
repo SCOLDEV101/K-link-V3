@@ -332,6 +332,7 @@ class LibraryController extends Controller
         //---------------------------
 
         $data = [
+            'groupID' => $groupDb->groupID,
             'faculty' => $groupDb->library->faculty->nameEN ?? 'none',
             'major' => $groupDb->library->major->nameEN ?? 'none',
             'department' => $groupDb->library->department->name ?? 'none',
