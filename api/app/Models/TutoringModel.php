@@ -58,8 +58,8 @@ class TutoringModel extends Model
             'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u'],
             // 'activityName' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
             'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
-            'location' => ['required', 'string'],
-            'detail' => ['nullable', 'string'],
+            'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u'],
+            'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u'],
         ],
         [
             'facultyID.required' => 'faculty is required',
@@ -74,8 +74,8 @@ class TutoringModel extends Model
             'memberMax.numeric' => 'max member numeric invalid',
             'memberMax.regex' => 'max member type invalid',
             'location.required' => 'location required',
-            'location.string' => 'location string invalid',
-            'detail.string' => 'detail string invalid',
+            'location.regex' => 'location can only contain letters, numbers, whitespaces and some special',
+            'detail.regex' => 'detail can only contain letters, numbers, whitespaces and some special.',
         ]
     ];
 

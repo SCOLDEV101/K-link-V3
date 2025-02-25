@@ -75,9 +75,9 @@ class HobbyModel extends Model
             // 'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
             'deleteimage'=> ['sometimes','nullable'],
             'memberMax' => ['nullable', 'regex:/\b([0-9]|[1-9][0-9])\b/'],
-            'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'location' => ['required', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u'],
             'weekDate' => ['nullable', 'regex:/^[ก-๙.,]+$/u'],
-            'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u'],
+            'detail' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u'],
         ],
         [
             'activityName.required' => 'hobby name required',
@@ -90,9 +90,9 @@ class HobbyModel extends Model
             'endTime.regex' => 'end time type invalid',
             'memberMax.regex' => 'max member type invalid',
             'location.required' => 'location required',
-            'location.regex' => 'location can only contain letters, numbers and whitespaces',
+            'location.regex' => 'location can only contain letters, numbers, whitespaces and some special',
             'weekDate.regex' => 'week date type invalid',
-            'detail.regex' => 'detail can only contain letters, numbers and whitespaces.',
+            'detail.regex' => 'detail can only contain letters, numbers, whitespaces and some special.',
         ]
     ];
 

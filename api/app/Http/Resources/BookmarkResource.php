@@ -18,8 +18,8 @@ class BookmarkResource extends JsonResource
         $uID = auth()->user()->id;
 
         $days = [];
-        if ($this->group->groupDay) {
-            foreach ($this->group->groupDay as $day) {
+        if ($this->groupDay) {
+            foreach ($this->groupDay as $day) {
                 $days[] = $day->name ?? null;
             }
         }
