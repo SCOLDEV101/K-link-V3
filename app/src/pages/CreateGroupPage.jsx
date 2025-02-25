@@ -102,6 +102,7 @@ function CreateGroupPage() {
       });
       return;
     }
+
     if (weekDate.length === 0) {
       Swal.fire({
         position: "center",
@@ -130,6 +131,20 @@ function CreateGroupPage() {
       });
       return;
     }
+            if (memberMax !== null && memberMax < 2) {
+              Swal.fire({
+                position: "center",
+                title: "จำนวนสมาชิกต้องไม่น้อยกว่า 2 คน",
+                showConfirmButton: false,
+                timer: 2000,
+                customClass: {
+                  title: 'swal-title-success',
+                  container: 'swal-container',
+                  popup: 'swal-popup-error',
+                }
+              });
+              return;
+            }
     if (!location) {
       Swal.fire({
         position: "center",
@@ -298,6 +313,21 @@ function CreateGroupPage() {
       });
       return;
     }
+    if (memberMax !== null && memberMax < 2) {
+      Swal.fire({
+        position: "center",
+        title: "จำนวนสมาชิกต้องไม่น้อยกว่า 2 คน",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          title: 'swal-title-success',
+          container: 'swal-container',
+          popup: 'swal-popup-error',
+        }
+      });
+      return;
+    }
+
     if (!location) {
       Swal.fire({
         position: "center",
@@ -658,7 +688,7 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                       const value =
                         rawValue === ""
                           ? null
-                          : Math.max(2, Math.min(99, Number(rawValue)));
+                          : Math.max(1, Math.min(99, Number(rawValue)));
                       setMemberMax(value);
                     }}
                     className="p-1 px-2 form-control"
@@ -668,7 +698,7 @@ const daysThai = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
                       border: "1.5px solid #E7E7E7",
                       borderRadius: "5px",
                     }}
-                    placeholder={disabledMemberMax ? "ไม่จำกัด" : "ชั้นต่ำ 2 คน"}
+                    placeholder={disabledMemberMax ? "ไม่จำกัด" : "ขั้นต่ำ 2 คน"}
                     min="2"
                     step="1"
                     disabled={disabledMemberMax}

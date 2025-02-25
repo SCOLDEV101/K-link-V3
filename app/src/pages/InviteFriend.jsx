@@ -129,7 +129,7 @@ const InviteFriend = () => {
     try {
       console.log("Filter:", JSON.stringify(filter));
       const response = await axios.post(
-        config.SERVER_PATH + `/api/searching/searchInvite/${groupID}`,
+        config.SERVER_PATH + `/api/searchInvite/${groupID}`,
         { keyword: filter.search_Field_Box },
         { headers: headersAuth, withCredentials: true }
       );

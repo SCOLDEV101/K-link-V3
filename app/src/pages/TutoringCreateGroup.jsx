@@ -76,7 +76,7 @@ function TutoringCreateGroup() {
     const { name, value } = e.target;
     if (name === "memberMax") {
       const updatedValue =
-        value === null ? null : Math.max(2, Math.min(99, Number(value)));
+        value === null ? null : Math.max(1, Math.min(99, Number(value)));
 
       setFormData({
         ...formData,
@@ -107,7 +107,8 @@ function TutoringCreateGroup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e) => {  
+    console.log(formData);
     e.preventDefault();    
     if (!groupData.activityName && !formData.activityName ) {
           Swal.fire({
@@ -151,6 +152,22 @@ function TutoringCreateGroup() {
           });
           return;
         }
+        
+        if (formData.memberMax !== "" && formData.memberMax < 2) {
+          Swal.fire({
+            position: "center",
+            title: "จำนวนสมาชิกต้องไม่น้อยกว่า 2 คน",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+              title: 'swal-title-success',
+              container: 'swal-container',
+              popup: 'swal-popup-error',
+            }
+          });
+          return;
+        }
+
         if ((!groupData.startTime || !groupData.endTime) && (!formData.startTime && !formData.endTime )) {
           Swal.fire({
             position: "center",
@@ -182,9 +199,9 @@ function TutoringCreateGroup() {
 
         
 if (status && status === "update") {
-  if (groupData.activityName === formData.activityName) {
-    return; 
-  }
+  // if (groupData.activityName === formData.activityName) {
+  //   return; 
+  // }
 
   if (!formData.activityName) {
     Swal.fire({
@@ -201,9 +218,9 @@ if (status && status === "update") {
     return;
   }
 
-  if (groupData.facultyID === formData.facultyID) {
-    return; 
-  }
+  // if (groupData.facultyID === formData.facultyID) {
+  //   return; 
+  // }
   if (!formData.facultyID) {
     Swal.fire({
       position: "center",
@@ -219,9 +236,9 @@ if (status && status === "update") {
     return;
   }
 
-  if (groupData.date === formData.date) {
-    return;
-  }
+  // if (groupData.date === formData.date) {
+  //   return;
+  // }
   if (!formData.date) {
     Swal.fire({
       position: "center",
@@ -237,9 +254,9 @@ if (status && status === "update") {
     return;
   }
 
-  if (groupData.startTime === formData.startTime && groupData.endTime === formData.endTime) {
-    return;
-  }
+  // if (groupData.startTime === formData.startTime && groupData.endTime === formData.endTime) {
+  //   return;
+  // }
   if (!formData.startTime || !formData.endTime) {
     Swal.fire({
       position: "center",
@@ -255,9 +272,9 @@ if (status && status === "update") {
     return;
   }
 
-  if (groupData.location === formData.location) {
-    return;
-  }
+  // if (groupData.location === formData.location) {
+  //   return;
+  // }
   if (!formData.location) {
     Swal.fire({
       position: "center",
@@ -435,7 +452,7 @@ if (status && status === "update") {
   
     if (result.isConfirmed) {
     try {
-      await axios.delete(config.SERVER_PATH + "/api/tutoring/delete/" + groupID, { headers: config.Headers().headers, withCredentials: true}).then((res) => {
+      await axios.delete(config.SERVER_PATH + "/api/tutoring/deleteGroup/" + groupID, { headers: config.Headers().headers, withCredentials: true}).then((res) => {
         if (res.data.status === "ok") {
           console.log("Delete tutoring group success");
           Swal.fire({
@@ -657,7 +674,9 @@ if (status && status === "update") {
                   name="memberMax"
                   className="form-control"
                   value={formData.memberMax}
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
                   placeholder="ไม่จำกัด"
                   min="0"
                   max="99"
@@ -807,13 +826,6 @@ if (status && status === "update") {
               className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center"
             >
               <button
-                type="submit"
-                className="btn"
-                style={{ background: "#FFB600", width: "100%" }}
-              >
-                {status === "update" ? "บันทึก" : "สร้าง"}
-              </button>
-              <button
                 type="button"
                 className="btn"
                 onClick={ () => {
@@ -839,12 +851,20 @@ if (status && status === "update") {
                                         }
                                       });
                                     }}
-                style={{ background: "#D9D9D9", width: "100%" }}
+                style={{ background: "#D9D9D9", width: "80%" }}
               >
                 ยกเลิก
               </button>
+              <button
+                onClick={handleSubmit}
+                className="btn"
+                style={{ background: "#FFB600", width: "120%" }}
+              >
+                {status === "update" ? "บันทึก" : "สร้าง"}
+              </button>
+        
             </div>
-            {status === "update" && (
+            {/* {status === "update" && (
               <div
                 className="mt-3 d-flex flex-row gap-3 justify-content-center align-items-center"
               >
@@ -857,7 +877,7 @@ if (status && status === "update") {
                   ลบกลุ่ม
                 </button>
               </div>
-            )}
+            )} */}
           </form>
         </div>
       </div>

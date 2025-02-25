@@ -132,7 +132,7 @@ function EditMyAccount() {
           showConfirmButton: false,
           timer: 2000,
           customClass: {
-            title: 'swal-title-error',
+            title: 'swal-title-success',
             container: 'swal-container',
             popup: 'swal-popup-error',
           }
