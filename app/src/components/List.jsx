@@ -108,26 +108,23 @@ function List({ listItem, fetchData }) {
     "อา.": "#B3261E",
   };
 
-
-
   const handleShare = (selectedItemId) => {
-    const shareUrl = `https://k-link-v3.vercel.app/aboutlibrary/${selectedItemId}`; 
+    const shareUrl = `https://k-link-v3.vercel.app/?redirect=/aboutlibrary/${selectedItemId}`; 
     const shareText = `ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK\n${shareUrl}\nร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK`;
-    navigator.clipboard.writeText(shareText)
-  
+    navigator.clipboard.writeText(shareText);
+
     if (navigator.share) {
-      navigator.share({
-        title: "ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK",
-        text: "ร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK",
-        url: shareUrl, 
-      })
-      .then(() => console.log('แชร์สำเร็จ!'))
-      .catch((error) => console.log('การแชร์ล้มเหลว:', error));
+        navigator.share({
+            title: "ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK",
+            text: "ร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK",
+            url: shareUrl, 
+        })
+        .then(() => console.log('แชร์สำเร็จ!'))
+        .catch((error) => console.log('การแชร์ล้มเหลว:', error));
     } else {
-      alert('ไม่รองรับในเบราว์เซอร์ของคุณ');
+        alert('ไม่รองรับในเบราว์เซอร์ของคุณ');
     }
-  };
-  
+};
 
   const handleButtonClick = async (id, status) => {
     try {

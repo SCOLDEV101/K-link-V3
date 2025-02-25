@@ -39,6 +39,25 @@ const Footer = ({FileData}) => {
     initialActive !== -1 ? initialActive : 1
   );
 
+  const handleShare = (selectedItemId) => {
+    const shareUrl = `https://k-link-v3.vercel.app/?redirect=/aboutlibrary/${selectedItemId}`; 
+    const shareText = `ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK\n${shareUrl}\nร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK`;
+    navigator.clipboard.writeText(shareText);
+
+    if (navigator.share) {
+        navigator.share({
+            title: "ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK",
+            text: "ร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK",
+            url: shareUrl, 
+        })
+        .then(() => console.log('แชร์สำเร็จ!'))
+        .catch((error) => console.log('การแชร์ล้มเหลว:', error));
+    } else {
+        alert('ไม่รองรับในเบราว์เซอร์ของคุณ');
+    }
+};
+
+
   useEffect(() => {
     const currentActive = Menus.findIndex(
       (menu) => menu.route === location.pathname
@@ -83,20 +102,7 @@ const Footer = ({FileData}) => {
       <div
         style={{ width: "40%", cursor: "pointer" }}
         className="text-white fs-6 d-flex align-items-center justify-content-center"
-        onClick={() => {
-          if (navigator.share) {
-            navigator
-              .share({
-                title: "ฉันเจอเอกสารที่น่าสนใจในแอป K-LINK",
-                text: "ร่วมแบ่งปันประสบการณ์ที่ดีร่วมกันในแอป K-LINK",
-                url: window.location.href,
-              })
-              .then(() => console.log("Sharing successful!"))
-              .catch((error) => console.log("Sharing failed", error));
-          } else {
-            alert("Web Share API is not supported in your browser.");
-          }
-        }}
+        onClick={() => handleShare(FileData.groupID)}
       >
         <MdOutlineShare className="mx-1" />
         Share
