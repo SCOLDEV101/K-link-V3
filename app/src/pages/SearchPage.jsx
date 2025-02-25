@@ -38,31 +38,31 @@ function SearchPage() {
 
   const handleSearch = async () => {
     console.log("inputValue ::", inputValue, ":", feature);
+    setFetching(true); // แสดงสถานะกำลังดึงข้อมูล
+  
     try {
-      setFetching(true); // for waiting fetching 
-      await axios
-        .post(
-          config.SERVER_PATH + `/api/search/${feature}`,
-          { keyword: inputValue },
-          { headers: config.Headers().headers, withCredentials: true }
-        )
-        .then((res) => {
-          if (res.data.status === "ok") {
-            setFetching(false);
-            console.log("res.data.listItem ::", res.data.listItem);
-            setSearchListsArray(res.data.listItem); // <===================== { send back search results} =================
-            console.log("inputValue ::", inputValue);
-            goBack();
-          } else if (res.data.status === "failed") {
-            setFetching(false);
-            console.log("Search is no results");
-            setIsFalse(true);
-          }
-        });
+      const response = await axios.post(
+        `${config.SERVER_PATH}/api/search/${feature}`,
+        { keyword: inputValue },
+        { headers: config.Headers().headers, withCredentials: true }
+      );
+  
+      if (response.data.status === "ok") {
+        console.log("res.data.listItem ::", response.data.listItem);
+        setSearchListsArray(response.data.listItem); // ส่งผลลัพธ์การค้นหากลับ
+        goBack();
+      } else if (response.data.status === "failed") {
+        console.log("Search has no results");
+        setIsFalse(true);
+      }
     } catch (error) {
       console.error("Error fetching search results:", error);
+    } finally {
+      setFetching(false); 
+      setIsFalse(true);
     }
   };
+  
 
   return (
     <>

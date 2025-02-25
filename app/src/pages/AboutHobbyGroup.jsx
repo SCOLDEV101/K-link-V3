@@ -77,6 +77,17 @@ function AboutHobbyGroup() {
                 }
               );
               if (response.data.status === "ok") {
+                // Swal.fire({
+                //             position: "center",
+                //             title: "ออกจากกลุ่มแล้ว",
+                //             showConfirmButton: false,
+                //             timer: 2000,
+                //             customClass: {
+                //               title: 'swal-title-success',
+                //               container: 'swal-container',
+                //               popup: 'swal-popup-error',
+                //             }
+                //           });
                 console.log("leave group success");
                 navigate("/hobby");
               }
