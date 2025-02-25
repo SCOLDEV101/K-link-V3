@@ -135,21 +135,21 @@ class UserModel extends Model
     public static $validator = [
         [
             // 'image'=> ['sometimes','mimes:png,jpg,jpeg,gif'],
-            'username' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙-_.\s]+$/u', 'max:50'],
-            'fullname' => ['sometimes', 'regex:/^[a-zA-Zก-๙\s]+$/u', 'max:100'],
-            'aboutMe' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s]+$/u', 'max:1000'],
+            'username' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u', 'max:50'],
+            'fullname' => ['sometimes', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u', 'max:100'],
+            'aboutMe' => ['nullable', 'regex:/^[a-zA-Z0-9ก-๙\s!@#$%()_+\-=\[\]{}<>?:,\.\/]+$/u', 'max:1000'],
             'telephone' => ['sometimes', 'regex:/^[0-9]+$/', 'min:10', 'max:10'],
         ],
         [
-            'username.regex' => 'username can only contain letters, numbers, dashes, and underscores.',
-            'username.max' => 'username characters exceed limit',
-            'fullname.regex' => 'fullname can only contain letters, and whitespaces.',
-            'fullname.max' => 'fullname characters exceed limit',
-            'aboutMe.regex' => 'aboutMe can only contain letters, numbers and whitespaces.',
-            'aboutMe.max' => 'about me characters exceed limit',
-            'telephone.regex' => 'telephone type invalid',
-            'telephone.max' => 'telephone should have only 10 numbers',
-            'telephone.min' => 'telephone should have only 10 numbers',
-        ]
+            'username.regex' => 'Username can include letters, numbers, spaces, and special characters (!@#$%()_+-={}[]<>?,./).',
+            'username.max' => 'Username cannot exceed 50 characters.',
+            'fullname.regex' => 'Full name can include letters, numbers, spaces, and special characters (!@#$%()_+-={}[]<>?,./).',
+            'fullname.max' => 'Full name cannot exceed 100 characters.',
+            'aboutMe.regex' => 'About Me can include letters, numbers, spaces, and special characters (!@#$%()_+-={}[]<>?,./).',
+            'aboutMe.max' => 'About Me cannot exceed 1000 characters.',
+            'telephone.regex' => 'Telephone number must only contain digits.',
+            'telephone.min' => 'Telephone number must be exactly 10 digits.',
+            'telephone.max' => 'Telephone number must be exactly 10 digits.',
+        ]        
     ];
 }
