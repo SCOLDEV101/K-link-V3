@@ -37,19 +37,21 @@ code {
 }
 
 .swal-popup-success {
-  width: 75% !important; 
-  border-radius: 20px; 
-  background-color: #7CB518 ;    
+  width: 95% !important; 
+  border-radius: 5px; 
+  background-color: #7CB518 ;  
+  margin-bottom: 60vh; 
 }
 
 .swal-popup-error {
-  width: 75% !important; 
-  border-radius: 20px; 
-  background-color: #FF0101 ;    
+  width: 95% !important; 
+  border-radius: 5px; 
+  background-color: #B3261E ; 
+  margin-bottom: 60vh;    
 }
 
 .swal-popup-report {
-  width: 75% !important; 
+  width: 95% !important; 
   border-radius: 15px;
   border: 1px solid black;
   background-color: #FFFFFF ;    
@@ -74,8 +76,8 @@ code {
 
 .swal-title-success {
   border-radius: 20px 20px 0px 0px;               
-  color: rgb(0, 0, 0);   
-  font-size: medium;               
+  color: rgb(255, 255, 255);   
+  font-size: large;               
 }
 
 .swal-confirm-button,

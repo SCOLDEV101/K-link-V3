@@ -131,7 +131,7 @@ function CreateGroupPage() {
       });
       return;
     }
-            if (memberMax !== null && memberMax < 2) {
+            if (memberMax !== "" && memberMax < 2) {
               Swal.fire({
                 position: "center",
                 title: "จำนวนสมาชิกต้องไม่น้อยกว่า 2 คน",
@@ -313,7 +313,7 @@ function CreateGroupPage() {
       });
       return;
     }
-    if (memberMax !== null && memberMax < 2) {
+    if (memberMax !== "" && memberMax < 2) {
       Swal.fire({
         position: "center",
         title: "จำนวนสมาชิกต้องไม่น้อยกว่า 2 คน",
