@@ -3,17 +3,17 @@
   "name": "K-LINK Application",
   "icons": [
     {
-      "src": "K-Link-Logo.svg",
+      "src": "./K-Link-Logo.svg",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "Hobby_Default_Cover.png",
+      "src": "./Hobby_Default_Cover.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "Hobby_Default_Cover.png",
+      "src": "./Hobby_Default_Cover.png",
       "type": "image/png",
       "sizes": "512x512"
     }
