@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['k-link-v3.vercel.app'],
+    'allowed_origins' => ['https://k-link-v3.vercel.app/*'],
 
     // 'allowed_origins' => ['*'],
 
